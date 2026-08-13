@@ -1,0 +1,6 @@
+.next
+.turbo
+.yarn
+node_modules
+supabase/.temp
+yarn.lock

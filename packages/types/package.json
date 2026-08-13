@@ -1,0 +1,25 @@
+{
+  "name": "@hektor/types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts"
+    },
+    "./database": {
+      "types": "./src/database.ts"
+    }
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@hektor/eslint-config": "workspace:*",
+    "@hektor/typescript-config": "workspace:*",
+    "eslint": "^9.39.0",
+    "typescript": "6.0.3"
+  }
+}

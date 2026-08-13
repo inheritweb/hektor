@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "yarn install --immutable",
+  "buildCommand": "yarn workspace @hektor/web build",
+  "devCommand": "yarn workspace @hektor/web dev",
+  "outputDirectory": "apps/web/.next",
+  "git": {
+    "deploymentEnabled": false
+  }
+}

@@ -1,0 +1,69 @@
+name: Deploy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deployment:
+        description: Deployment target
+        required: true
+        type: choice
+        options:
+          - preview
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  preview:
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch' && inputs.deployment == 'preview')
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --global corepack@0.35.0
+      - run: corepack enable
+      - run: yarn install --immutable
+      - run: cp .env.example .env
+      - run: yarn check
+      - run: yarn test
+      - run: yarn vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - run: yarn vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      - run: yarn vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+  production:
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.deployment == 'production')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --global corepack@0.35.0
+      - run: corepack enable
+      - run: yarn install --immutable
+      - run: cp .env.example .env
+      - run: yarn check
+      - run: yarn test
+      - run: yarn vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - run: yarn vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: yarn vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

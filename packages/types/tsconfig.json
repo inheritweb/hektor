@@ -1,0 +1,4 @@
+{
+  "extends": "@hektor/typescript-config/base.json",
+  "include": ["src/**/*.ts"]
+}

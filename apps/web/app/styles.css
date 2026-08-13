@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-hektor-green: #3ecf8e;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply m-0 bg-[#101411] text-[#f4f7f4] antialiased;
+  }
+}

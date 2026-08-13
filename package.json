@@ -1,0 +1,49 @@
+{
+  "name": "hektor",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "yarn@4.18.0",
+  "engines": {
+    "node": ">=24.0.0 <25.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "ci": "yarn check && yarn test && yarn build",
+    "dev": "turbo run dev",
+    "dev:web": "yarn workspace @hektor/web dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint -- --fix",
+    "test": "turbo run test",
+    "test:e2e": "yarn workspace @hektor/web test:e2e",
+    "test:e2e:ui": "yarn workspace @hektor/web test:e2e:ui",
+    "test:watch": "yarn workspace @hektor/web test:watch",
+    "typecheck": "turbo run typecheck",
+    "check": "yarn format:check && yarn lint && yarn typecheck",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:reset": "supabase db reset",
+    "supabase:lint": "supabase db lint",
+    "supabase:migration:new": "supabase migration new",
+    "supabase:types": "supabase gen types typescript --local > packages/types/src/database.ts",
+    "vercel:build": "vercel build",
+    "vercel:build:production": "vercel build --prod",
+    "vercel:deploy:preview": "vercel deploy --prebuilt",
+    "vercel:deploy:production": "vercel deploy --prebuilt --prod",
+    "vercel:dev": "vercel dev",
+    "vercel:link": "vercel link",
+    "vercel:pull": "vercel pull"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6",
+    "supabase": "2.110.0",
+    "turbo": "2.10.9",
+    "vercel": "58.8.0"
+  }
+}
