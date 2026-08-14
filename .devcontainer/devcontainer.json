@@ -42,9 +42,9 @@
     "NEXT_PUBLIC_SUPABASE_URL": "http://localhost:54321"
   },
   "hostRequirements": {
-    "cpus": 4,
+    "cpus": 2,
     "memory": "8gb",
-    "storage": "32gb"
+    "storage": "16gb"
   },
   "customizations": {
     "vscode": {

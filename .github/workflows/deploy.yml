@@ -37,7 +37,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm install --global corepack@0.35.0
       - run: corepack enable
       - run: yarn install --immutable
       - run: cp .env.example .env
@@ -58,7 +57,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm install --global corepack@0.35.0
       - run: corepack enable
       - run: yarn install --immutable
       - run: cp .env.example .env

@@ -52,9 +52,11 @@ Install a Dev Container-compatible editor or CLI and ensure the host has a
 Docker-compatible runtime. The host does not need Node, Yarn, Supabase CLI,
 Vercel CLI, PostgreSQL, or Playwright.
 
-The container is configured for at least 4 CPUs, 8 GB of memory, and 32 GB of
-storage. The first start takes longer because it downloads the Supabase service
-images and Playwright's Chromium browser.
+The container declares a minimum of 2 CPUs, 8 GB of memory, and 16 GB of
+storage. This provides enough headroom for Yarn, the complete local Supabase
+stack, Next.js, and Playwright to run together. The first start takes longer
+because it downloads the Supabase service images and Playwright's Chromium
+browser.
 
 ### Open the dev container
 

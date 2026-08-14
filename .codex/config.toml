@@ -1,0 +1,6 @@
+[mcp_servers.linear]
+url = "https://mcp.linear.app/mcp"
+oauth_resource = "https://mcp.linear.app/mcp"
+auth = "oauth"
+enabled = true
+
