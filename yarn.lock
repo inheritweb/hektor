@@ -1252,6 +1252,7 @@ __metadata:
     postcss: "npm:8.5.6"
     react: "npm:19.2.8"
     react-dom: "npm:19.2.8"
+    react-icons: "npm:5.5.0"
     storybook: "npm:10.5.7"
     tailwind-merge: "npm:3.6.0"
     tailwindcss: "npm:4.3.3"
@@ -9003,6 +9004,15 @@ __metadata:
   peerDependencies:
     react: ^19.2.8
   checksum: 10c0/41ba2247b76f687fcfe5bbc99f514d6b851d8c8041c2f5ded36ed05bd7fdc5208cacbac9de51e3e6633e77f96f44cec9f0d4a5a55184dba4e00738f224439134
+  languageName: node
+  linkType: hard
+
+"react-icons@npm:5.5.0":
+  version: 5.5.0
+  resolution: "react-icons@npm:5.5.0"
+  peerDependencies:
+    react: "*"
+  checksum: 10c0/a24309bfc993c19cbcbfc928157e53a137851822779977b9588f6dd41ffc4d11ebc98b447f4039b0d309a858f0a42980f6bfb4477fb19f9f2d1bc2e190fcf79c
   languageName: node
   linkType: hard
 

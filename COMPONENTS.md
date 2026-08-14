@@ -34,6 +34,7 @@ packages/
     ├── package.json
     ├── src/
     │   ├── styles.css
+    │   ├── context/
     │   ├── atoms/
     │   ├── molecules/
     │   ├── organisms/
@@ -45,6 +46,23 @@ packages/
 `@hektor/tailwind-config` owns shared design tokens and Tailwind theme mappings.
 `@hektor/ui` imports that theme and owns all reusable visual components. Apps
 consume both packages but do not become implementation dependencies of either.
+
+## Shared UI context
+
+Cross-cutting client-side presentation state lives under `src/context`, outside
+the atomic layer hierarchy. Context providers must remain independent of app
+routers, data clients, and domain state. They expose focused hooks and are
+exported through the `@hektor/ui/context` entrypoint.
+
+`ThemeProvider` owns the `light`, `dark`, and `system` theme preference. It
+persists the preference in local storage, follows operating-system changes while
+set to `system`, and applies the resolved theme to the document root. Components
+consume this through `useTheme`; they must not implement separate theme storage
+or media-query state.
+
+Theme selection UI belongs in the atomic hierarchy. `ThemeSwitcher` is a
+molecule because it composes generic buttons into one focused preference
+control. Icons use the Lucide set exported by `react-icons/lu`.
 
 ## Shared Tailwind theme
 

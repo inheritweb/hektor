@@ -3,6 +3,9 @@
   --color-foreground: var(--hektor-foreground);
   --color-surface: var(--hektor-surface);
   --color-surface-foreground: var(--hektor-surface-foreground);
+  --color-paper: var(--hektor-paper-background);
+  --color-menu: var(--hektor-menu-background);
+  --color-menu-foreground: var(--hektor-menu-foreground);
   --color-muted: var(--hektor-muted);
   --color-muted-foreground: var(--hektor-muted-foreground);
   --color-primary: var(--hektor-primary);
@@ -30,6 +33,9 @@
   --hektor-foreground: oklch(0.18 0.018 145);
   --hektor-surface: oklch(1 0 0);
   --hektor-surface-foreground: oklch(0.18 0.018 145);
+  --hektor-paper-background: oklch(0.975 0.018 145);
+  --hektor-menu-background: oklch(0.995 0.006 145);
+  --hektor-menu-foreground: oklch(0.18 0.018 145);
   --hektor-muted: oklch(0.95 0.008 145);
   --hektor-muted-foreground: oklch(0.48 0.018 145);
   --hektor-primary: oklch(0.74 0.17 155);
@@ -52,6 +58,9 @@
   --hektor-foreground: oklch(0.96 0.006 145);
   --hektor-surface: oklch(0.22 0.018 145);
   --hektor-surface-foreground: oklch(0.96 0.006 145);
+  --hektor-paper-background: oklch(0.145 0.018 145);
+  --hektor-menu-background: oklch(0.19 0.02 145);
+  --hektor-menu-foreground: oklch(0.96 0.006 145);
   --hektor-muted: oklch(0.27 0.018 145);
   --hektor-muted-foreground: oklch(0.72 0.015 145);
   --hektor-primary: oklch(0.78 0.17 155);
