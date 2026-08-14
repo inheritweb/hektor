@@ -60,6 +60,11 @@ set to `system`, and applies the resolved theme to the document root. Components
 consume this through `useTheme`; they must not implement separate theme storage
 or media-query state.
 
+The same provider owns durable interface preferences that belong across routes.
+The application-menu state is stored locally and restored through `menuState`
+and `setMenuState`. Templates use that preference by default while retaining a
+controlled API for exceptional consumers and isolated stories.
+
 Theme selection UI belongs in the atomic hierarchy. `ThemeSwitcher` is a
 molecule because it composes generic buttons into one focused preference
 control. Icons use the Lucide set exported by `react-icons/lu`.

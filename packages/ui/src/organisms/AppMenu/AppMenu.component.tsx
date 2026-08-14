@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import type { IconType } from 'react-icons';
-import { LuMenu } from 'react-icons/lu';
+import { LuArrowLeft, LuMenu } from 'react-icons/lu';
 
 import { Button } from '../../atoms/Button';
 import {
@@ -25,6 +25,7 @@ export interface AppMenuEntry {
 }
 
 export interface AppMenuProps {
+  compactHeader?: ReactNode;
   defaultState?: AppMenuState;
   footer?: ReactNode;
   header?: ReactNode;
@@ -33,14 +34,8 @@ export interface AppMenuProps {
   state?: AppMenuState;
 }
 
-export function nextAppMenuState(
-  state: AppMenuState,
-  desktop: boolean,
-): AppMenuState {
-  if (!desktop) return state === 'expanded' ? 'hidden' : 'expanded';
-  if (state === 'hidden') return 'icons';
-  if (state === 'icons') return 'expanded';
-  return 'hidden';
+export function nextAppMenuState(state: AppMenuState): AppMenuState {
+  return state === 'expanded' ? 'hidden' : 'expanded';
 }
 
 function useDesktopViewport() {
@@ -59,33 +54,48 @@ function useDesktopViewport() {
 
 function MenuContents({
   collapsed,
+  compactHeader,
   footer,
   header,
   items,
-}: Pick<AppMenuProps, 'footer' | 'header' | 'items'> & {
+}: Pick<AppMenuProps, 'compactHeader' | 'footer' | 'header' | 'items'> & {
   collapsed: boolean;
 }) {
   return (
     <>
-      {header ? (
-        <div className={cn('min-h-12 px-3 py-4', collapsed && 'px-2')}>
-          {header}
+      {header || compactHeader ? (
+        <div
+          className={cn(
+            'min-h-12 px-3 py-4',
+            collapsed && 'flex justify-center px-2',
+          )}
+        >
+          {collapsed ? compactHeader : header}
         </div>
       ) : null}
-      <nav aria-label="Application" className="flex-1 space-y-1 px-2 py-3">
+      <nav
+        aria-label="Application"
+        className={cn(
+          'flex-1 space-y-1 px-2 py-3',
+          collapsed && 'flex flex-col items-center gap-1 space-y-0',
+        )}
+      >
         {items.map((item) => (
           <AppMenuItem {...item} collapsed={collapsed} key={item.label} />
         ))}
       </nav>
       {footer && !collapsed ? (
-        <div className="border-t border-border p-3">{footer}</div>
+        <div className="flex justify-center border-t border-border p-3">
+          {footer}
+        </div>
       ) : null}
     </>
   );
 }
 
 export function AppMenu({
-  defaultState = 'icons',
+  compactHeader,
+  defaultState = 'hidden',
   footer,
   header,
   items,
@@ -101,19 +111,19 @@ export function AppMenu({
     onStateChange?.(nextState);
   };
 
-  const toggle = () => changeState(nextAppMenuState(state, desktop));
+  const toggle = () => changeState(nextAppMenuState(state));
 
   if (!desktop) {
     return (
       <>
         <Button
           aria-label="Toggle application menu"
-          className="fixed top-4 left-4 z-40 shadow-sm"
+          className="fixed top-4 left-4 z-40 text-muted-foreground hover:bg-transparent hover:text-foreground"
           onClick={toggle}
-          size="icon"
-          variant="outline"
+          size="icon-lg"
+          variant="ghost"
         >
-          <LuMenu aria-hidden="true" />
+          <LuMenu aria-hidden="true" className="size-6" strokeWidth={1.5} />
         </Button>
         <Sheet
           onOpenChange={(open) => changeState(open ? 'expanded' : 'hidden')}
@@ -126,6 +136,7 @@ export function AppMenu({
             </SheetDescription>
             <MenuContents
               collapsed={false}
+              compactHeader={compactHeader}
               footer={footer}
               header={header}
               items={items}
@@ -142,28 +153,45 @@ export function AppMenu({
     <aside
       aria-label="Application menu"
       className={cn(
-        'relative z-20 shrink-0 overflow-visible border-r border-border bg-menu text-menu-foreground transition-[width] duration-200 ease-out motion-reduce:transition-none',
+        'sticky top-0 z-20 h-svh shrink-0 overflow-visible border-r border-border bg-menu text-menu-foreground transition-[width] duration-200 ease-out motion-reduce:transition-none',
         state === 'hidden' && 'w-0 border-r-0',
-        collapsed && 'w-16',
+        collapsed && 'w-20',
         state === 'expanded' && 'w-64',
       )}
     >
       <Button
-        aria-label="Cycle application menu"
+        aria-label="Toggle application menu"
         className={cn(
-          'absolute top-4 z-30 shadow-sm',
+          'absolute top-4 z-30 text-muted-foreground hover:bg-transparent hover:text-foreground',
           state === 'hidden' ? 'left-4' : 'right-3',
+          state === 'icons' && 'right-auto left-1/2 -translate-x-1/2',
         )}
         onClick={toggle}
-        size="icon"
-        variant="outline"
+        size="icon-lg"
+        variant="ghost"
       >
-        <LuMenu aria-hidden="true" />
+        <LuMenu aria-hidden="true" className="size-6" strokeWidth={1.5} />
       </Button>
+      {state === 'expanded' ? (
+        <Button
+          aria-label="Collapse application menu to icons"
+          className="absolute top-4 left-4 z-30 text-muted-foreground hover:bg-transparent hover:text-foreground"
+          onClick={() => changeState('icons')}
+          size="icon-lg"
+          variant="ghost"
+        >
+          <LuArrowLeft
+            aria-hidden="true"
+            className="size-6"
+            strokeWidth={1.5}
+          />
+        </Button>
+      ) : null}
       {state === 'hidden' ? null : (
-        <div className="flex h-svh flex-col overflow-hidden pt-14">
+        <div className="flex h-full flex-col overflow-hidden pt-14">
           <MenuContents
             collapsed={collapsed}
+            compactHeader={compactHeader}
             footer={footer}
             header={header}
             items={items}

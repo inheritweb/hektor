@@ -23,7 +23,7 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
   return (
     <div
       aria-label="Theme preference"
-      className={cn('inline-flex', className)}
+      className={cn('flex w-full items-center justify-center', className)}
       role="group"
     >
       {choices.map(({ preference: choice, label, Icon }, index) => (
@@ -34,19 +34,19 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
                 aria-label={label}
                 aria-pressed={preference === choice}
                 className={cn(
-                  'rounded-none border-r-0 px-2 last:border-r',
+                  'size-12 cursor-pointer rounded-none border-r-0 bg-black/[0.025] last:border-r hover:bg-black/5 dark:bg-black/10 dark:hover:bg-black/15',
                   index === 0 && 'rounded-l-lg',
                   index === choices.length - 1 && 'rounded-r-lg',
                   preference === choice &&
-                    'relative z-10 bg-accent text-accent-foreground',
+                    'relative z-10 bg-surface text-foreground shadow-inner hover:bg-surface dark:bg-surface dark:hover:bg-surface',
                 )}
                 onClick={() => setPreference(choice as ThemePreference)}
-                size="icon"
+                size="icon-lg"
                 variant="outline"
               />
             }
           >
-            <Icon aria-hidden="true" />
+            <Icon aria-hidden="true" className="size-5" />
           </TooltipTrigger>
           <TooltipContent>{label}</TooltipContent>
         </Tooltip>

@@ -28,16 +28,20 @@ export function AppMenuItem({
       aria-current={active ? 'page' : undefined}
       aria-label={collapsed ? label : undefined}
       className={cn(
-        'w-full justify-start gap-3',
-        collapsed && 'justify-center px-0',
-        active && 'bg-accent text-accent-foreground',
+        'w-full justify-start gap-3 text-muted-foreground hover:bg-accent/40 hover:text-foreground',
+        collapsed && 'size-11 justify-center rounded-md p-0',
+        active && 'bg-accent/55 text-foreground/75',
       )}
       onClick={onSelect}
       render={href ? <a href={href} /> : undefined}
       size={collapsed ? 'icon' : 'lg'}
       variant="ghost"
     >
-      <Icon aria-hidden="true" />
+      <Icon
+        aria-hidden="true"
+        className={collapsed ? 'size-7' : 'size-5'}
+        strokeWidth={1.5}
+      />
       {collapsed ? null : <span>{label}</span>}
     </Button>
   );

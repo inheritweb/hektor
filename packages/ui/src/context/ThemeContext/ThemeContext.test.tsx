@@ -8,7 +8,11 @@ const mediaListeners = new Set<() => void>();
 let systemIsDark = false;
 
 function wrapper({ children }: { children: ReactNode }) {
-  return <ThemeProvider storageKey="theme-test">{children}</ThemeProvider>;
+  return (
+    <ThemeProvider menuStorageKey="menu-test" storageKey="theme-test">
+      {children}
+    </ThemeProvider>
+  );
 }
 
 describe('ThemeProvider', () => {
@@ -57,5 +61,17 @@ describe('ThemeProvider', () => {
     act(() => mediaListeners.forEach((listener) => listener()));
 
     expect(result.current.resolvedTheme).toBe('dark');
+  });
+
+  it('restores and stores the menu state', async () => {
+    window.localStorage.setItem('menu-test', 'expanded');
+    const { result } = renderHook(() => useTheme(), { wrapper });
+
+    await waitFor(() => expect(result.current.menuState).toBe('expanded'));
+
+    act(() => result.current.setMenuState('hidden'));
+
+    expect(result.current.menuState).toBe('hidden');
+    expect(window.localStorage.getItem('menu-test')).toBe('hidden');
   });
 });

@@ -1287,6 +1287,7 @@ __metadata:
     next: "npm:16.2.12"
     react: "npm:19.2.8"
     react-dom: "npm:19.2.8"
+    react-icons: "npm:5.5.0"
     tailwindcss: "npm:4.3.3"
     typescript: "npm:6.0.3"
     vitest: "npm:4.1.10"

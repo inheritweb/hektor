@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { LuFileText, LuHouse, LuSettings } from 'react-icons/lu';
 
-import { ThemeSwitcher } from '../../molecules';
+import { Logo, ThemeSwitcher } from '../../molecules';
 
 import { AppMenu } from './AppMenu.component';
 
@@ -15,7 +15,8 @@ const meta = {
   title: 'Organisms/AppMenu',
   component: AppMenu,
   args: {
-    header: <strong className="block truncate">Hektor</strong>,
+    compactHeader: <Logo size="md" variant="mark" />,
+    header: <Logo size="md" />,
     items,
     footer: <ThemeSwitcher />,
   },
