@@ -1,0 +1,12 @@
+{
+  "name": "@hektor/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "style": "./src/theme.css",
+  "exports": {
+    ".": "./src/theme.css"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ]
+}

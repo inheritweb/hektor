@@ -12,6 +12,8 @@ Treat `README.md` as the detailed development and operations reference.
 - `packages/types`: shared application types and generated Supabase database types.
 - `packages/eslint-config`: shared flat ESLint configuration.
 - `packages/typescript-config`: shared strict TypeScript configuration.
+- `packages/tailwind-config`: shared Tailwind theme and overridable design tokens.
+- `packages/ui`: shared atomic component library and Storybook.
 - `supabase/migrations`: source of truth for database schema changes.
 - `.github/workflows`: CI and Vercel deployment workflows.
 - `.devcontainer`: reproducible development container and startup scripts.
@@ -52,6 +54,12 @@ commands from the repository root unless documentation explicitly says otherwise
   values through `NEXT_PUBLIC_` variables.
 - Do not deploy, modify hosted Supabase resources, or perform destructive remote
   operations unless the user explicitly requests it.
+
+## UI component work
+
+Before creating or modifying UI components, Storybook stories, shared styles, or
+design tokens, read `COMPONENTS.md` and follow its package boundaries, atomic
+layers, dependency direction, and Storybook conventions.
 
 ## Verification
 

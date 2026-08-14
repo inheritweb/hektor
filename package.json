@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "turbo run build",
-    "ci": "yarn check && yarn test && yarn build",
+    "ci": "yarn check && yarn test && yarn build && yarn storybook:build",
     "dev": "turbo run dev",
     "dev:web": "yarn workspace @hektor/web dev",
     "format": "prettier --write .",
@@ -32,6 +32,8 @@
     "supabase:lint": "supabase db lint",
     "supabase:migration:new": "supabase migration new",
     "supabase:types": "supabase gen types typescript --local > packages/types/src/database.ts",
+    "storybook": "yarn workspace @hektor/ui storybook",
+    "storybook:build": "yarn workspace @hektor/ui build-storybook",
     "vercel:build": "vercel build",
     "vercel:build:production": "vercel build --prod",
     "vercel:deploy:preview": "vercel deploy --prebuilt",

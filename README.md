@@ -34,8 +34,10 @@ Exact versions are pinned in the workspace manifests and `yarn.lock`.
 │   └── web/                  # Next.js application
 ├── packages/
 │   ├── eslint-config/        # Shared flat ESLint configuration
+│   ├── tailwind-config/      # Shared Tailwind theme and design tokens
 │   ├── types/                # Shared application and generated database types
-│   └── typescript-config/    # Shared strict TypeScript configuration
+│   ├── typescript-config/    # Shared strict TypeScript configuration
+│   └── ui/                   # Atomic component library and Storybook
 ├── supabase/
 │   ├── migrations/           # Version-controlled database schema
 │   └── config.toml           # Local Supabase configuration
@@ -127,22 +129,29 @@ changed.
 
 ### Development and validation
 
-| Command             | What it does                                   |
-| ------------------- | ---------------------------------------------- |
-| `yarn dev`          | Runs all persistent development tasks          |
-| `yarn dev:web`      | Runs only the web application                  |
-| `yarn build`        | Creates all production builds                  |
-| `yarn ci`           | Runs checks, unit tests, and production builds |
-| `yarn lint`         | Runs ESLint across participating workspaces    |
-| `yarn lint:fix`     | Runs ESLint and applies safe fixes             |
-| `yarn typecheck`    | Runs TypeScript without emitting files         |
-| `yarn format`       | Formats the repository with Prettier           |
-| `yarn format:check` | Checks formatting without changing files       |
-| `yarn check`        | Runs formatting, linting, and typechecking     |
-| `yarn test`         | Runs unit tests once through Turborepo         |
-| `yarn test:watch`   | Runs web unit tests interactively              |
-| `yarn test:e2e`     | Runs the Playwright browser suite              |
-| `yarn test:e2e:ui`  | Opens Playwright's interactive test UI         |
+| Command                | What it does                                 |
+| ---------------------- | -------------------------------------------- |
+| `yarn dev`             | Runs all persistent development tasks        |
+| `yarn dev:web`         | Runs only the web application                |
+| `yarn build`           | Creates all production builds                |
+| `yarn ci`              | Runs checks, tests, app and Storybook builds |
+| `yarn lint`            | Runs ESLint across participating workspaces  |
+| `yarn lint:fix`        | Runs ESLint and applies safe fixes           |
+| `yarn typecheck`       | Runs TypeScript without emitting files       |
+| `yarn format`          | Formats the repository with Prettier         |
+| `yarn format:check`    | Checks formatting without changing files     |
+| `yarn check`           | Runs formatting, linting, and typechecking   |
+| `yarn test`            | Runs unit tests once through Turborepo       |
+| `yarn test:watch`      | Runs web unit tests interactively            |
+| `yarn test:e2e`        | Runs the Playwright browser suite            |
+| `yarn test:e2e:ui`     | Opens Playwright's interactive test UI       |
+| `yarn storybook`       | Runs the UI library's Storybook              |
+| `yarn storybook:build` | Builds the static Storybook                  |
+
+Component structure and dependency rules are defined in `COMPONENTS.md`.
+Shared semantic design tokens live in `@hektor/tailwind-config`; applications
+may override its CSS custom properties. Reusable components live in `@hektor/ui`
+and are reviewed through Storybook.
 
 ### Supabase
 

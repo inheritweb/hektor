@@ -1,0 +1,8 @@
+{
+  "extends": "@hektor/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "resolvePackageJsonImports": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", ".storybook/**/*.ts"]
+}

@@ -21,10 +21,6 @@ concurrency:
   group: vercel-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
 jobs:
   preview:
     if: >-
@@ -32,6 +28,10 @@ jobs:
       (github.event_name == 'workflow_dispatch' && inputs.deployment == 'preview')
     runs-on: ubuntu-latest
     environment: preview
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,9 +42,22 @@ jobs:
       - run: cp .env.example .env
       - run: yarn check
       - run: yarn test
-      - run: yarn vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-      - run: yarn vercel build --token=${{ secrets.VERCEL_TOKEN }}
-      - run: yarn vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Check Vercel credentials
+        id: vercel-credentials
+        shell: bash
+        run: |
+          if [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping preview deployment because Vercel credentials are not configured."
+          fi
+      - if: steps.vercel-credentials.outputs.available == 'true'
+        run: yarn vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+      - if: steps.vercel-credentials.outputs.available == 'true'
+        run: yarn vercel build --token="$VERCEL_TOKEN"
+      - if: steps.vercel-credentials.outputs.available == 'true'
+        run: yarn vercel deploy --prebuilt --token="$VERCEL_TOKEN"
 
   production:
     if: >-
@@ -52,6 +65,10 @@ jobs:
       (github.event_name == 'workflow_dispatch' && inputs.deployment == 'production')
     runs-on: ubuntu-latest
     environment: production
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -62,6 +79,19 @@ jobs:
       - run: cp .env.example .env
       - run: yarn check
       - run: yarn test
-      - run: yarn vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-      - run: yarn vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-      - run: yarn vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Check Vercel credentials
+        id: vercel-credentials
+        shell: bash
+        run: |
+          if [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping production deployment because Vercel credentials are not configured."
+          fi
+      - if: steps.vercel-credentials.outputs.available == 'true'
+        run: yarn vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - if: steps.vercel-credentials.outputs.available == 'true'
+        run: yarn vercel build --prod --token="$VERCEL_TOKEN"
+      - if: steps.vercel-credentials.outputs.available == 'true'
+        run: yarn vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"

@@ -1,0 +1,68 @@
+@theme inline {
+  --color-background: var(--hektor-background);
+  --color-foreground: var(--hektor-foreground);
+  --color-surface: var(--hektor-surface);
+  --color-surface-foreground: var(--hektor-surface-foreground);
+  --color-muted: var(--hektor-muted);
+  --color-muted-foreground: var(--hektor-muted-foreground);
+  --color-primary: var(--hektor-primary);
+  --color-primary-foreground: var(--hektor-primary-foreground);
+  --color-secondary: var(--hektor-secondary);
+  --color-secondary-foreground: var(--hektor-secondary-foreground);
+  --color-accent: var(--hektor-accent);
+  --color-accent-foreground: var(--hektor-accent-foreground);
+  --color-destructive: var(--hektor-destructive);
+  --color-destructive-foreground: var(--hektor-destructive-foreground);
+  --color-border: var(--hektor-border);
+  --color-input: var(--hektor-input);
+  --color-ring: var(--hektor-ring);
+  --color-hektor-green: var(--hektor-primary);
+
+  --radius-sm: calc(var(--hektor-radius) - 0.25rem);
+  --radius-md: calc(var(--hektor-radius) - 0.125rem);
+  --radius-lg: var(--hektor-radius);
+  --radius-xl: calc(var(--hektor-radius) + 0.25rem);
+}
+
+:root {
+  color-scheme: light;
+  --hektor-background: oklch(0.985 0.004 145);
+  --hektor-foreground: oklch(0.18 0.018 145);
+  --hektor-surface: oklch(1 0 0);
+  --hektor-surface-foreground: oklch(0.18 0.018 145);
+  --hektor-muted: oklch(0.95 0.008 145);
+  --hektor-muted-foreground: oklch(0.48 0.018 145);
+  --hektor-primary: oklch(0.74 0.17 155);
+  --hektor-primary-foreground: oklch(0.16 0.025 155);
+  --hektor-secondary: oklch(0.92 0.025 150);
+  --hektor-secondary-foreground: oklch(0.24 0.025 150);
+  --hektor-accent: oklch(0.9 0.055 150);
+  --hektor-accent-foreground: oklch(0.22 0.03 150);
+  --hektor-destructive: oklch(0.59 0.22 25);
+  --hektor-destructive-foreground: oklch(0.985 0 0);
+  --hektor-border: oklch(0.88 0.012 145);
+  --hektor-input: oklch(0.88 0.012 145);
+  --hektor-ring: oklch(0.66 0.15 155);
+  --hektor-radius: 0.625rem;
+}
+
+.dark {
+  color-scheme: dark;
+  --hektor-background: oklch(0.17 0.015 145);
+  --hektor-foreground: oklch(0.96 0.006 145);
+  --hektor-surface: oklch(0.22 0.018 145);
+  --hektor-surface-foreground: oklch(0.96 0.006 145);
+  --hektor-muted: oklch(0.27 0.018 145);
+  --hektor-muted-foreground: oklch(0.72 0.015 145);
+  --hektor-primary: oklch(0.78 0.17 155);
+  --hektor-primary-foreground: oklch(0.16 0.025 155);
+  --hektor-secondary: oklch(0.3 0.025 150);
+  --hektor-secondary-foreground: oklch(0.94 0.008 150);
+  --hektor-accent: oklch(0.34 0.045 150);
+  --hektor-accent-foreground: oklch(0.96 0.006 145);
+  --hektor-destructive: oklch(0.7 0.19 23);
+  --hektor-destructive-foreground: oklch(0.16 0.015 23);
+  --hektor-border: oklch(0.34 0.018 145);
+  --hektor-input: oklch(0.34 0.018 145);
+  --hektor-ring: oklch(0.76 0.15 155);
+}

@@ -28,6 +28,7 @@ jobs:
       - run: yarn check
       - run: yarn test
       - run: yarn build
+      - run: yarn storybook:build
 
   e2e:
     runs-on: ubuntu-latest
