@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { LuBuilding2, LuHouse, LuUsers } from 'react-icons/lu';
 
 import { Logo, ThemeSwitcher } from '../../molecules';
-import { AppHeader } from '../../organisms';
+import { AppHeader, GlobalToolbar } from '../../organisms';
 
 import { PaperTemplate } from './PaperTemplate.component';
 
@@ -26,6 +26,11 @@ const meta = {
     menuSections,
     menuFooter: <ThemeSwitcher />,
     header: <AppHeader title="Hektor" />,
+    toolbar: (
+      <GlobalToolbar
+        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Example' }]}
+      />
+    ),
     children: (
       <div>
         <div className="h-5 w-40 rounded bg-muted" />

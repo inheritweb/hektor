@@ -22,6 +22,7 @@ export interface PaperTemplateProps {
   menuSections: AppMenuSection[];
   menuState?: AppMenuState;
   onMenuStateChange?: (state: AppMenuState) => void;
+  toolbar?: ReactNode;
 }
 
 export function PaperTemplate({
@@ -36,6 +37,7 @@ export function PaperTemplate({
   menuSections,
   menuState: controlledMenuState,
   onMenuStateChange,
+  toolbar,
 }: PaperTemplateProps) {
   const { menuState: persistedMenuState, ready, setMenuState } = useTheme();
   const menuState = controlledMenuState ?? persistedMenuState;
@@ -77,11 +79,12 @@ export function PaperTemplate({
         <div
           data-slot="paper"
           className={cn(
-            'mx-auto w-full max-w-7xl bg-paper p-8 shadow-[0_0_24px_-8px_rgb(0_0_0/0.12)] md:p-12 dark:shadow-[0_0_24px_-8px_rgb(0_0_0/0.3)]',
+            'mx-auto w-full max-w-7xl bg-paper shadow-[0_0_24px_-8px_rgb(0_0_0/0.12)] dark:shadow-[0_0_24px_-8px_rgb(0_0_0/0.3)]',
             contentClassName,
           )}
         >
-          {children}
+          {toolbar}
+          <div className="p-8 md:p-12">{children}</div>
         </div>
       </main>
     </div>

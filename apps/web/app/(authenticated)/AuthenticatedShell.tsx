@@ -6,9 +6,42 @@ import { usePathname } from 'next/navigation';
 
 import { PlatformRole } from '@hektor/types';
 import { Logo, ThemeSwitcher } from '@hektor/ui/molecules';
-import { AppHeader, UserWidget } from '@hektor/ui/organisms';
+import {
+  AppHeader,
+  GlobalToolbar,
+  type GlobalToolbarBreadcrumb,
+  UserWidget,
+} from '@hektor/ui/organisms';
 import { PaperTemplate } from '@hektor/ui/templates';
 import { useGetCurrentUser } from '@hektor/query/users';
+
+export function breadcrumbsForPath(
+  pathname: string,
+): GlobalToolbarBreadcrumb[] {
+  if (pathname === '/') return [{ label: 'Home' }];
+
+  const home = { label: 'Home', href: '/' };
+  if (pathname === '/profile') return [home, { label: 'Profile' }];
+
+  if (pathname.startsWith('/admin/users/')) {
+    return [
+      home,
+      { label: 'Admin' },
+      { label: 'Users', href: '/admin/users' },
+      { label: 'User details' },
+    ];
+  }
+
+  if (pathname === '/admin/users') {
+    return [home, { label: 'Admin' }, { label: 'Users' }];
+  }
+
+  if (pathname.startsWith('/admin/organisations')) {
+    return [home, { label: 'Admin' }, { label: 'Organisations' }];
+  }
+
+  return [home];
+}
 
 export function AuthenticatedShell({
   children,
@@ -22,6 +55,7 @@ export function AuthenticatedShell({
   };
 }>) {
   const pathname = usePathname();
+  const breadcrumbs = breadcrumbsForPath(pathname);
   const currentUser = useGetCurrentUser();
   const [currentContextId, setCurrentContextId] = useState('personal');
   const user = currentUser.data?.data;
@@ -101,6 +135,7 @@ export function AuthenticatedShell({
       }
       menuHeader={<Logo size="md" />}
       menuSections={menuSections}
+      toolbar={<GlobalToolbar breadcrumbs={breadcrumbs} />}
     >
       {children}
     </PaperTemplate>
