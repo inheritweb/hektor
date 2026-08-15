@@ -69,6 +69,7 @@ describe('ThemeProvider', () => {
     const { result } = renderHook(() => useTheme(), { wrapper });
 
     await waitFor(() => expect(result.current.menuState).toBe('expanded'));
+    expect(result.current.ready).toBe(true);
 
     act(() => result.current.setMenuState('hidden'));
 

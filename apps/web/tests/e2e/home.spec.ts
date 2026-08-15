@@ -11,5 +11,5 @@ test('redirects an unauthenticated visitor to Google login', async ({
   ).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'Continue with Google' }),
-  ).toHaveAttribute('href', '/auth/google');
+  ).toHaveAttribute('href', '/auth/google?next=%2F');
 });

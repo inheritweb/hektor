@@ -117,7 +117,7 @@ export function Table<Row>({
               className={cn(
                 'border-b border-border',
                 striped && index % 2 === 1 && 'bg-accent/40',
-                highlight && 'transition-colors hover:bg-accent/60',
+                highlight && 'transition-colors hover:bg-accent/20',
               )}
               key={getRowId(row)}
             >

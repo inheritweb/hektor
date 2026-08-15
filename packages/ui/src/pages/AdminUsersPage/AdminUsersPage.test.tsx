@@ -7,6 +7,7 @@ describe('AdminUsersPage', () => {
   it('renders user directory fields', () => {
     render(
       <AdminUsersPage
+        getUserHref={(user) => `/admin/users/${user.id}`}
         onPageChange={() => undefined}
         page={1}
         pageSize={20}
@@ -29,5 +30,8 @@ describe('AdminUsersPage', () => {
     expect(screen.getByText('Alex Morgan')).toBeTruthy();
     expect(screen.getByText('Admin')).toBeTruthy();
     expect(screen.getByText('2')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'View' }).getAttribute('href'),
+    ).toBe('/admin/users/1');
   });
 });

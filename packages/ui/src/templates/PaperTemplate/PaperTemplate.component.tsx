@@ -37,7 +37,7 @@ export function PaperTemplate({
   menuState: controlledMenuState,
   onMenuStateChange,
 }: PaperTemplateProps) {
-  const { menuState: persistedMenuState, setMenuState } = useTheme();
+  const { menuState: persistedMenuState, ready, setMenuState } = useTheme();
   const menuState = controlledMenuState ?? persistedMenuState;
 
   const changeMenuState = (nextState: AppMenuState) => {
@@ -46,7 +46,12 @@ export function PaperTemplate({
   };
 
   return (
-    <div className="flex min-h-svh bg-page text-foreground">
+    <div
+      className={cn(
+        'flex min-h-svh bg-page text-foreground transition-opacity duration-200 ease-out motion-reduce:transition-none',
+        ready ? 'opacity-100' : 'opacity-0',
+      )}
+    >
       <AppMenu
         compactFooter={menuCompactFooter}
         compactHeader={menuCompactHeader}
@@ -72,7 +77,7 @@ export function PaperTemplate({
         <div
           data-slot="paper"
           className={cn(
-            'mx-auto w-full max-w-7xl border border-border bg-paper p-8 shadow-sm md:p-12',
+            'mx-auto w-full max-w-7xl bg-paper p-8 shadow-[0_0_24px_-8px_rgb(0_0_0/0.12)] md:p-12 dark:shadow-[0_0_24px_-8px_rgb(0_0_0/0.3)]',
             contentClassName,
           )}
         >

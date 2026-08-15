@@ -14,9 +14,9 @@ export interface AdminUserListItemViewModel {
 
 export interface AdminUsersPageProps {
   error?: string;
+  getUserHref?: (user: AdminUserListItemViewModel) => string;
   loading?: boolean;
   onPageChange: (page: number) => void;
-  onUserSelect?: (user: AdminUserListItemViewModel) => void;
   page: number;
   pageSize: number;
   totalRecords: number;
@@ -36,6 +36,7 @@ const column = createTableColumn<AdminUserListItemViewModel>();
 
 const columns = [
   column.accessor('displayName', {
+    className: 'first:pl-3',
     header: 'User',
     cell: ({ row, value }) => (
       <div className="min-w-48">
@@ -79,28 +80,28 @@ const columns = [
 
 export function AdminUsersPage({
   error,
+  getUserHref,
   loading,
   onPageChange,
-  onUserSelect,
   page,
   pageSize,
   totalRecords,
   users,
 }: AdminUsersPageProps) {
-  const selectableColumns = onUserSelect
+  const linkedColumns = getUserHref
     ? [
         ...columns,
         column.display('actions', {
           align: 'right',
+          className: 'last:pr-3',
           header: <span className="sr-only">Actions</span>,
           cell: ({ row }) => (
-            <button
-              className="font-semibold text-primary hover:underline"
-              onClick={() => onUserSelect(row)}
-              type="button"
+            <a
+              className="inline-flex rounded px-2 py-1 font-semibold text-primary hover:bg-accent/20 hover:underline"
+              href={getUserHref(row)}
             >
               View
-            </button>
+            </a>
           ),
         }),
       ]
@@ -109,7 +110,7 @@ export function AdminUsersPage({
   return (
     <Grid
       caption="Platform users"
-      columns={selectableColumns}
+      columns={linkedColumns}
       empty="No users have signed up yet."
       error={error}
       getRowId={(user) => user.id}

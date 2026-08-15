@@ -92,7 +92,10 @@ function MenuContents({
       >
         {sections.map((section, index) => (
           <section
-            className={cn(index > 0 && (collapsed ? 'mt-3' : 'mt-6'))}
+            className={cn(
+              collapsed && 'w-full',
+              index > 0 && (collapsed ? 'mt-3' : 'mt-6'),
+            )}
             key={section.label ?? index}
           >
             {section.label ? (
@@ -105,7 +108,12 @@ function MenuContents({
                 {section.label}
               </h2>
             ) : null}
-            <div className="space-y-1">
+            <div
+              className={cn(
+                'space-y-1',
+                collapsed && 'flex flex-col items-center',
+              )}
+            >
               {section.items.map((item) => (
                 <AppMenuItem {...item} collapsed={collapsed} key={item.label} />
               ))}

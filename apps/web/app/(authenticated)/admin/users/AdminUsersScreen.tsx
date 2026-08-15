@@ -39,6 +39,7 @@ export function AdminUsersScreen() {
   return (
     <AdminUsersPage
       error={users.error?.message}
+      getUserHref={(user) => `/admin/users/${user.id}`}
       loading={users.isPending}
       onPageChange={onPageChange}
       page={page}

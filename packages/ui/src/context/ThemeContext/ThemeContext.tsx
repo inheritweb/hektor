@@ -19,6 +19,7 @@ export type MenuState = 'hidden' | 'icons' | 'expanded';
 export interface ThemeContextValue {
   menuState: MenuState;
   preference: ThemePreference;
+  ready: boolean;
   resolvedTheme: ResolvedTheme;
   setMenuState: (state: MenuState) => void;
   setPreference: (preference: ThemePreference) => void;
@@ -62,6 +63,7 @@ export function ThemeProvider({
   const [menuState, setMenuStateValue] = useState<MenuState>(defaultMenuState);
   const [preference, setPreferenceState] =
     useState<ThemePreference>(defaultPreference);
+  const [ready, setReady] = useState(false);
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>('light');
 
   useEffect(() => {
@@ -77,6 +79,7 @@ export function ThemeProvider({
     if (isMenuState(storedMenuState)) {
       setMenuStateValue(storedMenuState);
     }
+    setReady(true);
 
     mediaQuery.addEventListener('change', updateSystemTheme);
     return () => mediaQuery.removeEventListener('change', updateSystemTheme);
@@ -109,11 +112,12 @@ export function ThemeProvider({
     () => ({
       menuState,
       preference,
+      ready,
       resolvedTheme,
       setMenuState,
       setPreference,
     }),
-    [menuState, preference, resolvedTheme, setMenuState, setPreference],
+    [menuState, preference, ready, resolvedTheme, setMenuState, setPreference],
   );
 
   return (
