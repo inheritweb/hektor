@@ -19,3 +19,5 @@ export const Expanded: Story = {};
 export const Collapsed: Story = { args: { collapsed: true } };
 
 export const Active: Story = { args: { active: true } };
+
+export const Linked: Story = { args: { href: '/example' } };

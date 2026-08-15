@@ -2,7 +2,7 @@
 
 import type { IconType } from 'react-icons';
 
-import { Button } from '../../atoms/Button';
+import { Button, buttonVariants } from '../../atoms/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../atoms/Tooltip';
 import { cn } from '#lib/utils';
 
@@ -23,26 +23,48 @@ export function AppMenuItem({
   label,
   onSelect,
 }: AppMenuItemProps) {
-  const item = (
-    <Button
-      aria-current={active ? 'page' : undefined}
-      aria-label={collapsed ? label : undefined}
-      className={cn(
-        'w-full justify-start gap-3 text-muted-foreground hover:bg-accent/40 hover:text-foreground',
-        collapsed && 'size-11 justify-center rounded-md p-0',
-        active && 'bg-accent/55 text-foreground/75',
-      )}
-      onClick={onSelect}
-      render={href ? <a href={href} /> : undefined}
-      size={collapsed ? 'icon' : 'lg'}
-      variant="ghost"
-    >
+  const className = cn(
+    'w-full justify-start gap-3 text-muted-foreground hover:bg-accent/40 hover:text-foreground',
+    collapsed && 'size-11 justify-center rounded-md p-0',
+    active && 'bg-accent/55 text-foreground/75',
+  );
+  const content = (
+    <>
       <Icon
         aria-hidden="true"
         className={collapsed ? 'size-7' : 'size-5'}
         strokeWidth={1.5}
       />
       {collapsed ? null : <span>{label}</span>}
+    </>
+  );
+  const sharedProps = {
+    'aria-current': active ? ('page' as const) : undefined,
+    'aria-label': collapsed ? label : undefined,
+    onClick: onSelect,
+  };
+  const item = href ? (
+    <a
+      {...sharedProps}
+      className={cn(
+        buttonVariants({
+          size: collapsed ? 'icon' : 'lg',
+          variant: 'ghost',
+        }),
+        className,
+      )}
+      href={href}
+    >
+      {content}
+    </a>
+  ) : (
+    <Button
+      {...sharedProps}
+      className={className}
+      size={collapsed ? 'icon' : 'lg'}
+      variant="ghost"
+    >
+      {content}
     </Button>
   );
 
