@@ -11,8 +11,13 @@ permissions:
 env:
   CI: true
   NEXT_TELEMETRY_DISABLED: 1
-  API_URL: http://127.0.0.1:54321
+  PUBLIC_BASE_URL: http://localhost:3000
+  SUPABASE_URL: http://127.0.0.1:54321
   SUPABASE_ANON_KEY: local-ci-placeholder
+  SUPABASE_SERVICE_ROLE_KEY: local-ci-placeholder
+  HEKTOR_ADMIN_EMAILS: admin@example.com
+  SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID: local-ci.apps.googleusercontent.com
+  SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET: local-ci-placeholder
 
 jobs:
   validate:
@@ -54,6 +59,8 @@ jobs:
       - run: corepack enable
       - run: yarn install --immutable
       - run: cp .env.example .env
+      - name: Start local Supabase
+        run: yarn supabase:start >/dev/null
       - run: yarn workspace @hektor/web playwright install --with-deps chromium
       - run: yarn test:e2e
       - uses: actions/upload-artifact@v4

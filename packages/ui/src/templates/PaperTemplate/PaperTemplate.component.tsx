@@ -16,6 +16,7 @@ export interface PaperTemplateProps {
   contentClassName?: string;
   header?: ReactNode;
   menuCompactHeader?: ReactNode;
+  menuCompactFooter?: ReactNode;
   menuFooter?: ReactNode;
   menuHeader?: ReactNode;
   menuItems: AppMenuEntry[];
@@ -29,6 +30,7 @@ export function PaperTemplate({
   contentClassName,
   header,
   menuCompactHeader,
+  menuCompactFooter,
   menuFooter,
   menuHeader,
   menuItems,
@@ -46,6 +48,7 @@ export function PaperTemplate({
   return (
     <div className="flex min-h-svh bg-page text-foreground">
       <AppMenu
+        compactFooter={menuCompactFooter}
         compactHeader={menuCompactHeader}
         footer={menuFooter}
         header={menuHeader}

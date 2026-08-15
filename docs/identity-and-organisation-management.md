@@ -33,24 +33,22 @@ groups, `organisation_users` records, roles, and active state. Authentication
 does not itself grant institutional access: a matching active provisioned
 organisation user is required.
 
-Google authenticates Hektor's own platform administrators. A successful Google
-login does not itself grant platform access: the Supabase user must also have an
-active Hektor platform-administrator assignment.
+Google authenticates personal users and Hektor's own platform administrators.
+An allowlisted Google identity is elevated to the platform-wide `admin` role;
+other identities retain ordinary personal access.
 
 #### User model
 
-Hektor uses `auth.users` directly as its user record. The Supabase user UUID is
-the application user identifier. Supabase owns authentication identities,
-provider linkage, email, and provider metadata; Hektor does not duplicate those
-fields or introduce a profile or authentication-link abstraction without a
-concrete domain requirement.
+Hektor uses `auth.users` as its durable user account and `auth.identities` for
+the login methods associated with it. Supabase owns credentials, identity
+linking, provider metadata, and authentication sessions; Hektor does not copy
+those fields into a profile or authentication-link table.
 
 SCIM can provision access before first login. The pending `organisation_users`
 record therefore stores the provider tenant and external subject and has a
-nullable user ID. On the first successful SAML login, Hektor links that record
-to the new `auth.users` record. From then on, the Supabase user ID is used
-throughout the application while the external identifiers remain available for
-subsequent SCIM updates and audit.
+nullable user ID. On the first successful institutional login, Hektor links the
+provisioned membership to the authenticated user. External
+identifiers remain available for subsequent SCIM updates and audit.
 
 Supabase owns PostgreSQL, SQL migrations, generated database types, Auth,
 Storage, and Row Level Security. Vercel runs and deploys the Next.js application.
@@ -298,12 +296,11 @@ Each user has one effective role in the relevant scope:
 The initial model does not introduce multiple role assignments. Permissions are
 defined in code configuration rather than repeated as route-local conditionals.
 
-A Supabase user may have `organisation_users` records in more than one
-organisation, with one role in each. This preserves relational correctness but
-does not require an organisation switcher in the initial UI. The first product
-flow assumes one active institutional organisation per non-platform user; an
-explicit organisation-selection experience is added only when a real user needs
-it.
+A user may have `organisation_users` records in more than one organisation,
+with one role in each. Personal access remains independent of those memberships.
+The application therefore exposes an active-context selector for personal use
+and every active organisation membership. Context selection does not replace
+server-side membership and role checks.
 
 To be specified further: the exact permission matrix and whether an `admin`
 acting inside a test organisation also needs an `organisation_users` record.

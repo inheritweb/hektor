@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { DM_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+import { QueryProvider } from '@hektor/query';
 import { TooltipProvider } from '@hektor/ui/atoms';
 import { ThemeProvider } from '@hektor/ui/context';
 
@@ -25,7 +26,9 @@ export default function RootLayout({
     <html className={titleFont.variable} lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <QueryProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

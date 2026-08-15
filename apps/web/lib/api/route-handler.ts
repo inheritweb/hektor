@@ -111,6 +111,15 @@ export function registerEndpoint<TContract extends AnyHektorContract>(
     } catch (error) {
       const serviceError = normaliseServiceError(error);
 
+      if (serviceError.code >= HektorErrorCode.InternalServerError) {
+        console.error('API endpoint failed', {
+          method: contract.method,
+          path: contract.path,
+          message: serviceError.internalMessage,
+          cause: serviceError.cause,
+        });
+      }
+
       return Response.json(toErrorResponse(serviceError), {
         status: serviceError.code,
       });

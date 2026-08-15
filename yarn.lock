@@ -1201,6 +1201,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@hektor/config@workspace:*, @hektor/config@workspace:packages/config":
+  version: 0.0.0-use.local
+  resolution: "@hektor/config@workspace:packages/config"
+  dependencies:
+    "@hektor/eslint-config": "workspace:*"
+    "@hektor/typescript-config": "workspace:*"
+    eslint: "npm:^9.39.0"
+    typescript: "npm:6.0.3"
+  languageName: unknown
+  linkType: soft
+
 "@hektor/eslint-config@workspace:*, @hektor/eslint-config@workspace:packages/eslint-config":
   version: 0.0.0-use.local
   resolution: "@hektor/eslint-config@workspace:packages/eslint-config"
@@ -1217,7 +1228,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@hektor/query@workspace:packages/query":
+"@hektor/query@workspace:*, @hektor/query@workspace:packages/query":
   version: 0.0.0-use.local
   resolution: "@hektor/query@workspace:packages/query"
   dependencies:
@@ -1317,7 +1328,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hektor/web@workspace:apps/web"
   dependencies:
+    "@hektor/config": "workspace:*"
     "@hektor/eslint-config": "workspace:*"
+    "@hektor/query": "workspace:*"
     "@hektor/services": "workspace:*"
     "@hektor/tailwind-config": "workspace:*"
     "@hektor/types": "workspace:*"

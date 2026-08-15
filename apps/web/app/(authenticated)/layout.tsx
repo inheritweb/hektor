@@ -1,30 +1,23 @@
-'use client';
-
 import type { ReactNode } from 'react';
-import { LuFileText, LuHouse, LuSettings } from 'react-icons/lu';
 
-import { Logo, ThemeSwitcher } from '@hektor/ui/molecules';
-import { AppHeader } from '@hektor/ui/organisms';
-import { PaperTemplate } from '@hektor/ui/templates';
+import { requireAuthenticated } from '../../lib/auth/platform-admin';
 
-const menuItems = [
-  { label: 'Home', icon: LuHouse, href: '/', active: true },
-  { label: 'Documents', icon: LuFileText, href: '/documents' },
-  { label: 'Settings', icon: LuSettings, href: '/settings' },
-];
+import { AuthenticatedShell } from './AuthenticatedShell';
 
-export default function AuthenticatedLayout({
+export default async function AuthenticatedLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  const user = await requireAuthenticated();
+  const displayName =
+    typeof user.user_metadata.full_name === 'string'
+      ? user.user_metadata.full_name
+      : typeof user.user_metadata.name === 'string'
+        ? user.user_metadata.name
+        : (user.email ?? 'Your account');
+
   return (
-    <PaperTemplate
-      header={<AppHeader title="Hektor" />}
-      menuCompactHeader={<Logo size="md" variant="mark" />}
-      menuFooter={<ThemeSwitcher />}
-      menuHeader={<Logo size="md" />}
-      menuItems={menuItems}
-    >
+    <AuthenticatedShell fallbackUser={{ displayName, email: user.email }}>
       {children}
-    </PaperTemplate>
+    </AuthenticatedShell>
   );
 }

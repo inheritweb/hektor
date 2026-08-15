@@ -12,6 +12,10 @@
     "./system": {
       "types": "./src/system/index.ts",
       "import": "./src/system/index.ts"
+    },
+    "./users": {
+      "types": "./src/users/index.ts",
+      "import": "./src/users/index.ts"
     }
   },
   "scripts": {

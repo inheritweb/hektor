@@ -27,6 +27,10 @@
     "./contracts/organisations": {
       "types": "./src/contracts/organisations.ts",
       "import": "./src/contracts/organisations.ts"
+    },
+    "./contracts/users": {
+      "types": "./src/contracts/users.ts",
+      "import": "./src/contracts/users.ts"
     }
   },
   "scripts": {

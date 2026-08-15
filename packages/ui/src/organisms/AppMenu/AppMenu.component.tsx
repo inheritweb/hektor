@@ -25,6 +25,7 @@ export interface AppMenuEntry {
 }
 
 export interface AppMenuProps {
+  compactFooter?: ReactNode;
   compactHeader?: ReactNode;
   defaultState?: AppMenuState;
   footer?: ReactNode;
@@ -54,11 +55,15 @@ function useDesktopViewport() {
 
 function MenuContents({
   collapsed,
+  compactFooter,
   compactHeader,
   footer,
   header,
   items,
-}: Pick<AppMenuProps, 'compactHeader' | 'footer' | 'header' | 'items'> & {
+}: Pick<
+  AppMenuProps,
+  'compactFooter' | 'compactHeader' | 'footer' | 'header' | 'items'
+> & {
   collapsed: boolean;
 }) {
   return (
@@ -84,16 +89,15 @@ function MenuContents({
           <AppMenuItem {...item} collapsed={collapsed} key={item.label} />
         ))}
       </nav>
-      {footer && !collapsed ? (
-        <div className="flex justify-center border-t border-border p-3">
-          {footer}
-        </div>
+      {(collapsed ? compactFooter : footer) ? (
+        <div className="p-3">{collapsed ? compactFooter : footer}</div>
       ) : null}
     </>
   );
 }
 
 export function AppMenu({
+  compactFooter,
   compactHeader,
   defaultState = 'hidden',
   footer,
@@ -118,7 +122,7 @@ export function AppMenu({
       <>
         <Button
           aria-label="Toggle application menu"
-          className="fixed top-4 left-4 z-40 text-muted-foreground hover:bg-transparent hover:text-foreground"
+          className="fixed top-4 left-4 z-40 cursor-pointer text-muted-foreground hover:bg-transparent hover:text-foreground"
           onClick={toggle}
           size="icon-lg"
           variant="ghost"
@@ -136,6 +140,7 @@ export function AppMenu({
             </SheetDescription>
             <MenuContents
               collapsed={false}
+              compactFooter={compactFooter}
               compactHeader={compactHeader}
               footer={footer}
               header={header}
@@ -162,7 +167,7 @@ export function AppMenu({
       <Button
         aria-label="Toggle application menu"
         className={cn(
-          'absolute top-4 z-30 text-muted-foreground hover:bg-transparent hover:text-foreground',
+          'absolute top-4 z-30 cursor-pointer text-muted-foreground hover:bg-transparent hover:text-foreground',
           state === 'hidden' ? 'left-4' : 'right-3',
           state === 'icons' && 'right-auto left-1/2 -translate-x-1/2',
         )}
@@ -175,7 +180,7 @@ export function AppMenu({
       {state === 'expanded' ? (
         <Button
           aria-label="Collapse application menu to icons"
-          className="absolute top-4 left-4 z-30 text-muted-foreground hover:bg-transparent hover:text-foreground"
+          className="absolute top-4 left-4 z-30 cursor-pointer text-muted-foreground hover:bg-transparent hover:text-foreground"
           onClick={() => changeState('icons')}
           size="icon-lg"
           variant="ghost"
@@ -191,6 +196,7 @@ export function AppMenu({
         <div className="flex h-full flex-col overflow-hidden pt-14">
           <MenuContents
             collapsed={collapsed}
+            compactFooter={compactFooter}
             compactHeader={compactHeader}
             footer={footer}
             header={header}

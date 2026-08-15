@@ -10,6 +10,7 @@ Treat `README.md` as the detailed development and operations reference.
 
 - `apps/web`: Next.js App Router application, browser tests, and Supabase clients.
 - `packages/types`: shared application types and generated Supabase database types.
+- `packages/config`: stable, typed application and identity configuration.
 - `packages/eslint-config`: shared flat ESLint configuration.
 - `packages/typescript-config`: shared strict TypeScript configuration.
 - `packages/tailwind-config`: shared Tailwind theme and overridable design tokens.
