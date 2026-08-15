@@ -8,6 +8,7 @@ import {
   GroupStatus,
   OrganisationStatus,
 } from '../organisations';
+import { PlatformRole } from '../users';
 import {
   type ContractOutput,
   type ContractParams,
@@ -56,6 +57,7 @@ export const organisationSchema = organisationSummarySchema.extend({
 export const listOrganisationsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
   query: paginationQuerySchema.extend({
     order: z.enum(['name', 'createdAt']).default('name'),
   }),
@@ -65,6 +67,7 @@ export const listOrganisationsContract = defineContract({
 export const getOrganisationContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
   params: z.object({ organisationId: z.uuid() }),
   output: hektorResponseSchema(organisationSchema),
 });

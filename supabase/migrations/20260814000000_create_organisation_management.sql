@@ -69,8 +69,8 @@ create unique index organisation_users_external_id_unique
 on public.organisation_users (organisation_id, external_id)
 where external_id is not null;
 
-create index organisation_users_user_id_idx
-on public.organisation_users (user_id)
+create index organisation_users_user_organisation_idx
+on public.organisation_users (user_id, organisation_id)
 where user_id is not null;
 
 create index organisation_users_cohort_id_idx

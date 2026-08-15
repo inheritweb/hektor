@@ -25,6 +25,16 @@ its email and OAuth login methods. Supabase automatically links identities with
 the same verified email and supports explicit linking of OAuth identities with
 different emails.
 
+`User` is the dominant application entity and exists independently of any
+organisation. `OrganisationMembership` belongs to the organisation domain and
+associates an organisation with a user, including a pending unlinked state for
+provisioning before first login. The same association can be traversed from a
+platform user view or an organisation's people view.
+
+Personal access is a context, not a user subtype or container. The initial
+personal authentication methods are passwordless email code and Google OAuth;
+passwords and authenticator-app MFA are outside the initial scope.
+
 Hektor uses `organisation_users` to associate the user with each organisation
 in which they participate. The active context is selected from `personal` or
 one of the user's active organisation memberships.
@@ -102,8 +112,8 @@ foundations without forcing its workflow into the EHR model.
 ## Delivery sequence
 
 1. Establish Supabase identity linking and multi-organisation membership.
-2. Allow ordinary Google sign-up while retaining allowlisted platform-admin
-   elevation.
+2. Allow ordinary passwordless email and Google sign-up while retaining
+   allowlisted Google platform-admin elevation.
 3. Surface the signed-in user and active context in the application shell.
 4. Implement verified account linking before institutional SAML is released.
 5. Define the first EHR capability, free allowance, and institutional grant.

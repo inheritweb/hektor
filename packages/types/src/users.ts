@@ -1,38 +1,37 @@
-import type {
-  OrganisationRole,
-  OrganisationStatus,
-  OrganisationUserStatus,
-  ScimResourceStatus,
-} from './organisations';
+import type { OrganisationMembershipSummary } from './organisations';
+
+export enum IdentityProvider {
+  Email = 'email',
+  Google = 'google',
+}
+
+export enum PlatformRole {
+  Admin = 'admin',
+}
 
 export interface UserIdentity {
   id: string;
-  provider: string;
+  provider: IdentityProvider;
   email?: string;
   createdAt?: string;
   lastSignInAt?: string;
 }
 
-export interface UserOrganisation {
-  membershipId: string;
-  id: string;
-  name: string;
-  slug: string;
-  status: OrganisationStatus;
-  role: OrganisationRole;
-  membershipStatus: OrganisationUserStatus;
-  scimStatus: ScimResourceStatus;
-  institutionalUserName: string;
-}
-
-export interface CurrentUser {
+export interface User {
   id: string;
   displayName: string;
-  isPlatformAdmin: boolean;
+  platformRole?: PlatformRole;
   email?: string;
   avatarUrl?: string;
   identities: UserIdentity[];
-  organisations: UserOrganisation[];
+  memberships: OrganisationMembershipSummary[];
   createdAt: string;
   updatedAt: string;
 }
+
+export type UserSummary = Pick<
+  User,
+  'id' | 'displayName' | 'email' | 'avatarUrl' | 'platformRole'
+>;
+
+export type CurrentUser = User;

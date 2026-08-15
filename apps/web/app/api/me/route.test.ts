@@ -48,7 +48,7 @@ describe('GET /api/me', () => {
     const currentUser = {
       id: user.id,
       displayName: 'Alex Morgan',
-      isPlatformAdmin: true,
+      platformRole: 'admin',
       email: 'alex@example.com',
       identities: [
         {
@@ -58,7 +58,7 @@ describe('GET /api/me', () => {
           createdAt: '2026-08-15T10:00:00.000Z',
         },
       ],
-      organisations: [],
+      memberships: [],
       createdAt: '2026-08-15T10:00:00.000Z',
       updatedAt: '2026-08-15T10:00:00.000Z',
     };

@@ -16,6 +16,7 @@ export const healthCheckSchema = z.object({
 export const getHealthCheckContract = defineContract({
   method: 'GET',
   path: '/api/health-check',
+  access: { type: 'public' },
   output: hektorResponseSchema(healthCheckSchema),
 });
 

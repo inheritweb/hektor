@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  PlatformRole,
   OrganisationRole,
   OrganisationStatus,
   OrganisationUserStatus,
@@ -53,7 +54,7 @@ describe('user mappers', () => {
     expect(mapCurrentUser(user, memberships)).toEqual({
       id: user.id,
       displayName: 'Alex Morgan',
-      isPlatformAdmin: true,
+      platformRole: PlatformRole.Admin,
       email: 'alex@example.com',
       avatarUrl: undefined,
       identities: [
@@ -65,16 +66,18 @@ describe('user mappers', () => {
           lastSignInAt: '2026-08-15T11:00:00.000Z',
         },
       ],
-      organisations: [
+      memberships: [
         {
-          membershipId: 'ecbfcbf1-ea33-47cd-a2a2-bbc87d21f8cd',
-          id: '6b14eb81-81f9-47e9-b55e-a78f6a4c4013',
-          name: 'Northshire University',
-          slug: 'northshire-university',
-          status: OrganisationStatus.Active,
+          id: 'ecbfcbf1-ea33-47cd-a2a2-bbc87d21f8cd',
+          organisation: {
+            id: '6b14eb81-81f9-47e9-b55e-a78f6a4c4013',
+            name: 'Northshire University',
+            slug: 'northshire-university',
+            status: OrganisationStatus.Active,
+          },
           role: OrganisationRole.Tutor,
-          membershipStatus: OrganisationUserStatus.Active,
-          scimStatus: ScimResourceStatus.Active,
+          status: OrganisationUserStatus.Active,
+          provisioningStatus: ScimResourceStatus.Active,
           institutionalUserName: 'a.morgan@northshire.ac.uk',
         },
       ],

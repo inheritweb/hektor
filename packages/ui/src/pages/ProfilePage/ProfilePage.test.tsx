@@ -8,21 +8,21 @@ const profile = {
   displayName: 'Alex Morgan',
   email: 'alex@example.com',
   identities: [],
-  organisations: [],
+  memberships: [],
 };
 
 afterEach(cleanup);
 
 describe('ProfilePage', () => {
   it('identifies a personal account that is also a platform admin', () => {
-    render(<ProfilePage {...profile} isPlatformAdmin />);
+    render(<ProfilePage {...profile} platformRole="admin" />);
 
     expect(screen.getByText('Platform admin')).toBeTruthy();
     expect(screen.getByText('Personal account')).toBeTruthy();
   });
 
   it('does not show the admin label for a standard account', () => {
-    render(<ProfilePage {...profile} isPlatformAdmin={false} />);
+    render(<ProfilePage {...profile} />);
 
     expect(screen.queryByText('Platform admin')).toBeNull();
   });

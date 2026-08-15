@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+import type { OrganisationRole } from '../organisations';
+import type { PlatformRole } from '../users';
+
 export enum SortDirection {
   Ascending = 'asc',
   Descending = 'desc',
@@ -80,6 +83,16 @@ export const hektorErrorResponseSchema: z.ZodType<HektorErrorResponse> =
 
 type ContractSchema = z.ZodType;
 
+export type ContractAccess =
+  | { type: 'public' }
+  | { type: 'authenticated' }
+  | { type: 'platform'; roles: readonly PlatformRole[] }
+  | {
+      type: 'organisation';
+      organisationIdParam: string;
+      roles: readonly OrganisationRole[];
+    };
+
 export interface HektorContract<
   TParams extends ContractSchema = ContractSchema,
   TQuery extends ContractSchema = ContractSchema,
@@ -88,6 +101,7 @@ export interface HektorContract<
 > {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
+  access: ContractAccess;
   params?: TParams;
   query?: TQuery;
   body?: TBody;

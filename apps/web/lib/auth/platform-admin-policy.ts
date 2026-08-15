@@ -1,6 +1,7 @@
 import type { User } from '@supabase/supabase-js';
 
 import { googleIdentityConfig } from '@hektor/config/identity';
+import { PlatformRole } from '@hektor/types';
 
 export function platformAdminEmails(value: string) {
   return new Set(
@@ -12,7 +13,7 @@ export function platformAdminEmails(value: string) {
 }
 
 export function isPlatformAdmin(user: User) {
-  return user.app_metadata.role === googleIdentityConfig.platformAdminRole;
+  return user.app_metadata.role === PlatformRole.Admin;
 }
 
 export function canBootstrapPlatformAdmin(user: User, emails: Set<string>) {

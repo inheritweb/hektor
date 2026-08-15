@@ -1,11 +1,13 @@
 import {
+  IdentityProvider,
+  type OrganisationMembershipSummary,
   OrganisationRole,
   OrganisationStatus,
   OrganisationUserStatus,
+  PlatformRole,
   ScimResourceStatus,
   type CurrentUser,
   type UserIdentity,
-  type UserOrganisation,
 } from '@hektor/types';
 import type {
   User,
@@ -18,28 +20,37 @@ function optionalString(value: unknown) {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
+function mapIdentityProvider(provider: string) {
+  if (provider === IdentityProvider.Email) return IdentityProvider.Email;
+  if (provider === IdentityProvider.Google) return IdentityProvider.Google;
+
+  throw new Error(`Unsupported identity provider: ${provider}`);
+}
+
 export function mapUserIdentity(identity: SupabaseUserIdentity): UserIdentity {
   return {
     id: identity.id,
-    provider: identity.provider,
+    provider: mapIdentityProvider(identity.provider),
     email: optionalString(identity.identity_data?.email),
     createdAt: identity.created_at ?? undefined,
     lastSignInAt: identity.last_sign_in_at ?? undefined,
   };
 }
 
-export function mapUserOrganisation(
+export function mapOrganisationMembershipSummary(
   membership: CurrentUserOrganisationsQueryResult[number],
-): UserOrganisation {
+): OrganisationMembershipSummary {
   return {
-    membershipId: membership.id,
-    id: membership.organisation.id,
-    name: membership.organisation.name,
-    slug: membership.organisation.slug,
-    status: membership.organisation.status as OrganisationStatus,
+    id: membership.id,
+    organisation: {
+      id: membership.organisation.id,
+      name: membership.organisation.name,
+      slug: membership.organisation.slug,
+      status: membership.organisation.status as OrganisationStatus,
+    },
     role: membership.role as OrganisationRole,
-    membershipStatus: membership.status as OrganisationUserStatus,
-    scimStatus: membership.scim_status as ScimResourceStatus,
+    status: membership.status as OrganisationUserStatus,
+    provisioningStatus: membership.scim_status as ScimResourceStatus,
     institutionalUserName: membership.user_name,
   };
 }
@@ -57,13 +68,16 @@ export function mapCurrentUser(
   return {
     id: user.id,
     displayName,
-    isPlatformAdmin: user.app_metadata.role === 'admin',
+    platformRole:
+      user.app_metadata.role === PlatformRole.Admin
+        ? PlatformRole.Admin
+        : undefined,
     email: user.email,
     avatarUrl:
       optionalString(user.user_metadata.avatar_url) ??
       optionalString(user.user_metadata.picture),
     identities: (user.identities ?? []).map(mapUserIdentity),
-    organisations: memberships.map(mapUserOrganisation),
+    memberships: memberships.map(mapOrganisationMembershipSummary),
     createdAt: user.created_at,
     updatedAt: user.updated_at ?? user.created_at,
   };

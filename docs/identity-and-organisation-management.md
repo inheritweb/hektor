@@ -33,9 +33,10 @@ groups, `organisation_users` records, roles, and active state. Authentication
 does not itself grant institutional access: a matching active provisioned
 organisation user is required.
 
-Google authenticates personal users and Hektor's own platform administrators.
-An allowlisted Google identity is elevated to the platform-wide `admin` role;
-other identities retain ordinary personal access.
+Passwordless email codes and Google authenticate personal users. Google also
+authenticates Hektor's own platform administrators. An allowlisted Google
+identity is elevated to the platform-wide `admin` role; email identities and
+other Google identities retain ordinary personal access.
 
 #### User model
 
@@ -43,6 +44,20 @@ Hektor uses `auth.users` as its durable user account and `auth.identities` for
 the login methods associated with it. Supabase owns credentials, identity
 linking, provider metadata, and authentication sessions; Hektor does not copy
 those fields into a profile or authentication-link table.
+
+Hektor's canonical `User` is a global domain entity projected from Supabase
+Auth. `OrganisationMembership` belongs to the organisation domain and
+associates an organisation with a user; it does not define or own the user.
+"Personal" describes the active context when no organisation membership is
+selected, not a separate user kind.
+
+Locally, Supabase renders Hektor's versioned passwordless email template and
+delivers it to Mailpit. Hosted delivery will use custom SMTP, initially
+considering Resend. A future provider-neutral messaging package should follow
+the established adapter pattern—validated messages with fake, SMTP, and hosted
+provider adapters—but Supabase Auth remains responsible for generating and
+verifying authentication codes unless a Send Email Hook deliberately replaces
+that boundary.
 
 SCIM can provision access before first login. The pending `organisation_users`
 record therefore stores the provider tenant and external subject and has a

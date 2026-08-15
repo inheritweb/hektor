@@ -61,7 +61,7 @@ export interface Cohort {
   status: GroupStatus;
   organisation: OrganisationSummary;
   groups: OrganisationGroupSummary[];
-  learners: OrganisationUserSummary[];
+  learners: OrganisationMembershipUserSummary[];
   createdAt: string;
   updatedAt: string;
 }
@@ -72,12 +72,12 @@ export interface OrganisationGroup {
   status: GroupStatus;
   organisation: OrganisationSummary;
   cohort?: CohortSummary;
-  users: OrganisationUserSummary[];
+  users: OrganisationMembershipUserSummary[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface OrganisationUser {
+export interface OrganisationMembership {
   id: string;
   userId?: string;
   userName: string;
@@ -98,6 +98,15 @@ export interface OrganisationUser {
   updatedAt: string;
 }
 
+export interface OrganisationMembershipSummary {
+  id: string;
+  organisation: OrganisationSummary;
+  role: OrganisationRole;
+  status: OrganisationUserStatus;
+  provisioningStatus: ScimResourceStatus;
+  institutionalUserName: string;
+}
+
 export type OrganisationSummary = Pick<
   Organisation,
   'id' | 'name' | 'slug' | 'status'
@@ -113,8 +122,8 @@ export type OrganisationGroupSummary = Pick<
   'id' | 'name' | 'status'
 >;
 
-export type OrganisationUserSummary = Pick<
-  OrganisationUser,
+export type OrganisationMembershipUserSummary = Pick<
+  OrganisationMembership,
   | 'id'
   | 'userId'
   | 'userName'

@@ -26,16 +26,16 @@ export function AuthenticatedShell({
   const user = currentUser.data?.data;
   const contexts = [
     { id: 'personal', label: 'Personal account' },
-    ...(user?.organisations
+    ...(user?.memberships
       .filter(
-        (organisation) =>
-          organisation.status === 'active' &&
-          organisation.membershipStatus === 'active' &&
-          ['not_managed', 'active'].includes(organisation.scimStatus),
+        (membership) =>
+          membership.organisation.status === 'active' &&
+          membership.status === 'active' &&
+          ['not_managed', 'active'].includes(membership.provisioningStatus),
       )
-      .map((organisation) => ({
-        id: organisation.id,
-        label: organisation.name,
+      .map((membership) => ({
+        id: membership.organisation.id,
+        label: membership.organisation.name,
       })) ?? []),
   ];
 

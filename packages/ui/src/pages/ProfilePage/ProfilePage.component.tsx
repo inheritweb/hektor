@@ -16,12 +16,14 @@ export interface ProfileIdentityViewModel {
 }
 
 export interface ProfileOrganisationViewModel {
-  membershipId: string;
   id: string;
-  name: string;
+  organisation: {
+    id: string;
+    name: string;
+  };
   role: string;
-  membershipStatus: string;
-  scimStatus: string;
+  status: string;
+  provisioningStatus: string;
   institutionalUserName: string;
 }
 
@@ -31,8 +33,8 @@ export interface ProfilePageProps {
   displayName: string;
   email?: string;
   identities: ProfileIdentityViewModel[];
-  isPlatformAdmin: boolean;
-  organisations: ProfileOrganisationViewModel[];
+  memberships: ProfileOrganisationViewModel[];
+  platformRole?: string;
 }
 
 function initials(displayName: string) {
@@ -74,8 +76,8 @@ export function ProfilePage({
   displayName,
   email,
   identities,
-  isPlatformAdmin,
-  organisations,
+  memberships,
+  platformRole,
 }: ProfilePageProps) {
   return (
     <div className="space-y-12">
@@ -94,7 +96,7 @@ export function ProfilePage({
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
             {displayName}
           </h1>
-          {isPlatformAdmin ? (
+          {platformRole === 'admin' ? (
             <span className="mt-3 inline-flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
               <LuShieldCheck aria-hidden="true" className="size-3.5" />
               Platform admin
@@ -171,36 +173,38 @@ export function ProfilePage({
             personal account.
           </p>
         </div>
-        {organisations.length > 0 ? (
+        {memberships.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2">
-            {organisations.map((organisation) => (
+            {memberships.map((membership) => (
               <article
                 className="border border-border bg-surface p-5"
-                key={organisation.membershipId}
+                key={membership.id}
               >
                 <div className="flex items-start gap-4">
                   <span className="flex size-10 shrink-0 items-center justify-center bg-accent text-accent-foreground">
                     <LuBuilding2 aria-hidden="true" className="size-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold">{organisation.name}</h3>
+                    <h3 className="font-semibold">
+                      {membership.organisation.name}
+                    </h3>
                     <p className="mt-1 truncate text-sm text-muted-foreground">
-                      {organisation.institutionalUserName}
+                      {membership.institutionalUserName}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2 text-xs capitalize">
                       <span className="bg-primary/10 px-2.5 py-1 font-medium text-primary">
-                        {readable(organisation.role)}
+                        {readable(membership.role)}
                       </span>
                       <span className="bg-accent px-2.5 py-1 text-accent-foreground">
-                        {readable(organisation.membershipStatus)}
+                        {readable(membership.status)}
                       </span>
-                      {organisation.scimStatus !== 'not_managed' ? (
+                      {membership.provisioningStatus !== 'not_managed' ? (
                         <span className="flex items-center gap-1.5 bg-accent px-2.5 py-1 text-accent-foreground">
                           <LuShieldCheck
                             aria-hidden="true"
                             className="size-3.5"
                           />
-                          SCIM {readable(organisation.scimStatus)}
+                          SCIM {readable(membership.provisioningStatus)}
                         </span>
                       ) : null}
                     </div>
