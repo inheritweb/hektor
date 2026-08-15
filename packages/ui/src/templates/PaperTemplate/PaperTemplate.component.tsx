@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { useTheme } from '../../context';
 import {
   AppMenu,
-  type AppMenuEntry,
+  type AppMenuSection,
   type AppMenuState,
 } from '../../organisms/AppMenu';
 import { cn } from '#lib/utils';
@@ -19,7 +19,7 @@ export interface PaperTemplateProps {
   menuCompactFooter?: ReactNode;
   menuFooter?: ReactNode;
   menuHeader?: ReactNode;
-  menuItems: AppMenuEntry[];
+  menuSections: AppMenuSection[];
   menuState?: AppMenuState;
   onMenuStateChange?: (state: AppMenuState) => void;
 }
@@ -33,7 +33,7 @@ export function PaperTemplate({
   menuCompactFooter,
   menuFooter,
   menuHeader,
-  menuItems,
+  menuSections,
   menuState: controlledMenuState,
   onMenuStateChange,
 }: PaperTemplateProps) {
@@ -52,8 +52,8 @@ export function PaperTemplate({
         compactHeader={menuCompactHeader}
         footer={menuFooter}
         header={menuHeader}
-        items={menuItems}
         onStateChange={changeMenuState}
+        sections={menuSections}
         state={menuState}
       />
       <main

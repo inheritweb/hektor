@@ -1,15 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { LuFileText, LuHouse, LuSettings } from 'react-icons/lu';
+import { LuBuilding2, LuHouse, LuUsers } from 'react-icons/lu';
 
 import { Logo, ThemeSwitcher } from '../../molecules';
 import { AppHeader } from '../../organisms';
 
 import { PaperTemplate } from './PaperTemplate.component';
 
-const menuItems = [
-  { label: 'Home', icon: LuHouse, href: '#home', active: true },
-  { label: 'Documents', icon: LuFileText, href: '#documents' },
-  { label: 'Settings', icon: LuSettings, href: '#settings' },
+const menuSections = [
+  { items: [{ label: 'Home', icon: LuHouse, href: '#home', active: true }] },
+  {
+    label: 'Admin',
+    items: [
+      { label: 'Users', icon: LuUsers, href: '#users' },
+      { label: 'Organisations', icon: LuBuilding2, href: '#organisations' },
+    ],
+  },
 ];
 
 const meta = {
@@ -18,7 +23,7 @@ const meta = {
   args: {
     menuCompactHeader: <Logo size="md" variant="mark" />,
     menuHeader: <Logo size="md" />,
-    menuItems,
+    menuSections,
     menuFooter: <ThemeSwitcher />,
     header: <AppHeader title="Hektor" />,
     children: (

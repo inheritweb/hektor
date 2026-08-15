@@ -1,24 +1,37 @@
-import type { Database } from '@hektor/types/database';
-import type { QueryData, SupabaseClient } from '@supabase/supabase-js';
+import type { QueryData } from '@supabase/supabase-js';
 
-export type DatabaseClient = SupabaseClient<Database>;
+import type { DatabaseClient } from '../database';
 
-export function buildCurrentUserOrganisationsQuery(
-  client: DatabaseClient,
-  userId: string,
-) {
-  return client
-    .from('organisation_users')
-    .select(
-      `
+export function createUsersQueries(client: DatabaseClient) {
+  const buildCurrentUserOrganisationsQuery = (userId: string) =>
+    client
+      .from('organisation_users')
+      .select(
+        `
         id, user_name, role, status, scim_status,
         organisation:organisations!inner (id, name, slug, status)
       `,
-    )
-    .eq('user_id', userId)
-    .order('created_at');
+      )
+      .eq('user_id', userId)
+      .order('created_at');
+
+  const buildUserMembershipCountsQuery = (userIds: string[]) =>
+    client.from('organisation_users').select('user_id').in('user_id', userIds);
+
+  return {
+    buildCurrentUserOrganisationsQuery,
+    buildUserMembershipCountsQuery,
+  };
 }
 
 export type CurrentUserOrganisationsQueryResult = QueryData<
-  ReturnType<typeof buildCurrentUserOrganisationsQuery>
+  ReturnType<
+    ReturnType<typeof createUsersQueries>['buildCurrentUserOrganisationsQuery']
+  >
+>;
+
+export type UserMembershipCountsQueryResult = QueryData<
+  ReturnType<
+    ReturnType<typeof createUsersQueries>['buildUserMembershipCountsQuery']
+  >
 >;

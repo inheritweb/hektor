@@ -1,7 +1,6 @@
-import type { Database } from '@hektor/types/database';
-import type { QueryData, SupabaseClient } from '@supabase/supabase-js';
+import type { QueryData } from '@supabase/supabase-js';
 
-export type DatabaseClient = SupabaseClient<Database>;
+import type { DatabaseClient } from '../database';
 
 export function buildOrganisationSummariesQuery(
   client: DatabaseClient,

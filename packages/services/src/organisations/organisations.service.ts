@@ -7,6 +7,7 @@ import type {
 import { HektorErrorCode } from '@hektor/types/contracts';
 
 import { createServiceError } from '../errors';
+import type { DatabaseClient } from '../database';
 
 import {
   mapOrganisation,
@@ -15,7 +16,6 @@ import {
 import {
   buildOrganisationDetailQuery,
   buildOrganisationSummariesQuery,
-  type DatabaseClient,
 } from './organisations.queries';
 
 export async function listOrganisations(

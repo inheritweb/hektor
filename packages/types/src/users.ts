@@ -34,4 +34,11 @@ export type UserSummary = Pick<
   'id' | 'displayName' | 'email' | 'avatarUrl' | 'platformRole'
 >;
 
+export interface UserListItem extends UserSummary {
+  createdAt: string;
+  identityProviders: IdentityProvider[];
+  lastSignInAt?: string;
+  membershipCount: number;
+}
+
 export type CurrentUser = User;

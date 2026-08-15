@@ -7,7 +7,7 @@ import type { Route } from 'next';
 import { emailIdentityConfig } from '@hektor/config/identity';
 import { Button, Input, buttonVariants } from '@hektor/ui/atoms';
 
-import { createClient } from '../../lib/supabase/client';
+import { createBrowserSupabaseClient } from '../../lib/supabase/client';
 
 interface LoginScreenProps {
   next: string;
@@ -26,7 +26,7 @@ export function LoginScreen({ next }: LoginScreenProps) {
     setError(undefined);
     setIsSubmitting(true);
 
-    const client = createClient();
+    const client = createBrowserSupabaseClient();
     const { error: signInError } = await client.auth.signInWithOtp({
       email,
       options: { shouldCreateUser: true },
@@ -47,7 +47,7 @@ export function LoginScreen({ next }: LoginScreenProps) {
     setError(undefined);
     setIsSubmitting(true);
 
-    const client = createClient();
+    const client = createBrowserSupabaseClient();
     const { error: verificationError } = await client.auth.verifyOtp({
       email,
       token: code,

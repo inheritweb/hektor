@@ -4,4 +4,7 @@ import { makeQuery } from './make-query';
 
 export const HEALTH_CHECK_QUERY_KEY = ['system', 'health-check'] as const;
 
-export const useHealthCheck = makeQuery(getHealthCheck, HEALTH_CHECK_QUERY_KEY);
+export const useGetHealthCheck = makeQuery(
+  getHealthCheck,
+  HEALTH_CHECK_QUERY_KEY,
+);

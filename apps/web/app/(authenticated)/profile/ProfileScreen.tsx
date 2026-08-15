@@ -1,10 +1,10 @@
 'use client';
 
-import { useCurrentUser } from '@hektor/query/users';
+import { useGetCurrentUser } from '@hektor/query/users';
 import { ProfilePage } from '@hektor/ui/pages';
 
 export function ProfileScreen() {
-  const currentUser = useCurrentUser();
+  const currentUser = useGetCurrentUser();
 
   if (currentUser.isPending) {
     return (

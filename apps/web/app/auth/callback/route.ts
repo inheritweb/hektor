@@ -5,7 +5,7 @@ import { googleIdentityConfig } from '@hektor/config/identity';
 import { env } from '../../../env';
 import { bootstrapPlatformAdmin } from '../../../lib/auth/platform-admin';
 import { resolvePostLoginPath } from '../../../lib/auth/redirects';
-import { createClient } from '../../../lib/supabase/server';
+import { createServerSupabaseClient } from '../../../lib/supabase/server';
 
 function loginError(reason: string) {
   const url = new URL(googleIdentityConfig.errorPath, env.PUBLIC_BASE_URL);
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
   if (!code) return loginError('missing-code');
 
-  const client = await createClient();
+  const client = await createServerSupabaseClient();
   const { error } = await client.auth.exchangeCodeForSession(code);
 
   if (error) return loginError('code-exchange-failed');

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import { PlatformRole } from '@hektor/types';
+
 import { requireAuthenticated } from '../../lib/auth/platform-admin';
 
 import { AuthenticatedShell } from './AuthenticatedShell';
@@ -16,7 +18,16 @@ export default async function AuthenticatedLayout({
         : (user.email ?? 'Your account');
 
   return (
-    <AuthenticatedShell fallbackUser={{ displayName, email: user.email }}>
+    <AuthenticatedShell
+      fallbackUser={{
+        displayName,
+        email: user.email,
+        platformRole:
+          user.app_metadata.role === PlatformRole.Admin
+            ? PlatformRole.Admin
+            : undefined,
+      }}
+    >
       {children}
     </AuthenticatedShell>
   );

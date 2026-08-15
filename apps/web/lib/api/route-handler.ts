@@ -118,10 +118,10 @@ async function authenticate(
   return user;
 }
 
-async function createSupabaseClient() {
-  const { createClient } = await import('../supabase/server');
+async function createRouteSupabaseClient() {
+  const { createServerSupabaseClient } = await import('@/lib/supabase/server');
 
-  return createClient();
+  return createServerSupabaseClient();
 }
 
 async function authorize(
@@ -182,7 +182,7 @@ export function registerEndpoint<TContract extends AnyHektorContract>(
       const supabase =
         contract.access.type === 'public'
           ? undefined
-          : await createSupabaseClient();
+          : await createRouteSupabaseClient();
       const user = supabase
         ? await authenticate(contract, supabase)
         : undefined;

@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server';
 import { googleIdentityConfig } from '@hektor/config/identity';
 
 import { env } from '../../../env';
-import { createClient } from '../../../lib/supabase/server';
+import { createServerSupabaseClient } from '../../../lib/supabase/server';
 
 export async function POST() {
-  const client = await createClient();
+  const client = await createServerSupabaseClient();
   await client.auth.signOut();
 
   return NextResponse.redirect(

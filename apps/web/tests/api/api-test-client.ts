@@ -5,7 +5,7 @@ import {
   type HektorErrorCode,
 } from '@hektor/types/contracts';
 
-import type { RegisteredEndpoint } from '../../lib/api/route-handler';
+import type { RegisteredEndpoint } from '@/lib/api/route-handler';
 
 interface ApiTestRequest {
   method?: string;

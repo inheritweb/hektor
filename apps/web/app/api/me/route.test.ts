@@ -6,25 +6,33 @@ import {
   callApiEndpoint,
   expectApiError,
   expectApiResponse,
-} from '../../../tests/api/api-test-client';
+} from '@/tests/api/api-test-client';
 
-const { getCurrentUserMock, getUserMock } = vi.hoisted(() => ({
-  getCurrentUserMock: vi.fn(),
-  getUserMock: vi.fn(),
-}));
+const { createUsersServiceMock, getCurrentUserMock, getUserMock } = vi.hoisted(
+  () => ({
+    createUsersServiceMock: vi.fn(),
+    getCurrentUserMock: vi.fn(),
+    getUserMock: vi.fn(),
+  }),
+);
 
-vi.mock('../../../lib/supabase/server', () => ({
-  createClient: async () => ({ auth: { getUser: getUserMock } }),
+vi.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: async () => ({
+    auth: { getUser: getUserMock },
+  }),
 }));
 
 vi.mock('@hektor/services/users', () => ({
-  getCurrentUser: getCurrentUserMock,
+  createUsersService: createUsersServiceMock,
 }));
 
 import { GET } from './route';
 
 describe('GET /api/me', () => {
   beforeEach(() => {
+    createUsersServiceMock.mockReturnValue({
+      getCurrentUser: getCurrentUserMock,
+    });
     getCurrentUserMock.mockReset();
     getUserMock.mockReset();
   });

@@ -3,7 +3,7 @@ import { describe, it } from 'vitest';
 import {
   callApiEndpoint,
   expectApiResponse,
-} from '../../../tests/api/api-test-client';
+} from '@/tests/api/api-test-client';
 
 import { GET } from './route';
 

@@ -1,29 +1,59 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { LuFileText, LuHouse, LuSettings } from 'react-icons/lu';
+import { LuBuilding2, LuHouse, LuUsers } from 'react-icons/lu';
+import { usePathname } from 'next/navigation';
 
+import { PlatformRole } from '@hektor/types';
 import { Logo, ThemeSwitcher } from '@hektor/ui/molecules';
 import { AppHeader, UserWidget } from '@hektor/ui/organisms';
 import { PaperTemplate } from '@hektor/ui/templates';
-import { useCurrentUser } from '@hektor/query/users';
-
-const menuItems = [
-  { label: 'Home', icon: LuHouse, href: '/', active: true },
-  { label: 'Documents', icon: LuFileText, href: '/documents' },
-  { label: 'Settings', icon: LuSettings, href: '/settings' },
-];
+import { useGetCurrentUser } from '@hektor/query/users';
 
 export function AuthenticatedShell({
   children,
   fallbackUser,
 }: Readonly<{
   children: ReactNode;
-  fallbackUser: { displayName: string; email?: string };
+  fallbackUser: {
+    displayName: string;
+    email?: string;
+    platformRole?: PlatformRole;
+  };
 }>) {
-  const currentUser = useCurrentUser();
+  const pathname = usePathname();
+  const currentUser = useGetCurrentUser();
   const [currentContextId, setCurrentContextId] = useState('personal');
   const user = currentUser.data?.data;
+  const platformRole = user?.platformRole ?? fallbackUser.platformRole;
+  const menuSections = [
+    {
+      items: [
+        { label: 'Home', icon: LuHouse, href: '/', active: pathname === '/' },
+      ],
+    },
+    ...(platformRole === PlatformRole.Admin
+      ? [
+          {
+            label: 'Admin',
+            items: [
+              {
+                label: 'Users',
+                icon: LuUsers,
+                href: '/admin/users',
+                active: pathname.startsWith('/admin/users'),
+              },
+              {
+                label: 'Organisations',
+                icon: LuBuilding2,
+                href: '/admin/organisations',
+                active: pathname.startsWith('/admin/organisations'),
+              },
+            ],
+          },
+        ]
+      : []),
+  ];
   const contexts = [
     { id: 'personal', label: 'Personal account' },
     ...(user?.memberships
@@ -70,7 +100,7 @@ export function AuthenticatedShell({
         </div>
       }
       menuHeader={<Logo size="md" />}
-      menuItems={menuItems}
+      menuSections={menuSections}
     >
       {children}
     </PaperTemplate>

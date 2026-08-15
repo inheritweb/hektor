@@ -9,7 +9,7 @@ const { signInWithOtpMock, verifyOtpMock } = vi.hoisted(() => ({
 }));
 
 vi.mock('../../lib/supabase/client', () => ({
-  createClient: () => ({
+  createBrowserSupabaseClient: () => ({
     auth: {
       signInWithOtp: signInWithOtpMock,
       verifyOtp: verifyOtpMock,

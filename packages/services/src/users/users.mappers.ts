@@ -8,6 +8,7 @@ import {
   ScimResourceStatus,
   type CurrentUser,
   type UserIdentity,
+  type UserListItem,
 } from '@hektor/types';
 import type {
   User,
@@ -80,5 +81,24 @@ export function mapCurrentUser(
     memberships: memberships.map(mapOrganisationMembershipSummary),
     createdAt: user.created_at,
     updatedAt: user.updated_at ?? user.created_at,
+  };
+}
+
+export function mapUserListItem(
+  user: User,
+  membershipCount: number,
+): UserListItem {
+  const mapped = mapCurrentUser(user, []);
+
+  return {
+    id: mapped.id,
+    displayName: mapped.displayName,
+    platformRole: mapped.platformRole,
+    email: mapped.email,
+    avatarUrl: mapped.avatarUrl,
+    createdAt: mapped.createdAt,
+    identityProviders: mapped.identities.map((identity) => identity.provider),
+    lastSignInAt: user.last_sign_in_at,
+    membershipCount,
   };
 }

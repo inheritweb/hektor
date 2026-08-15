@@ -4,7 +4,7 @@ import { googleIdentityConfig } from '@hektor/config/identity';
 
 import { env } from '../../../env';
 import { resolvePostLoginPath } from '../../../lib/auth/redirects';
-import { createClient } from '../../../lib/supabase/server';
+import { createServerSupabaseClient } from '../../../lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   const next = resolvePostLoginPath(request.nextUrl.searchParams.get('next'));
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   callback.searchParams.set('next', next);
 
-  const client = await createClient();
+  const client = await createServerSupabaseClient();
   const { data, error } = await client.auth.signInWithOAuth({
     provider: googleIdentityConfig.provider,
     options: { redirectTo: callback.toString() },

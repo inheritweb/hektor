@@ -1,14 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { LuFileText, LuHouse, LuSettings } from 'react-icons/lu';
+import { LuBuilding2, LuHouse, LuUsers } from 'react-icons/lu';
 
 import { Logo, ThemeSwitcher } from '../../molecules';
 
 import { AppMenu } from './AppMenu.component';
 
-const items = [
-  { label: 'Home', icon: LuHouse, href: '#home', active: true },
-  { label: 'Documents', icon: LuFileText, href: '#documents' },
-  { label: 'Settings', icon: LuSettings, href: '#settings' },
+const sections = [
+  {
+    items: [{ label: 'Home', icon: LuHouse, href: '#home', active: true }],
+  },
+  {
+    label: 'Admin',
+    items: [
+      { label: 'Users', icon: LuUsers, href: '#users' },
+      { label: 'Organisations', icon: LuBuilding2, href: '#organisations' },
+    ],
+  },
 ];
 
 const meta = {
@@ -17,7 +24,7 @@ const meta = {
   args: {
     compactHeader: <Logo size="md" variant="mark" />,
     header: <Logo size="md" />,
-    items,
+    sections,
     footer: <ThemeSwitcher />,
   },
   parameters: { layout: 'fullscreen' },

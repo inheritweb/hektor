@@ -24,14 +24,19 @@ export interface AppMenuEntry {
   onSelect?: () => void;
 }
 
+export interface AppMenuSection {
+  items: AppMenuEntry[];
+  label?: string;
+}
+
 export interface AppMenuProps {
   compactFooter?: ReactNode;
   compactHeader?: ReactNode;
   defaultState?: AppMenuState;
   footer?: ReactNode;
   header?: ReactNode;
-  items: AppMenuEntry[];
   onStateChange?: (state: AppMenuState) => void;
+  sections: AppMenuSection[];
   state?: AppMenuState;
 }
 
@@ -59,10 +64,10 @@ function MenuContents({
   compactHeader,
   footer,
   header,
-  items,
+  sections,
 }: Pick<
   AppMenuProps,
-  'compactFooter' | 'compactHeader' | 'footer' | 'header' | 'items'
+  'compactFooter' | 'compactHeader' | 'footer' | 'header' | 'sections'
 > & {
   collapsed: boolean;
 }) {
@@ -85,8 +90,27 @@ function MenuContents({
           collapsed && 'flex flex-col items-center gap-1 space-y-0',
         )}
       >
-        {items.map((item) => (
-          <AppMenuItem {...item} collapsed={collapsed} key={item.label} />
+        {sections.map((section, index) => (
+          <section
+            className={cn(index > 0 && (collapsed ? 'mt-3' : 'mt-6'))}
+            key={section.label ?? index}
+          >
+            {section.label ? (
+              <h2
+                className={cn(
+                  'px-3 pb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground',
+                  collapsed && 'sr-only',
+                )}
+              >
+                {section.label}
+              </h2>
+            ) : null}
+            <div className="space-y-1">
+              {section.items.map((item) => (
+                <AppMenuItem {...item} collapsed={collapsed} key={item.label} />
+              ))}
+            </div>
+          </section>
         ))}
       </nav>
       {(collapsed ? compactFooter : footer) ? (
@@ -102,8 +126,8 @@ export function AppMenu({
   defaultState = 'hidden',
   footer,
   header,
-  items,
   onStateChange,
+  sections,
   state: controlledState,
 }: AppMenuProps) {
   const desktop = useDesktopViewport();
@@ -144,7 +168,7 @@ export function AppMenu({
               compactHeader={compactHeader}
               footer={footer}
               header={header}
-              items={items}
+              sections={sections}
             />
           </SheetContent>
         </Sheet>
@@ -200,7 +224,7 @@ export function AppMenu({
             compactHeader={compactHeader}
             footer={footer}
             header={header}
-            items={items}
+            sections={sections}
           />
         </div>
       )}

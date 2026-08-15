@@ -13,7 +13,7 @@ import {
   callApiEndpoint,
   expectApiError,
   expectApiResponse,
-} from '../../tests/api/api-test-client';
+} from '@/tests/api/api-test-client';
 
 const { createClientMock, getUserMock, rpcMock } = vi.hoisted(() => ({
   createClientMock: vi.fn(),
@@ -21,7 +21,9 @@ const { createClientMock, getUserMock, rpcMock } = vi.hoisted(() => ({
   rpcMock: vi.fn(),
 }));
 
-vi.mock('../supabase/server', () => ({ createClient: createClientMock }));
+vi.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: createClientMock,
+}));
 
 import { registerEndpoint } from './route-handler';
 

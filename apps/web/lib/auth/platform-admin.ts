@@ -5,8 +5,8 @@ import { redirect } from 'next/navigation';
 import { googleIdentityConfig } from '@hektor/config/identity';
 
 import { env } from '../../env';
-import { createAdminClient } from '../supabase/admin';
-import { createClient } from '../supabase/server';
+import { createAdminSupabaseClient } from '../supabase/admin';
+import { createServerSupabaseClient } from '../supabase/server';
 import {
   canBootstrapPlatformAdmin,
   isPlatformAdmin,
@@ -25,7 +25,7 @@ export async function bootstrapPlatformAdmin(user: User) {
     return null;
   }
 
-  const adminClient = createAdminClient();
+  const adminClient = createAdminSupabaseClient();
   const { data, error } = await adminClient.auth.admin.updateUserById(user.id, {
     app_metadata: {
       ...user.app_metadata,
@@ -39,7 +39,7 @@ export async function bootstrapPlatformAdmin(user: User) {
 }
 
 export async function requirePlatformAdmin() {
-  const client = await createClient();
+  const client = await createServerSupabaseClient();
   const {
     data: { user },
   } = await client.auth.getUser();
@@ -52,7 +52,7 @@ export async function requirePlatformAdmin() {
 }
 
 export async function requireAuthenticated() {
-  const client = await createClient();
+  const client = await createServerSupabaseClient();
   const {
     data: { user },
   } = await client.auth.getUser();
