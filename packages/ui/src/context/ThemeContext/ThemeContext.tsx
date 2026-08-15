@@ -11,7 +11,9 @@ import {
 } from 'react';
 
 export type ThemePreference = 'light' | 'system' | 'dark';
+
 export type ResolvedTheme = Exclude<ThemePreference, 'system'>;
+
 export type MenuState = 'hidden' | 'icons' | 'expanded';
 
 export interface ThemeContextValue {
@@ -31,7 +33,9 @@ export interface ThemeProviderProps {
 }
 
 const DEFAULT_STORAGE_KEY = 'hektor-theme';
+
 const DEFAULT_MENU_STORAGE_KEY = 'hektor-menu-state';
+
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function isThemePreference(value: string | null): value is ThemePreference {

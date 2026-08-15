@@ -14,10 +14,13 @@ const meta = {
 } satisfies Meta<typeof Logo>;
 
 export default meta;
+
 type Story = StoryObj<typeof meta>;
 
 export const Lockup: Story = {};
+
 export const Mark: Story = { args: { variant: 'mark' } };
+
 export const Sizes: Story = {
   render: () => (
     <div className="flex flex-col items-start gap-6">

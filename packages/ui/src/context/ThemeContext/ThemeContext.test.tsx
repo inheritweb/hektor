@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ThemeProvider, useTheme } from './ThemeContext';
 
 const mediaListeners = new Set<() => void>();
+
 let systemIsDark = false;
 
 function wrapper({ children }: { children: ReactNode }) {

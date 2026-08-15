@@ -24,11 +24,15 @@ const meta = {
 } satisfies Meta<typeof AppMenu>;
 
 export default meta;
+
 type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {};
+
 export const Hidden: Story = { args: { state: 'hidden' } };
+
 export const Icons: Story = { args: { state: 'icons' } };
+
 export const Expanded: Story = { args: { state: 'expanded' } };
 
 export const Mobile: Story = {

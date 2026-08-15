@@ -21,6 +21,10 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "test:integration": {
+      "cache": false,
+      "dependsOn": ["^build"]
     }
   }
 }

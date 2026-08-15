@@ -28,6 +28,8 @@ commands from the repository root unless documentation explicitly says otherwise
 - Start development: `yarn dev`
 - Run fast validation: `yarn check`
 - Run unit tests: `yarn test`
+- Run database integration tests: `yarn test:integration` (requires local
+  Supabase)
 - Build all workspaces: `yarn build`
 - Run the full CI-equivalent suite: `yarn ci`
 - Run browser tests: `yarn test:e2e`
@@ -42,6 +44,13 @@ commands from the repository root unless documentation explicitly says otherwise
 - Keep changes scoped to the request and preserve unrelated working-tree changes.
 - Add or update regression tests when behavior changes or a bug is fixed.
 - Prefer workspace scripts over invoking unpinned global tools.
+- Separate top-level declarations with a blank line, including consecutive
+  exported types, interfaces, constants, and functions.
+- Derive Zod schemas from existing TypeScript string or numeric enums instead
+  of repeating their members as literal unions.
+- Define canonical domain types in TypeScript first. Boundary Zod schemas must
+  satisfy those domain types; only contract-specific request and response types
+  should be inferred from Zod schemas.
 - Commit `yarn.lock` whenever dependency manifests change.
 - Do not edit generated files manually. In particular, regenerate
   `packages/types/src/database.ts` with `yarn supabase:types` after schema changes.
@@ -71,6 +80,10 @@ the required local services are available.
 
 Report which checks ran and any checks that could not run. Do not claim a check
 passed without executing it.
+
+Keep database integration tests separate from the fast unit suite. Integration
+tests may create uniquely identified fixtures in local Supabase and must clean
+them up; they must never reset or target a hosted database implicitly.
 
 ## Git and generated changes
 

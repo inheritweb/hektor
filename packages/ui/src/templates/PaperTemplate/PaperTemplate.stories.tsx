@@ -33,9 +33,11 @@ const meta = {
 } satisfies Meta<typeof PaperTemplate>;
 
 export default meta;
+
 type Story = StoryObj<typeof meta>;
 
 export const Desktop: Story = {};
+
 export const Mobile: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
 };

@@ -30,6 +30,20 @@ jobs:
       - run: yarn build
       - run: yarn storybook:build
 
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: corepack enable
+      - run: yarn install --immutable
+      - name: Start local Supabase
+        run: yarn supabase:start
+      - name: Run database integration tests
+        run: yarn test:integration
+
   e2e:
     runs-on: ubuntu-latest
     steps:

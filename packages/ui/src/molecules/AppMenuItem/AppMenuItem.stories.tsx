@@ -11,8 +11,11 @@ const meta = {
 } satisfies Meta<typeof AppMenuItem>;
 
 export default meta;
+
 type Story = StoryObj<typeof meta>;
 
 export const Expanded: Story = {};
+
 export const Collapsed: Story = { args: { collapsed: true } };
+
 export const Active: Story = { args: { active: true } };
