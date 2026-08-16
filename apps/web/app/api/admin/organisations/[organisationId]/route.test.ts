@@ -1,0 +1,91 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { OrganisationStatus, PlatformRole } from '@hektor/types';
+
+import {
+  callApiEndpoint,
+  expectApiResponse,
+} from '@/tests/api/api-test-client';
+
+const {
+  createAdminSupabaseClientMock,
+  createOrganisationsServiceMock,
+  getOrganisationMock,
+  getUserMock,
+} = vi.hoisted(() => ({
+  createAdminSupabaseClientMock: vi.fn(),
+  createOrganisationsServiceMock: vi.fn(),
+  getOrganisationMock: vi.fn(),
+  getUserMock: vi.fn(),
+}));
+
+vi.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: async () => ({
+    auth: { getUser: getUserMock },
+  }),
+}));
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminSupabaseClient: createAdminSupabaseClientMock,
+}));
+
+vi.mock('@hektor/services/organisations', () => ({
+  createOrganisationsService: createOrganisationsServiceMock,
+}));
+
+import { GET } from './route';
+
+describe('GET /api/admin/organisations/:organisationId', () => {
+  beforeEach(() => {
+    createAdminSupabaseClientMock.mockReset();
+    createOrganisationsServiceMock.mockReturnValue({
+      getOrganisation: getOrganisationMock,
+    });
+    getOrganisationMock.mockReset();
+    getUserMock.mockReset();
+  });
+
+  it('gets an organisation through the privileged service client', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const adminClient = { auth: { admin: {} } };
+    const responseData = {
+      id: organisationId,
+      name: 'Northbridge University',
+      slug: 'northbridge-university',
+      status: OrganisationStatus.Active,
+      contractPeriods: [],
+      cohorts: [],
+      groups: [],
+      usersSummary: {
+        total: 0,
+        linked: 0,
+        awaitingAccountLinking: 0,
+        learners: 0,
+        tutors: 0,
+        organisationAdmins: 0,
+        suspended: 0,
+      },
+      createdAt: '2026-08-15T10:00:00.000Z',
+      updatedAt: '2026-08-15T11:00:00.000Z',
+    };
+    getUserMock.mockResolvedValue({
+      data: {
+        user: { id: 'admin-id', app_metadata: { role: PlatformRole.Admin } },
+      },
+      error: null,
+    });
+    createAdminSupabaseClientMock.mockReturnValue(adminClient);
+    getOrganisationMock.mockResolvedValue({ data: responseData });
+
+    const response = await callApiEndpoint(GET, {
+      path: `/api/admin/organisations/${organisationId}`,
+      params: { organisationId },
+    });
+
+    await expectApiResponse(response, responseData);
+    expect(createOrganisationsServiceMock).toHaveBeenCalledWith(adminClient);
+    expect(getOrganisationMock).toHaveBeenCalledWith({
+      organisationId,
+    });
+  });
+});

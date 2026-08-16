@@ -8,4 +8,4 @@ export {
   buildOrganisationSummariesQuery,
 } from './organisations.queries';
 
-export { getOrganisation, listOrganisations } from './organisations.service';
+export { createOrganisationsService } from './organisations.service';

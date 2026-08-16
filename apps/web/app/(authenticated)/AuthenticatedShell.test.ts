@@ -17,5 +17,31 @@ describe('breadcrumbsForPath', () => {
       { label: 'Users', href: '/admin/users' },
       { label: 'User details' },
     ]);
+    expect(
+      breadcrumbsForPath(
+        '/admin/organisations/ab720a62-06df-408d-9e8c-0201ac69269a',
+        'Northbridge University',
+      ),
+    ).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Admin' },
+      { label: 'Organisations', href: '/admin/organisations' },
+      { label: 'Northbridge University' },
+    ]);
+    expect(
+      breadcrumbsForPath(
+        '/admin/organisations/ab720a62-06df-408d-9e8c-0201ac69269a/users',
+        'Northbridge University',
+      ),
+    ).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Admin' },
+      { label: 'Organisations', href: '/admin/organisations' },
+      {
+        label: 'Northbridge University',
+        href: '/admin/organisations/ab720a62-06df-408d-9e8c-0201ac69269a',
+      },
+      { label: 'Users' },
+    ]);
   });
 });

@@ -4,19 +4,29 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { OrganisationStatus, SortDirection } from '@hektor/types';
 import { HektorErrorCode } from '@hektor/types/contracts';
+import { organisationSchema } from '@hektor/types/contracts/organisations';
 
 import { HektorServiceError } from '../errors';
 import { createIntegrationDatabaseClient } from '../testing/local-supabase';
 
-import { getOrganisation, listOrganisations } from './organisations.service';
+import { createOrganisationsService } from './organisations.service';
 
 const client = createIntegrationDatabaseClient();
+
+const { getOrganisation, listOrganisations, listOrganisationUsers } =
+  createOrganisationsService(client);
 
 const organisationId = randomUUID();
 
 const cohortId = randomUUID();
 
 const contractPeriodId = randomUUID();
+
+const groupId = randomUUID();
+
+const learnerId = randomUUID();
+
+const tutorId = randomUUID();
 
 const slug = `integration-${organisationId}`;
 
@@ -53,9 +63,45 @@ describe('organisation services', () => {
       });
 
     if (contractError) throw contractError;
+
+    const { error: groupError } = await client.from('groups').insert({
+      id: groupId,
+      organisation_id: organisationId,
+      cohort_id: cohortId,
+      name: 'Clinical Practice A',
+    });
+
+    if (groupError) throw groupError;
+
+    const { error: usersError } = await client
+      .from('organisation_users')
+      .insert([
+        {
+          id: learnerId,
+          organisation_id: organisationId,
+          cohort_id: cohortId,
+          user_name: 'learner@integration.example',
+          role: 'learner',
+          status: 'active',
+        },
+        {
+          id: tutorId,
+          organisation_id: organisationId,
+          user_name: 'tutor@integration.example',
+          role: 'tutor',
+          status: 'suspended',
+        },
+      ]);
+
+    if (usersError) throw usersError;
   });
 
   afterAll(async () => {
+    await client
+      .from('organisation_users')
+      .delete()
+      .eq('organisation_id', organisationId);
+    await client.from('groups').delete().eq('organisation_id', organisationId);
     await client
       .from('organisation_contract_periods')
       .delete()
@@ -65,7 +111,7 @@ describe('organisation services', () => {
   });
 
   it('lists organisations through the real Supabase query', async () => {
-    const response = await listOrganisations(client, {
+    const response = await listOrganisations({
       page: 1,
       pageSize: 100,
       order: 'name',
@@ -82,7 +128,9 @@ describe('organisation services', () => {
   });
 
   it('loads and maps an organisation aggregate', async () => {
-    const response = await getOrganisation(client, { organisationId });
+    const response = await getOrganisation({ organisationId });
+
+    expect(() => organisationSchema.parse(response.data)).not.toThrow();
 
     expect(response.data).toMatchObject({
       id: organisationId,
@@ -95,6 +143,21 @@ describe('organisation services', () => {
           name: 'September 2026',
         },
       ],
+      groups: [
+        {
+          id: groupId,
+          name: 'Clinical Practice A',
+        },
+      ],
+      usersSummary: {
+        total: 2,
+        linked: 0,
+        awaitingAccountLinking: 2,
+        learners: 1,
+        tutors: 1,
+        organisationAdmins: 0,
+        suspended: 1,
+      },
       contractPeriods: [
         {
           id: contractPeriodId,
@@ -108,9 +171,36 @@ describe('organisation services', () => {
     });
   });
 
+  it('lists linked and awaiting organisation users', async () => {
+    const response = await listOrganisationUsers(
+      { organisationId },
+      {
+        page: 1,
+        pageSize: 20,
+        order: 'userName',
+        dir: SortDirection.Ascending,
+      },
+    );
+
+    expect(response.context.totalRecords).toBe(2);
+    expect(response.data).toEqual([
+      expect.objectContaining({
+        id: learnerId,
+        role: 'learner',
+        linked: false,
+      }),
+      expect.objectContaining({
+        id: tutorId,
+        role: 'tutor',
+        status: 'suspended',
+        linked: false,
+      }),
+    ]);
+  });
+
   it('raises a not-found service error', async () => {
     await expect(
-      getOrganisation(client, { organisationId: randomUUID() }),
+      getOrganisation({ organisationId: randomUUID() }),
     ).rejects.toMatchObject({
       code: HektorErrorCode.NotFound,
       message: 'Organisation not found',

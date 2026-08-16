@@ -16,6 +16,10 @@
     "./users": {
       "types": "./src/users.ts",
       "import": "./src/users.ts"
+    },
+    "./organisations": {
+      "types": "./src/organisations.ts",
+      "import": "./src/organisations.ts"
     }
   },
   "scripts": {

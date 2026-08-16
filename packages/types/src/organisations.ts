@@ -49,8 +49,20 @@ export interface Organisation {
   status: OrganisationStatus;
   contractPeriods: OrganisationContractPeriod[];
   cohorts: CohortSummary[];
+  groups: OrganisationGroupSummary[];
+  usersSummary: OrganisationUsersSummary;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface OrganisationUsersSummary {
+  total: number;
+  linked: number;
+  awaitingAccountLinking: number;
+  learners: number;
+  tutors: number;
+  organisationAdmins: number;
+  suspended: number;
 }
 
 export interface Cohort {

@@ -1,0 +1,84 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { PlatformRole, SortDirection } from '@hektor/types';
+
+import { callApiEndpoint } from '@/tests/api/api-test-client';
+
+const {
+  createAdminSupabaseClientMock,
+  createOrganisationsServiceMock,
+  getUserMock,
+  listOrganisationUsersMock,
+} = vi.hoisted(() => ({
+  createAdminSupabaseClientMock: vi.fn(),
+  createOrganisationsServiceMock: vi.fn(),
+  getUserMock: vi.fn(),
+  listOrganisationUsersMock: vi.fn(),
+}));
+
+vi.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: async () => ({
+    auth: { getUser: getUserMock },
+  }),
+}));
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminSupabaseClient: createAdminSupabaseClientMock,
+}));
+
+vi.mock('@hektor/services/organisations', () => ({
+  createOrganisationsService: createOrganisationsServiceMock,
+}));
+
+import { GET } from './route';
+
+describe('GET /api/admin/organisations/:organisationId/users', () => {
+  beforeEach(() => {
+    createAdminSupabaseClientMock.mockReset();
+    createOrganisationsServiceMock.mockReturnValue({
+      listOrganisationUsers: listOrganisationUsersMock,
+    });
+    getUserMock.mockReset();
+    listOrganisationUsersMock.mockReset();
+  });
+
+  it('lists organisation users through the privileged service client', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const adminClient = { auth: { admin: {} } };
+    const responseData = {
+      context: {
+        page: 1,
+        pageSize: 20,
+        totalRecords: 0,
+        sort: { order: 'userName', dir: SortDirection.Ascending },
+      },
+      data: [],
+    };
+    getUserMock.mockResolvedValue({
+      data: {
+        user: { id: 'admin-id', app_metadata: { role: PlatformRole.Admin } },
+      },
+      error: null,
+    });
+    createAdminSupabaseClientMock.mockReturnValue(adminClient);
+    listOrganisationUsersMock.mockResolvedValue(responseData);
+
+    const response = await callApiEndpoint(GET, {
+      path: `/api/admin/organisations/${organisationId}/users`,
+      params: { organisationId },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual(responseData);
+    expect(createOrganisationsServiceMock).toHaveBeenCalledWith(adminClient);
+    expect(listOrganisationUsersMock).toHaveBeenCalledWith(
+      { organisationId },
+      {
+        page: 1,
+        pageSize: 20,
+        order: 'userName',
+        dir: SortDirection.Ascending,
+      },
+    );
+  });
+});

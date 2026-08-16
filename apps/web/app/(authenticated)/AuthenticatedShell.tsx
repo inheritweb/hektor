@@ -13,10 +13,12 @@ import {
   UserWidget,
 } from '@hektor/ui/organisms';
 import { PaperTemplate } from '@hektor/ui/templates';
+import { useAdminGetOrganisation } from '@hektor/query/organisations';
 import { useGetCurrentUser } from '@hektor/query/users';
 
 export function breadcrumbsForPath(
   pathname: string,
+  organisationName = 'Organisation',
 ): GlobalToolbarBreadcrumb[] {
   if (pathname === '/') return [{ label: 'Home' }];
 
@@ -37,7 +39,21 @@ export function breadcrumbsForPath(
   }
 
   if (pathname.startsWith('/admin/organisations')) {
-    return [home, { label: 'Admin' }, { label: 'Organisations' }];
+    if (pathname === '/admin/organisations') {
+      return [home, { label: 'Admin' }, { label: 'Organisations' }];
+    }
+
+    return [
+      home,
+      { label: 'Admin' },
+      { label: 'Organisations', href: '/admin/organisations' },
+      ...(pathname.endsWith('/users')
+        ? [
+            { label: organisationName, href: pathname.slice(0, -6) },
+            { label: 'Users' },
+          ]
+        : [{ label: organisationName }]),
+    ];
   }
 
   return [home];
@@ -55,7 +71,17 @@ export function AuthenticatedShell({
   };
 }>) {
   const pathname = usePathname();
-  const breadcrumbs = breadcrumbsForPath(pathname);
+  const organisationId = pathname.match(
+    /^\/admin\/organisations\/([^/]+)/,
+  )?.[1];
+  const breadcrumbOrganisation = useAdminGetOrganisation(
+    { params: { organisationId: organisationId ?? '' } },
+    { enabled: Boolean(organisationId) },
+  );
+  const breadcrumbs = breadcrumbsForPath(
+    pathname,
+    breadcrumbOrganisation.data?.data.name,
+  );
   const currentUser = useGetCurrentUser();
   const [currentContextId, setCurrentContextId] = useState('personal');
   const user = currentUser.data?.data;
