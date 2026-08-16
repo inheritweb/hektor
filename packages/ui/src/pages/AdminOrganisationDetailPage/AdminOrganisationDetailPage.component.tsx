@@ -61,6 +61,7 @@ export interface AdminOrganisationDetailViewModel {
 }
 
 export interface AdminOrganisationDetailPageProps {
+  contractPeriodsHref: string;
   organisation: AdminOrganisationDetailViewModel;
   provisionsHref: string;
   usersHref: string;
@@ -106,6 +107,7 @@ function CollectionSection({
 }
 
 export function AdminOrganisationDetailPage({
+  contractPeriodsHref,
   organisation,
   provisionsHref,
   usersHref,
@@ -196,6 +198,12 @@ export function AdminOrganisationDetailPage({
             No contract periods have been created.
           </p>
         )}
+        <NavigationLink
+          className={`${buttonVariants({ size: 'sm', variant: 'outline' })} mt-5`}
+          href={contractPeriodsHref}
+        >
+          View contract periods
+        </NavigationLink>
       </CollectionSection>
 
       <CollectionSection

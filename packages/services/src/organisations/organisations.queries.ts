@@ -61,6 +61,37 @@ export type OrganisationDetailQueryResult = QueryData<
   ReturnType<typeof buildOrganisationDetailQuery>
 >;
 
+export function buildOrganisationContractPeriodsQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  options: {
+    page: number;
+    pageSize: number;
+    order: 'startsOn' | 'endsOn';
+    dir: 'asc' | 'desc';
+  },
+) {
+  const first = (options.page - 1) * options.pageSize;
+  const order = options.order === 'endsOn' ? 'ends_on' : 'starts_on';
+
+  return client
+    .from('organisation_contract_periods')
+    .select(
+      `
+      id, starts_on, ends_on, learner_seat_allowance, created_at, updated_at,
+      activations:organisation_seat_activations (organisation_user_id)
+    `,
+      { count: 'exact' },
+    )
+    .eq('organisation_id', organisationId)
+    .order(order, { ascending: options.dir === 'asc' })
+    .range(first, first + options.pageSize - 1);
+}
+
+export type OrganisationContractPeriodsQueryResult = QueryData<
+  ReturnType<typeof buildOrganisationContractPeriodsQuery>
+>;
+
 export function buildOrganisationMembershipsCountQuery(
   client: DatabaseClient,
   organisationId: string,

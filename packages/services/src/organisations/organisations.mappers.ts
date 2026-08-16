@@ -19,6 +19,7 @@ import {
 
 import type {
   OrganisationDetailQueryResult,
+  OrganisationContractPeriodsQueryResult,
   OrganisationMembershipsQueryResult,
   OrganisationSummaryQueryResult,
   OrganisationUserProvisionsQueryResult,
@@ -39,8 +40,10 @@ export function mapOrganisationSummary(
   };
 }
 
-function mapContractPeriod(
-  record: OrganisationDetailQueryResult['contractPeriods'][number],
+export function mapOrganisationContractPeriod(
+  record:
+    | OrganisationDetailQueryResult['contractPeriods'][number]
+    | OrganisationContractPeriodsQueryResult[number],
 ): OrganisationContractPeriod {
   const activated = record.activations.length;
   return {
@@ -93,7 +96,7 @@ export function mapOrganisation(
 ): Organisation {
   return {
     ...mapOrganisationSummary(record),
-    contractPeriods: record.contractPeriods.map(mapContractPeriod),
+    contractPeriods: record.contractPeriods.map(mapOrganisationContractPeriod),
     cohorts: record.cohorts.map(mapCohortSummary),
     groups: record.groups.map(mapGroupSummary),
     usersSummary,

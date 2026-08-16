@@ -51,6 +51,7 @@ const meta = {
   title: 'Pages/AdminOrganisationDetailPage',
   component: AdminOrganisationDetailPage,
   args: {
+    contractPeriodsHref: `/admin/organisations/${organisation.id}/contract-periods`,
     organisation,
     provisionsHref: `/admin/organisations/${organisation.id}/provisioned-users`,
     usersHref: `/admin/organisations/${organisation.id}/users`,

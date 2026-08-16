@@ -47,7 +47,15 @@ export function breadcrumbsForPath(
       home,
       { label: 'Admin' },
       { label: 'Organisations', href: '/admin/organisations' },
-      ...(pathname.endsWith('/provisioned-users')
+      ...(pathname.endsWith('/contract-periods')
+        ? [
+            {
+              label: organisationName,
+              href: pathname.slice(0, -17),
+            },
+            { label: 'Contract periods' },
+          ]
+        : pathname.endsWith('/provisioned-users')
         ? [
             {
               label: organisationName,

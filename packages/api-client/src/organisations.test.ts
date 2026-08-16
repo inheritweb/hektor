@@ -6,6 +6,7 @@ import { SortDirection } from '@hektor/types/contracts';
 import { Client } from './client';
 import {
   getOrganisation,
+  listOrganisationContractPeriods,
   listOrganisationUserProvisions,
   listOrganisations,
   listOrganisationUsers,
@@ -123,6 +124,42 @@ describe('admin organisation API methods', () => {
     ).resolves.toEqual(response);
     expect(fetcher).toHaveBeenCalledWith(
       `https://hektor.test/api/admin/organisations/${organisationId}/users?page=1&pageSize=20&order=displayName&dir=asc`,
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('requests paginated organisation contract periods', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const response = {
+      context: {
+        page: 1,
+        pageSize: 20,
+        totalRecords: 0,
+        sort: { order: 'startsOn', dir: SortDirection.Descending },
+      },
+      data: [],
+    };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json(response));
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+
+    await expect(
+      listOrganisationContractPeriods(client, {
+        params: { organisationId },
+        query: {
+          page: 1,
+          pageSize: 20,
+          order: 'startsOn',
+          dir: SortDirection.Descending,
+        },
+      }),
+    ).resolves.toEqual(response);
+    expect(fetcher).toHaveBeenCalledWith(
+      `https://hektor.test/api/admin/organisations/${organisationId}/contract-periods?page=1&pageSize=20&order=startsOn&dir=desc`,
       expect.objectContaining({ method: 'GET' }),
     );
   });

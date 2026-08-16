@@ -19,6 +19,21 @@ describe('breadcrumbsForPath', () => {
     ]);
     expect(
       breadcrumbsForPath(
+        '/admin/organisations/ab720a62-06df-408d-9e8c-0201ac69269a/contract-periods',
+        'Northbridge University',
+      ),
+    ).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Admin' },
+      { label: 'Organisations', href: '/admin/organisations' },
+      {
+        label: 'Northbridge University',
+        href: '/admin/organisations/ab720a62-06df-408d-9e8c-0201ac69269a',
+      },
+      { label: 'Contract periods' },
+    ]);
+    expect(
+      breadcrumbsForPath(
         '/admin/organisations/ab720a62-06df-408d-9e8c-0201ac69269a',
         'Northbridge University',
       ),

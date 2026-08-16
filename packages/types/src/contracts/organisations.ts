@@ -136,6 +136,17 @@ export const getOrganisationContract = defineContract({
   output: hektorResponseSchema(organisationSchema),
 });
 
+export const listOrganisationContractPeriodsContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/organisations/:organisationId/contract-periods',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  query: paginationQuerySchema.extend({
+    order: z.enum(['startsOn', 'endsOn']).default('startsOn'),
+  }),
+  output: hektorCollectionResponseSchema(z.array(contractPeriodSchema)),
+});
+
 export const listOrganisationUsersContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/users',
@@ -182,6 +193,18 @@ export type GetOrganisationParams = ContractParams<
 
 export type GetOrganisationResponse = ContractOutput<
   typeof getOrganisationContract
+>;
+
+export type ListOrganisationContractPeriodsParams = ContractParams<
+  typeof listOrganisationContractPeriodsContract
+>;
+
+export type ListOrganisationContractPeriodsQuery = ContractQuery<
+  typeof listOrganisationContractPeriodsContract
+>;
+
+export type ListOrganisationContractPeriodsResponse = ContractOutput<
+  typeof listOrganisationContractPeriodsContract
 >;
 
 export type ListOrganisationUsersParams = ContractParams<

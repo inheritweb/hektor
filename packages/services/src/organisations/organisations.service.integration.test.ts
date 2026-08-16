@@ -15,6 +15,7 @@ const client = createIntegrationDatabaseClient();
 
 const {
   getOrganisation,
+  listOrganisationContractPeriods,
   listOrganisations,
   listOrganisationUserProvisions,
   listOrganisationUsers,
@@ -252,6 +253,28 @@ describe('organisation services', () => {
         role: 'tutor',
         status: 'suspended',
         user: expect.objectContaining({ displayName: 'Integration Tutor' }),
+      }),
+    ]);
+  });
+
+  it('lists contract periods with derived seat usage', async () => {
+    const response = await listOrganisationContractPeriods(
+      { organisationId },
+      {
+        page: 1,
+        pageSize: 20,
+        order: 'startsOn',
+        dir: SortDirection.Descending,
+      },
+    );
+
+    expect(response.context.totalRecords).toBe(1);
+    expect(response.data).toEqual([
+      expect.objectContaining({
+        id: contractPeriodId,
+        startsOn: '2026-09-01',
+        endsOn: '2027-09-01',
+        seats: { allowed: 100, activated: 0, remaining: 100 },
       }),
     ]);
   });

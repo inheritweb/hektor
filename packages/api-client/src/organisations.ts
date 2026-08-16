@@ -1,5 +1,6 @@
 import {
   getOrganisationContract,
+  listOrganisationContractPeriodsContract,
   listOrganisationUserProvisionsContract,
   listOrganisationUsersContract,
   listOrganisationsContract,
@@ -10,6 +11,10 @@ import { registerApiMethod } from './api-method';
 export const listOrganisations = registerApiMethod(listOrganisationsContract);
 
 export const getOrganisation = registerApiMethod(getOrganisationContract);
+
+export const listOrganisationContractPeriods = registerApiMethod(
+  listOrganisationContractPeriodsContract,
+);
 
 export const listOrganisationUsers = registerApiMethod(
   listOrganisationUsersContract,

@@ -1,6 +1,9 @@
 import type {
   GetOrganisationParams,
   GetOrganisationResponse,
+  ListOrganisationContractPeriodsParams,
+  ListOrganisationContractPeriodsQuery,
+  ListOrganisationContractPeriodsResponse,
   ListOrganisationUserProvisionsParams,
   ListOrganisationUserProvisionsQuery,
   ListOrganisationUserProvisionsResponse,
@@ -23,12 +26,14 @@ import { mapUserSummary } from '../users/users.mappers';
 
 import {
   mapOrganisation,
+  mapOrganisationContractPeriod,
   mapOrganisationMembershipUserSummary,
   mapOrganisationSummary,
   mapOrganisationUserProvision,
 } from './organisations.mappers';
 import {
   buildOrganisationDetailQuery,
+  buildOrganisationContractPeriodsQuery,
   buildOrganisationMembershipsCountQuery,
   buildOrganisationMembershipsQuery,
   buildOrganisationSummariesQuery,
@@ -234,6 +239,35 @@ export function createOrganisationsService(client: DatabaseClient) {
     };
   }
 
+  async function listOrganisationContractPeriods(
+    params: ListOrganisationContractPeriodsParams,
+    query: ListOrganisationContractPeriodsQuery,
+  ): Promise<ListOrganisationContractPeriodsResponse> {
+    const { data, error, count } = await buildOrganisationContractPeriodsQuery(
+      client,
+      params.organisationId,
+      query,
+    );
+
+    if (error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to list organisation contract periods',
+        internalMessage: error.message,
+        cause: error,
+      });
+    }
+
+    return {
+      context: {
+        page: query.page,
+        pageSize: query.pageSize,
+        totalRecords: count ?? 0,
+        sort: { order: query.order, dir: query.dir },
+      },
+      data: data.map(mapOrganisationContractPeriod),
+    };
+  }
+
   async function listOrganisationUserProvisions(
     params: ListOrganisationUserProvisionsParams,
     query: ListOrganisationUserProvisionsQuery,
@@ -286,6 +320,7 @@ export function createOrganisationsService(client: DatabaseClient) {
 
   return {
     getOrganisation,
+    listOrganisationContractPeriods,
     listOrganisations,
     listOrganisationUserProvisions,
     listOrganisationUsers,

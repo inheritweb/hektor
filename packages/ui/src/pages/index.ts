@@ -2,6 +2,8 @@ export * from './AdminOrganisationsPage';
 
 export * from './AdminOrganisationDetailPage';
 
+export * from './AdminOrganisationContractPeriodsPage';
+
 export * from './AdminOrganisationUsersPage';
 
 export * from './AdminOrganisationUserProvisionsPage';
