@@ -18,6 +18,7 @@ const {
   getOrganisationCohort,
   listOrganisationContractPeriods,
   listOrganisationCohorts,
+  listOrganisationGroups,
   listOrganisations,
   listOrganisationUserProvisions,
   listOrganisationUsers,
@@ -326,6 +327,29 @@ describe('organisation services', () => {
         },
       ],
     });
+  });
+
+  it('lists the unified organisation groups', async () => {
+    const response = await listOrganisationGroups(
+      { organisationId },
+      {
+        page: 1,
+        pageSize: 20,
+        order: 'name',
+        dir: SortDirection.Ascending,
+      },
+    );
+
+    expect(response.context.totalRecords).toBe(1);
+    expect(response.data).toEqual([
+      {
+        id: groupId,
+        name: 'Clinical Practice A',
+        status: 'active',
+        provisioningMethod: undefined,
+        sourceExternalId: undefined,
+      },
+    ]);
   });
 
   it('lists provisioned users independently', async () => {

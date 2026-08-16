@@ -23,6 +23,7 @@ import type {
   OrganisationCohortDetailQueryResult,
   OrganisationDetailQueryResult,
   OrganisationContractPeriodsQueryResult,
+  OrganisationGroupsQueryResult,
   OrganisationMembershipsQueryResult,
   OrganisationSummaryQueryResult,
   OrganisationUserProvisionsQueryResult,
@@ -84,20 +85,19 @@ export function mapOrganisationCohort(
   return {
     ...mapOrganisationCohortSummary(record),
     organisation: mapOrganisationSummary(record.organisation),
-    groups: record.groups.map(mapGroupSummary),
+    groups: record.groups.map(mapOrganisationGroupSummary),
     learners,
     createdAt: mapDateTime(record.created_at),
     updatedAt: mapDateTime(record.updated_at),
   };
 }
 
-function mapGroupSummary(record: {
-  id: string;
-  name: string;
-  provisioning_method: 'scim' | 'csv' | 'manual' | null;
-  source_external_id: string | null;
-  status: 'active' | 'archived';
-}): OrganisationGroupSummary {
+export function mapOrganisationGroupSummary(
+  record:
+    | OrganisationGroupsQueryResult[number]
+    | OrganisationDetailQueryResult['groups'][number]
+    | OrganisationCohortDetailQueryResult['groups'][number],
+): OrganisationGroupSummary {
   return {
     id: record.id,
     name: record.name,
@@ -117,7 +117,7 @@ export function mapOrganisation(
     ...mapOrganisationSummary(record),
     contractPeriods: record.contractPeriods.map(mapOrganisationContractPeriod),
     cohorts: record.cohorts.map(mapOrganisationCohortSummary),
-    groups: record.groups.map(mapGroupSummary),
+    groups: record.groups.map(mapOrganisationGroupSummary),
     usersSummary,
     userProvisionsSummary,
     createdAt: mapDateTime(record.created_at),
@@ -160,7 +160,9 @@ export function mapOrganisationUserProvision(
           status: record.cohort.status as GroupStatus,
         }
       : undefined,
-    groups: record.groupLinks.map(({ group }) => mapGroupSummary(group)),
+    groups: record.groupLinks.map(({ group }) =>
+      mapOrganisationGroupSummary(group),
+    ),
     organisationUserId: record.organisation_user_id ?? undefined,
     provisioningMethod: record.provisioning_method as ProvisioningMethod,
     sourceExternalId: record.source_external_id ?? undefined,

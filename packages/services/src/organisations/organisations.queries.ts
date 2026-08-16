@@ -4,6 +4,7 @@ import type {
   GroupStatus,
   OrganisationRole,
   OrganisationUserStatus,
+  ProvisioningMethod,
   ProvisioningStatus,
 } from '@hektor/types';
 
@@ -150,6 +151,40 @@ export function buildOrganisationCohortDetailQuery(
 
 export type OrganisationCohortDetailQueryResult = QueryData<
   ReturnType<typeof buildOrganisationCohortDetailQuery>
+>;
+
+export function buildOrganisationGroupsQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  options: {
+    page: number;
+    pageSize: number;
+    order: 'name' | 'createdAt';
+    dir: 'asc' | 'desc';
+    status?: GroupStatus;
+    provisioningMethod?: ProvisioningMethod;
+  },
+) {
+  const first = (options.page - 1) * options.pageSize;
+  const order = options.order === 'createdAt' ? 'created_at' : 'name';
+  let query = client
+    .from('organisation_groups')
+    .select('id, name, status, provisioning_method, source_external_id', {
+      count: 'exact',
+    })
+    .eq('organisation_id', organisationId)
+    .order(order, { ascending: options.dir === 'asc' })
+    .range(first, first + options.pageSize - 1);
+
+  if (options.status) query = query.eq('status', options.status);
+  if (options.provisioningMethod) {
+    query = query.eq('provisioning_method', options.provisioningMethod);
+  }
+  return query;
+}
+
+export type OrganisationGroupsQueryResult = QueryData<
+  ReturnType<typeof buildOrganisationGroupsQuery>
 >;
 
 export function buildOrganisationMembershipsCountQuery(

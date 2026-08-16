@@ -9,6 +9,7 @@ describe('AdminOrganisationDetailPage', () => {
       <AdminOrganisationDetailPage
         cohortsHref="/admin/organisations/organisation-id/cohorts"
         contractPeriodsHref="/admin/organisations/organisation-id/contract-periods"
+        groupsHref="/admin/organisations/organisation-id/groups"
         organisation={{
           id: 'organisation-id',
           name: 'Northbridge University',
@@ -63,6 +64,9 @@ describe('AdminOrganisationDetailPage', () => {
     expect(screen.getByText('Awaiting account linking')).toBeTruthy();
     expect(screen.getByText('Clinical Practice A')).toBeTruthy();
     expect(screen.getByText('September 2026')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'View groups' }).getAttribute('href'),
+    ).toBe('/admin/organisations/organisation-id/groups');
     expect(
       screen.getByRole('link', { name: 'View cohorts' }).getAttribute('href'),
     ).toBe('/admin/organisations/organisation-id/cohorts');

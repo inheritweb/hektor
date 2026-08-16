@@ -9,6 +9,7 @@ import {
   getOrganisationCohort,
   listOrganisationContractPeriods,
   listOrganisationCohorts,
+  listOrganisationGroups,
   listOrganisationUserProvisions,
   listOrganisations,
   listOrganisationUsers,
@@ -239,6 +240,42 @@ describe('admin organisation API methods', () => {
     ).resolves.toEqual(response);
     expect(fetcher).toHaveBeenCalledWith(
       `https://hektor.test/api/admin/organisations/${organisationId}/cohorts/${cohortId}`,
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('requests paginated organisation groups', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const response = {
+      context: {
+        page: 1,
+        pageSize: 20,
+        totalRecords: 0,
+        sort: { order: 'name', dir: SortDirection.Ascending },
+      },
+      data: [],
+    };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json(response));
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+
+    await expect(
+      listOrganisationGroups(client, {
+        params: { organisationId },
+        query: {
+          page: 1,
+          pageSize: 20,
+          order: 'name',
+          dir: SortDirection.Ascending,
+        },
+      }),
+    ).resolves.toEqual(response);
+    expect(fetcher).toHaveBeenCalledWith(
+      `https://hektor.test/api/admin/organisations/${organisationId}/groups?page=1&pageSize=20&order=name&dir=asc`,
       expect.objectContaining({ method: 'GET' }),
     );
   });

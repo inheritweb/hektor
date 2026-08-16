@@ -8,6 +8,8 @@ export * from './AdminOrganisationCohortsPage';
 
 export * from './AdminOrganisationCohortDetailPage';
 
+export * from './AdminOrganisationGroupsPage';
+
 export * from './AdminOrganisationUsersPage';
 
 export * from './AdminOrganisationUserProvisionsPage';

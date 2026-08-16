@@ -9,6 +9,9 @@ import type {
   ListOrganisationCohortsParams,
   ListOrganisationCohortsQuery,
   ListOrganisationCohortsResponse,
+  ListOrganisationGroupsParams,
+  ListOrganisationGroupsQuery,
+  ListOrganisationGroupsResponse,
   ListOrganisationUserProvisionsParams,
   ListOrganisationUserProvisionsQuery,
   ListOrganisationUserProvisionsResponse,
@@ -34,6 +37,7 @@ import {
   mapOrganisationCohort,
   mapOrganisationContractPeriod,
   mapOrganisationCohortSummary,
+  mapOrganisationGroupSummary,
   mapOrganisationMembershipUserSummary,
   mapOrganisationSummary,
   mapOrganisationUserProvision,
@@ -43,6 +47,7 @@ import {
   buildOrganisationCohortDetailQuery,
   buildOrganisationContractPeriodsQuery,
   buildOrganisationCohortsQuery,
+  buildOrganisationGroupsQuery,
   buildOrganisationMembershipsCountQuery,
   buildOrganisationMembershipsQuery,
   buildOrganisationSummariesQuery,
@@ -354,6 +359,35 @@ export function createOrganisationsService(client: DatabaseClient) {
     return { data: mapOrganisationCohort(data, learners) };
   }
 
+  async function listOrganisationGroups(
+    params: ListOrganisationGroupsParams,
+    query: ListOrganisationGroupsQuery,
+  ): Promise<ListOrganisationGroupsResponse> {
+    const { data, error, count } = await buildOrganisationGroupsQuery(
+      client,
+      params.organisationId,
+      query,
+    );
+
+    if (error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to list organisation groups',
+        internalMessage: error.message,
+        cause: error,
+      });
+    }
+
+    return {
+      context: {
+        page: query.page,
+        pageSize: query.pageSize,
+        totalRecords: count ?? 0,
+        sort: { order: query.order, dir: query.dir },
+      },
+      data: data.map(mapOrganisationGroupSummary),
+    };
+  }
+
   async function listOrganisationUserProvisions(
     params: ListOrganisationUserProvisionsParams,
     query: ListOrganisationUserProvisionsQuery,
@@ -408,6 +442,7 @@ export function createOrganisationsService(client: DatabaseClient) {
     getOrganisationCohort,
     getOrganisation,
     listOrganisationCohorts,
+    listOrganisationGroups,
     listOrganisationContractPeriods,
     listOrganisations,
     listOrganisationUserProvisions,

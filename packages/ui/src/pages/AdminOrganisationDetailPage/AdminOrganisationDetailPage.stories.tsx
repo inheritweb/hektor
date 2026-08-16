@@ -53,6 +53,7 @@ const meta = {
   args: {
     cohortsHref: `/admin/organisations/${organisation.id}/cohorts`,
     contractPeriodsHref: `/admin/organisations/${organisation.id}/contract-periods`,
+    groupsHref: `/admin/organisations/${organisation.id}/groups`,
     organisation,
     provisionsHref: `/admin/organisations/${organisation.id}/provisioned-users`,
     usersHref: `/admin/organisations/${organisation.id}/users`,
