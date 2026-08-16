@@ -1,4 +1,5 @@
 import { createTableColumn } from '../../atoms/Table';
+import { NavigationLink } from '../../context';
 import { Grid } from '../../organisms/Grid';
 
 export interface AdminOrganisationGroupListItemViewModel {
@@ -12,6 +13,7 @@ export interface AdminOrganisationGroupListItemViewModel {
 export interface AdminOrganisationGroupsPageProps {
   error?: string;
   groups: readonly AdminOrganisationGroupListItemViewModel[];
+  getGroupHref?: (group: AdminOrganisationGroupListItemViewModel) => string;
   loading?: boolean;
   onPageChange: (page: number) => void;
   organisationName: string;
@@ -51,6 +53,7 @@ const columns = [
 export function AdminOrganisationGroupsPage({
   error,
   groups,
+  getGroupHref,
   loading,
   onPageChange,
   organisationName,
@@ -58,10 +61,28 @@ export function AdminOrganisationGroupsPage({
   pageSize,
   totalRecords,
 }: AdminOrganisationGroupsPageProps) {
+  const linkedColumns = getGroupHref
+    ? [
+        ...columns,
+        column.display('actions', {
+          align: 'right',
+          className: 'last:pr-3',
+          header: <span className="sr-only">Actions</span>,
+          cell: ({ row }) => (
+            <NavigationLink
+              className="inline-flex rounded px-2 py-1 font-semibold text-primary hover:bg-accent/20 hover:underline"
+              href={getGroupHref(row)}
+            >
+              View
+            </NavigationLink>
+          ),
+        }),
+      ]
+    : columns;
   return (
     <Grid
       caption={`Groups for ${organisationName}`}
-      columns={columns}
+      columns={linkedColumns}
       empty="This organisation has no groups."
       error={error}
       getRowId={(group) => group.id}

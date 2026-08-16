@@ -16,6 +16,7 @@ const client = createIntegrationDatabaseClient();
 const {
   getOrganisation,
   getOrganisationCohort,
+  getOrganisationGroup,
   listOrganisationContractPeriods,
   listOrganisationCohorts,
   listOrganisationGroups,
@@ -140,6 +141,24 @@ describe('organisation services', () => {
       });
 
     if (provisionError) throw provisionError;
+
+    const { error: groupUsersError } = await client
+      .from('organisation_group_users')
+      .insert({
+        organisation_id: organisationId,
+        organisation_group_id: groupId,
+        organisation_user_id: learnerMembershipId,
+      });
+    if (groupUsersError) throw groupUsersError;
+
+    const { error: provisionedGroupUsersError } = await client
+      .from('organisation_provisioned_group_users')
+      .insert({
+        organisation_id: organisationId,
+        organisation_group_id: groupId,
+        organisation_user_provision_id: provisionId,
+      });
+    if (provisionedGroupUsersError) throw provisionedGroupUsersError;
   });
 
   afterAll(async () => {
@@ -350,6 +369,32 @@ describe('organisation services', () => {
         sourceExternalId: undefined,
       },
     ]);
+  });
+
+  it('loads linked and provisioned group members independently', async () => {
+    const response = await getOrganisationGroup({
+      groupId,
+      organisationId,
+    });
+
+    expect(response.data).toMatchObject({
+      id: groupId,
+      cohort: { id: cohortId },
+      users: [
+        {
+          id: learnerMembershipId,
+          user: { id: learnerUserId, displayName: 'Integration Learner' },
+        },
+      ],
+      provisionedUsers: [
+        {
+          id: provisionId,
+          provisionedDisplayName: 'Pending Learner',
+          provisionedUserName: 'pending@integration.example',
+          status: 'pending',
+        },
+      ],
+    });
   });
 
   it('lists provisioned users independently', async () => {

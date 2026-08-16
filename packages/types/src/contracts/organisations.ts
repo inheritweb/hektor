@@ -6,6 +6,8 @@ import {
   type OrganisationCohort,
   type OrganisationContractPeriod,
   type OrganisationGroupSummary,
+  type OrganisationGroup,
+  type OrganisationGroupProvisionedUserSummary,
   type OrganisationMembershipUserSummary,
   type OrganisationSummary,
   type OrganisationUserProvision,
@@ -53,6 +55,15 @@ export const organisationGroupSummarySchema = z.object({
   sourceExternalId: z.string().min(1).optional(),
 }) satisfies z.ZodType<OrganisationGroupSummary>;
 
+export const organisationGroupProvisionedUserSummarySchema = z.object({
+  id: z.uuid(),
+  provisioningMethod: z.enum(ProvisioningMethod),
+  provisionedDisplayName: z.string().min(1).optional(),
+  provisionedRole: z.enum(OrganisationRole),
+  provisionedUserName: z.string().min(1),
+  status: z.enum(ProvisioningStatus),
+}) satisfies z.ZodType<OrganisationGroupProvisionedUserSummary>;
+
 export const organisationUsersSummarySchema = z.object({
   total: z.number().int().nonnegative(),
   learners: z.number().int().nonnegative(),
@@ -87,6 +98,22 @@ export const organisationCohortSchema = z.object({
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 }) satisfies z.ZodType<OrganisationCohort>;
+
+export const organisationGroupSchema = z.object({
+  id: z.uuid(),
+  name: z.string().min(1),
+  status: z.enum(GroupStatus),
+  organisation: organisationSummarySchema,
+  cohort: organisationCohortSummarySchema.optional(),
+  users: z.array(organisationMembershipUserSummarySchema),
+  provisionedUsers: z.array(organisationGroupProvisionedUserSummarySchema),
+  provisioningMethod: z.enum(ProvisioningMethod).optional(),
+  sourceExternalId: z.string().min(1).optional(),
+  lastSynchronizedAt: z.iso.datetime().optional(),
+  sourceDeletedAt: z.iso.datetime().optional(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+}) satisfies z.ZodType<OrganisationGroup>;
 
 export const organisationUserProvisionSchema = z.object({
   id: z.uuid(),
@@ -198,6 +225,14 @@ export const listOrganisationGroupsContract = defineContract({
   ),
 });
 
+export const getOrganisationGroupContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/organisations/:organisationId/groups/:groupId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), groupId: z.uuid() }),
+  output: hektorResponseSchema(organisationGroupSchema),
+});
+
 export const listOrganisationUsersContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/users',
@@ -288,6 +323,14 @@ export type ListOrganisationGroupsQuery = ContractQuery<
 
 export type ListOrganisationGroupsResponse = ContractOutput<
   typeof listOrganisationGroupsContract
+>;
+
+export type GetOrganisationGroupParams = ContractParams<
+  typeof getOrganisationGroupContract
+>;
+
+export type GetOrganisationGroupResponse = ContractOutput<
+  typeof getOrganisationGroupContract
 >;
 
 export type ListOrganisationUsersParams = ContractParams<

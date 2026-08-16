@@ -100,12 +100,22 @@ export interface OrganisationGroup {
   organisation: OrganisationSummary;
   cohort?: OrganisationCohortSummary;
   users: OrganisationMembershipUserSummary[];
+  provisionedUsers: OrganisationGroupProvisionedUserSummary[];
   provisioningMethod?: ProvisioningMethod;
   sourceExternalId?: string;
   lastSynchronizedAt?: string;
   sourceDeletedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface OrganisationGroupProvisionedUserSummary {
+  id: string;
+  provisioningMethod: ProvisioningMethod;
+  provisionedDisplayName?: string;
+  provisionedRole: OrganisationRole;
+  provisionedUserName: string;
+  status: ProvisioningStatus;
 }
 
 export interface OrganisationMembership {

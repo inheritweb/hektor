@@ -3,6 +3,8 @@ import type {
   GetOrganisationResponse,
   GetOrganisationCohortParams,
   GetOrganisationCohortResponse,
+  GetOrganisationGroupParams,
+  GetOrganisationGroupResponse,
   ListOrganisationContractPeriodsParams,
   ListOrganisationContractPeriodsQuery,
   ListOrganisationContractPeriodsResponse,
@@ -38,6 +40,7 @@ import {
   mapOrganisationContractPeriod,
   mapOrganisationCohortSummary,
   mapOrganisationGroupSummary,
+  mapOrganisationGroup,
   mapOrganisationMembershipUserSummary,
   mapOrganisationSummary,
   mapOrganisationUserProvision,
@@ -48,6 +51,7 @@ import {
   buildOrganisationContractPeriodsQuery,
   buildOrganisationCohortsQuery,
   buildOrganisationGroupsQuery,
+  buildOrganisationGroupDetailQuery,
   buildOrganisationMembershipsCountQuery,
   buildOrganisationMembershipsQuery,
   buildOrganisationSummariesQuery,
@@ -388,6 +392,52 @@ export function createOrganisationsService(client: DatabaseClient) {
     };
   }
 
+  async function getOrganisationGroup(
+    params: GetOrganisationGroupParams,
+  ): Promise<GetOrganisationGroupResponse> {
+    const { data, error } = await buildOrganisationGroupDetailQuery(
+      client,
+      params.organisationId,
+      params.groupId,
+    );
+
+    if (error) {
+      throw createServiceError(
+        error.code === 'PGRST116'
+          ? HektorErrorCode.NotFound
+          : HektorErrorCode.InternalServerError,
+        {
+          message:
+            error.code === 'PGRST116'
+              ? 'Organisation group not found'
+              : 'Unable to get organisation group',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    const users = await Promise.all(
+      data.userLinks.map(async ({ membership }) => {
+        const { data: authData, error: authError } =
+          await client.auth.admin.getUserById(membership.user_id);
+        if (authError) {
+          throw createServiceError(HektorErrorCode.InternalServerError, {
+            message: 'Unable to get organisation group',
+            internalMessage: authError.message,
+            cause: authError,
+          });
+        }
+        return mapOrganisationMembershipUserSummary(
+          membership,
+          mapUserSummary(authData.user),
+        );
+      }),
+    );
+
+    return { data: mapOrganisationGroup(data, users) };
+  }
+
   async function listOrganisationUserProvisions(
     params: ListOrganisationUserProvisionsParams,
     query: ListOrganisationUserProvisionsQuery,
@@ -440,6 +490,7 @@ export function createOrganisationsService(client: DatabaseClient) {
 
   return {
     getOrganisationCohort,
+    getOrganisationGroup,
     getOrganisation,
     listOrganisationCohorts,
     listOrganisationGroups,

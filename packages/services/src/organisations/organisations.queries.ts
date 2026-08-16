@@ -187,6 +187,39 @@ export type OrganisationGroupsQueryResult = QueryData<
   ReturnType<typeof buildOrganisationGroupsQuery>
 >;
 
+export function buildOrganisationGroupDetailQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  groupId: string,
+) {
+  return client
+    .from('organisation_groups')
+    .select(
+      `
+      id, name, status, provisioning_method, source_external_id,
+      last_synchronized_at, source_deleted_at, created_at, updated_at,
+      organisation:organisations (id, name, slug, status),
+      cohort:organisation_cohorts (id, name, starts_on, ends_on, status),
+      userLinks:organisation_group_users (
+        membership:organisation_users (id, user_id, role, status)
+      ),
+      provisionLinks:organisation_provisioned_group_users (
+        provision:organisation_user_provisions (
+          id, provisioning_method, provisioned_user_name,
+          provisioned_display_name, provisioned_role, status
+        )
+      )
+    `,
+    )
+    .eq('organisation_id', organisationId)
+    .eq('id', groupId)
+    .single();
+}
+
+export type OrganisationGroupDetailQueryResult = QueryData<
+  ReturnType<typeof buildOrganisationGroupDetailQuery>
+>;
+
 export function buildOrganisationMembershipsCountQuery(
   client: DatabaseClient,
   organisationId: string,

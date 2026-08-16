@@ -4,6 +4,7 @@ export {
   mapOrganisationContractPeriod,
   mapOrganisationCohortSummary,
   mapOrganisationGroupSummary,
+  mapOrganisationGroup,
   mapOrganisationSummary,
 } from './organisations.mappers';
 
@@ -13,6 +14,7 @@ export {
   buildOrganisationContractPeriodsQuery,
   buildOrganisationCohortsQuery,
   buildOrganisationGroupsQuery,
+  buildOrganisationGroupDetailQuery,
   buildOrganisationSummariesQuery,
 } from './organisations.queries';
 

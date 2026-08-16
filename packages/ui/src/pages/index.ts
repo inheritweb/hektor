@@ -10,6 +10,8 @@ export * from './AdminOrganisationCohortDetailPage';
 
 export * from './AdminOrganisationGroupsPage';
 
+export * from './AdminOrganisationGroupDetailPage';
+
 export * from './AdminOrganisationUsersPage';
 
 export * from './AdminOrganisationUserProvisionsPage';

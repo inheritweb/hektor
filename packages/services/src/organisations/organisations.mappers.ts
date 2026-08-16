@@ -3,6 +3,8 @@ import {
   type OrganisationCohort,
   type OrganisationCohortSummary,
   type OrganisationContractPeriod,
+  type OrganisationGroup,
+  type OrganisationGroupProvisionedUserSummary,
   type OrganisationGroupSummary,
   type OrganisationMembershipUserSummary,
   type OrganisationSummary,
@@ -24,6 +26,7 @@ import type {
   OrganisationDetailQueryResult,
   OrganisationContractPeriodsQueryResult,
   OrganisationGroupsQueryResult,
+  OrganisationGroupDetailQueryResult,
   OrganisationMembershipsQueryResult,
   OrganisationSummaryQueryResult,
   OrganisationUserProvisionsQueryResult,
@@ -105,6 +108,39 @@ export function mapOrganisationGroupSummary(
     provisioningMethod:
       (record.provisioning_method as ProvisioningMethod | null) ?? undefined,
     sourceExternalId: record.source_external_id ?? undefined,
+  };
+}
+
+export function mapOrganisationGroup(
+  record: OrganisationGroupDetailQueryResult,
+  users: OrganisationMembershipUserSummary[],
+): OrganisationGroup {
+  const provisionedUsers: OrganisationGroupProvisionedUserSummary[] =
+    record.provisionLinks.map(({ provision }) => ({
+      id: provision.id,
+      provisioningMethod: provision.provisioning_method as ProvisioningMethod,
+      provisionedDisplayName: provision.provisioned_display_name ?? undefined,
+      provisionedRole: provision.provisioned_role as OrganisationRole,
+      provisionedUserName: provision.provisioned_user_name,
+      status: provision.status as ProvisioningStatus,
+    }));
+
+  return {
+    ...mapOrganisationGroupSummary(record),
+    organisation: mapOrganisationSummary(record.organisation),
+    cohort: record.cohort
+      ? mapOrganisationCohortSummary(record.cohort)
+      : undefined,
+    users,
+    provisionedUsers,
+    lastSynchronizedAt: record.last_synchronized_at
+      ? mapDateTime(record.last_synchronized_at)
+      : undefined,
+    sourceDeletedAt: record.source_deleted_at
+      ? mapDateTime(record.source_deleted_at)
+      : undefined,
+    createdAt: mapDateTime(record.created_at),
+    updatedAt: mapDateTime(record.updated_at),
   };
 }
 

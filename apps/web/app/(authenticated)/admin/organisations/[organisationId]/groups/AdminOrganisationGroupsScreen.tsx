@@ -51,6 +51,9 @@ export function AdminOrganisationGroupsScreen({
     <AdminOrganisationGroupsPage
       error={groups.error?.message ?? organisation.error?.message}
       groups={groups.data?.data ?? []}
+      getGroupHref={(group) =>
+        `/admin/organisations/${organisationId}/groups/${group.id}`
+      }
       loading={groups.isPending || organisation.isPending}
       onPageChange={onPageChange}
       organisationName={organisation.data?.data.name ?? 'Organisation'}
