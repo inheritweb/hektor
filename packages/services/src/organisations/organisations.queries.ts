@@ -126,6 +126,32 @@ export type OrganisationCohortsQueryResult = QueryData<
   ReturnType<typeof buildOrganisationCohortsQuery>
 >;
 
+export function buildOrganisationCohortDetailQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  cohortId: string,
+) {
+  return client
+    .from('organisation_cohorts')
+    .select(
+      `
+      id, name, starts_on, ends_on, status, created_at, updated_at,
+      organisation:organisations (id, name, slug, status),
+      groups:organisation_groups (
+        id, name, status, provisioning_method, source_external_id
+      ),
+      memberships:organisation_users (id, user_id, role, status)
+    `,
+    )
+    .eq('organisation_id', organisationId)
+    .eq('id', cohortId)
+    .single();
+}
+
+export type OrganisationCohortDetailQueryResult = QueryData<
+  ReturnType<typeof buildOrganisationCohortDetailQuery>
+>;
+
 export function buildOrganisationMembershipsCountQuery(
   client: DatabaseClient,
   organisationId: string,

@@ -6,6 +6,7 @@ import { SortDirection } from '@hektor/types/contracts';
 import { Client } from './client';
 import {
   getOrganisation,
+  getOrganisationCohort,
   listOrganisationContractPeriods,
   listOrganisationCohorts,
   listOrganisationUserProvisions,
@@ -197,6 +198,47 @@ describe('admin organisation API methods', () => {
     ).resolves.toEqual(response);
     expect(fetcher).toHaveBeenCalledWith(
       `https://hektor.test/api/admin/organisations/${organisationId}/cohorts?page=1&pageSize=20&order=startsOn&dir=desc`,
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('interpolates organisation and cohort ids for cohort detail', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const cohortId = '03d946de-8938-46d8-93a4-e3917df0928e';
+    const response = {
+      data: {
+        id: cohortId,
+        name: 'September 2026',
+        startsOn: '2026-09-01',
+        endsOn: '2029-08-31',
+        status: 'active',
+        organisation: {
+          id: organisationId,
+          name: 'Northbridge University',
+          slug: 'northbridge-university',
+          status: 'active',
+        },
+        groups: [],
+        learners: [],
+        createdAt: '2026-08-16T10:00:00.000Z',
+        updatedAt: '2026-08-16T10:00:00.000Z',
+      },
+    };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json(response));
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+
+    await expect(
+      getOrganisationCohort(client, {
+        params: { cohortId, organisationId },
+      }),
+    ).resolves.toEqual(response);
+    expect(fetcher).toHaveBeenCalledWith(
+      `https://hektor.test/api/admin/organisations/${organisationId}/cohorts/${cohortId}`,
       expect.objectContaining({ method: 'GET' }),
     );
   });

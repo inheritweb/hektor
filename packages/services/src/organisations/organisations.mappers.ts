@@ -1,5 +1,6 @@
 import {
   type Organisation,
+  type OrganisationCohort,
   type OrganisationCohortSummary,
   type OrganisationContractPeriod,
   type OrganisationGroupSummary,
@@ -19,6 +20,7 @@ import {
 
 import type {
   OrganisationCohortsQueryResult,
+  OrganisationCohortDetailQueryResult,
   OrganisationDetailQueryResult,
   OrganisationContractPeriodsQueryResult,
   OrganisationMembershipsQueryResult,
@@ -75,6 +77,20 @@ export function mapOrganisationCohortSummary(
   };
 }
 
+export function mapOrganisationCohort(
+  record: OrganisationCohortDetailQueryResult,
+  learners: OrganisationMembershipUserSummary[],
+): OrganisationCohort {
+  return {
+    ...mapOrganisationCohortSummary(record),
+    organisation: mapOrganisationSummary(record.organisation),
+    groups: record.groups.map(mapGroupSummary),
+    learners,
+    createdAt: mapDateTime(record.created_at),
+    updatedAt: mapDateTime(record.updated_at),
+  };
+}
+
 function mapGroupSummary(record: {
   id: string;
   name: string;
@@ -110,7 +126,10 @@ export function mapOrganisation(
 }
 
 export function mapOrganisationMembershipUserSummary(
-  record: OrganisationMembershipsQueryResult[number],
+  record: Pick<
+    OrganisationMembershipsQueryResult[number],
+    'id' | 'role' | 'status'
+  >,
   user: UserSummary,
 ): OrganisationMembershipUserSummary {
   return {

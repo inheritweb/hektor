@@ -13,12 +13,16 @@ import {
   UserWidget,
 } from '@hektor/ui/organisms';
 import { PaperTemplate } from '@hektor/ui/templates';
-import { useAdminGetOrganisation } from '@hektor/query/organisations';
+import {
+  useAdminGetOrganisation,
+  useAdminGetOrganisationCohort,
+} from '@hektor/query/organisations';
 import { useGetCurrentUser } from '@hektor/query/users';
 
 export function breadcrumbsForPath(
   pathname: string,
   organisationName = 'Organisation',
+  cohortName = 'Cohort',
 ): GlobalToolbarBreadcrumb[] {
   if (pathname === '/') return [{ label: 'Home' }];
 
@@ -47,36 +51,48 @@ export function breadcrumbsForPath(
       home,
       { label: 'Admin' },
       { label: 'Organisations', href: '/admin/organisations' },
-      ...(pathname.endsWith('/cohorts')
+      ...(pathname.match(/\/cohorts\/[^/]+$/)
         ? [
             {
               label: organisationName,
-              href: pathname.slice(0, -8),
+              href: pathname.slice(0, pathname.lastIndexOf('/cohorts/')),
             },
-            { label: 'Cohorts' },
+            {
+              label: 'Cohorts',
+              href: pathname.slice(0, pathname.lastIndexOf('/')),
+            },
+            { label: cohortName },
           ]
-        : pathname.endsWith('/contract-periods')
+        : pathname.endsWith('/cohorts')
           ? [
               {
                 label: organisationName,
-                href: pathname.slice(0, -17),
+                href: pathname.slice(0, -8),
               },
-              { label: 'Contract periods' },
+              { label: 'Cohorts' },
             ]
-          : pathname.endsWith('/provisioned-users')
+          : pathname.endsWith('/contract-periods')
             ? [
                 {
                   label: organisationName,
-                  href: pathname.slice(0, -18),
+                  href: pathname.slice(0, -17),
                 },
-                { label: 'Provisioned users' },
+                { label: 'Contract periods' },
               ]
-            : pathname.endsWith('/users')
+            : pathname.endsWith('/provisioned-users')
               ? [
-                  { label: organisationName, href: pathname.slice(0, -6) },
-                  { label: 'Users' },
+                  {
+                    label: organisationName,
+                    href: pathname.slice(0, -18),
+                  },
+                  { label: 'Provisioned users' },
                 ]
-              : [{ label: organisationName }]),
+              : pathname.endsWith('/users')
+                ? [
+                    { label: organisationName, href: pathname.slice(0, -6) },
+                    { label: 'Users' },
+                  ]
+                : [{ label: organisationName }]),
     ];
   }
 
@@ -98,13 +114,24 @@ export function AuthenticatedShell({
   const organisationId = pathname.match(
     /^\/admin\/organisations\/([^/]+)/,
   )?.[1];
+  const cohortId = pathname.match(/\/cohorts\/([^/]+)$/)?.[1];
   const breadcrumbOrganisation = useAdminGetOrganisation(
     { params: { organisationId: organisationId ?? '' } },
     { enabled: Boolean(organisationId) },
   );
+  const breadcrumbCohort = useAdminGetOrganisationCohort(
+    {
+      params: {
+        cohortId: cohortId ?? '',
+        organisationId: organisationId ?? '',
+      },
+    },
+    { enabled: Boolean(cohortId && organisationId) },
+  );
   const breadcrumbs = breadcrumbsForPath(
     pathname,
     breadcrumbOrganisation.data?.data.name,
+    breadcrumbCohort.data?.data.name,
   );
   const currentUser = useGetCurrentUser();
   const [currentContextId, setCurrentContextId] = useState('personal');

@@ -1,6 +1,8 @@
 import type {
   GetOrganisationParams,
   GetOrganisationResponse,
+  GetOrganisationCohortParams,
+  GetOrganisationCohortResponse,
   ListOrganisationContractPeriodsParams,
   ListOrganisationContractPeriodsQuery,
   ListOrganisationContractPeriodsResponse,
@@ -29,6 +31,7 @@ import { mapUserSummary } from '../users/users.mappers';
 
 import {
   mapOrganisation,
+  mapOrganisationCohort,
   mapOrganisationContractPeriod,
   mapOrganisationCohortSummary,
   mapOrganisationMembershipUserSummary,
@@ -37,6 +40,7 @@ import {
 } from './organisations.mappers';
 import {
   buildOrganisationDetailQuery,
+  buildOrganisationCohortDetailQuery,
   buildOrganisationContractPeriodsQuery,
   buildOrganisationCohortsQuery,
   buildOrganisationMembershipsCountQuery,
@@ -302,6 +306,54 @@ export function createOrganisationsService(client: DatabaseClient) {
     };
   }
 
+  async function getOrganisationCohort(
+    params: GetOrganisationCohortParams,
+  ): Promise<GetOrganisationCohortResponse> {
+    const { data, error } = await buildOrganisationCohortDetailQuery(
+      client,
+      params.organisationId,
+      params.cohortId,
+    );
+
+    if (error) {
+      throw createServiceError(
+        error.code === 'PGRST116'
+          ? HektorErrorCode.NotFound
+          : HektorErrorCode.InternalServerError,
+        {
+          message:
+            error.code === 'PGRST116'
+              ? 'Organisation cohort not found'
+              : 'Unable to get organisation cohort',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    const learners = await Promise.all(
+      data.memberships
+        .filter((membership) => membership.role === OrganisationRole.Learner)
+        .map(async (membership) => {
+          const { data: authData, error: authError } =
+            await client.auth.admin.getUserById(membership.user_id);
+          if (authError) {
+            throw createServiceError(HektorErrorCode.InternalServerError, {
+              message: 'Unable to get organisation cohort',
+              internalMessage: authError.message,
+              cause: authError,
+            });
+          }
+          return mapOrganisationMembershipUserSummary(
+            membership,
+            mapUserSummary(authData.user),
+          );
+        }),
+    );
+
+    return { data: mapOrganisationCohort(data, learners) };
+  }
+
   async function listOrganisationUserProvisions(
     params: ListOrganisationUserProvisionsParams,
     query: ListOrganisationUserProvisionsQuery,
@@ -353,6 +405,7 @@ export function createOrganisationsService(client: DatabaseClient) {
   }
 
   return {
+    getOrganisationCohort,
     getOrganisation,
     listOrganisationCohorts,
     listOrganisationContractPeriods,

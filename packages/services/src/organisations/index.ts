@@ -1,5 +1,6 @@
 export {
   mapOrganisation,
+  mapOrganisationCohort,
   mapOrganisationContractPeriod,
   mapOrganisationCohortSummary,
   mapOrganisationSummary,
@@ -7,6 +8,7 @@ export {
 
 export {
   buildOrganisationDetailQuery,
+  buildOrganisationCohortDetailQuery,
   buildOrganisationContractPeriodsQuery,
   buildOrganisationCohortsQuery,
   buildOrganisationSummariesQuery,

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   type Organisation,
   type OrganisationCohortSummary,
+  type OrganisationCohort,
   type OrganisationContractPeriod,
   type OrganisationGroupSummary,
   type OrganisationMembershipUserSummary,
@@ -73,6 +74,19 @@ export const organisationMembershipUserSummarySchema = z.object({
   role: z.enum(OrganisationRole),
   status: z.enum(OrganisationUserStatus),
 }) satisfies z.ZodType<OrganisationMembershipUserSummary>;
+
+export const organisationCohortSchema = z.object({
+  id: z.uuid(),
+  name: z.string().min(1),
+  startsOn: z.iso.date(),
+  endsOn: z.iso.date(),
+  status: z.enum(GroupStatus),
+  organisation: organisationSummarySchema,
+  groups: z.array(organisationGroupSummarySchema),
+  learners: z.array(organisationMembershipUserSummarySchema),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+}) satisfies z.ZodType<OrganisationCohort>;
 
 export const organisationUserProvisionSchema = z.object({
   id: z.uuid(),
@@ -161,6 +175,14 @@ export const listOrganisationCohortsContract = defineContract({
   ),
 });
 
+export const getOrganisationCohortContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/organisations/:organisationId/cohorts/:cohortId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), cohortId: z.uuid() }),
+  output: hektorResponseSchema(organisationCohortSchema),
+});
+
 export const listOrganisationUsersContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/users',
@@ -231,6 +253,14 @@ export type ListOrganisationCohortsQuery = ContractQuery<
 
 export type ListOrganisationCohortsResponse = ContractOutput<
   typeof listOrganisationCohortsContract
+>;
+
+export type GetOrganisationCohortParams = ContractParams<
+  typeof getOrganisationCohortContract
+>;
+
+export type GetOrganisationCohortResponse = ContractOutput<
+  typeof getOrganisationCohortContract
 >;
 
 export type ListOrganisationUsersParams = ContractParams<

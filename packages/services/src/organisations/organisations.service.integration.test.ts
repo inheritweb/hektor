@@ -15,6 +15,7 @@ const client = createIntegrationDatabaseClient();
 
 const {
   getOrganisation,
+  getOrganisationCohort,
   listOrganisationContractPeriods,
   listOrganisationCohorts,
   listOrganisations,
@@ -301,6 +302,30 @@ describe('organisation services', () => {
         status: 'active',
       },
     ]);
+  });
+
+  it('loads a cohort with canonical learners and groups', async () => {
+    const response = await getOrganisationCohort({
+      cohortId,
+      organisationId,
+    });
+
+    expect(response.data).toMatchObject({
+      id: cohortId,
+      name: 'September 2026',
+      organisation: { id: organisationId },
+      groups: [{ id: groupId, name: 'Clinical Practice A' }],
+      learners: [
+        {
+          id: learnerMembershipId,
+          role: 'learner',
+          user: {
+            id: learnerUserId,
+            displayName: 'Integration Learner',
+          },
+        },
+      ],
+    });
   });
 
   it('lists provisioned users independently', async () => {
