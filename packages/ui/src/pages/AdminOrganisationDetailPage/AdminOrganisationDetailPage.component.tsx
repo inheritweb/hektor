@@ -61,6 +61,7 @@ export interface AdminOrganisationDetailViewModel {
 }
 
 export interface AdminOrganisationDetailPageProps {
+  cohortsHref: string;
   contractPeriodsHref: string;
   organisation: AdminOrganisationDetailViewModel;
   provisionsHref: string;
@@ -107,6 +108,7 @@ function CollectionSection({
 }
 
 export function AdminOrganisationDetailPage({
+  cohortsHref,
   contractPeriodsHref,
   organisation,
   provisionsHref,
@@ -232,6 +234,12 @@ export function AdminOrganisationDetailPage({
             No cohorts have been created.
           </p>
         )}
+        <NavigationLink
+          className={`${buttonVariants({ size: 'sm', variant: 'outline' })} mt-5`}
+          href={cohortsHref}
+        >
+          View cohorts
+        </NavigationLink>
       </CollectionSection>
 
       <CollectionSection

@@ -1,6 +1,7 @@
 import type { QueryData } from '@supabase/supabase-js';
 
 import type {
+  GroupStatus,
   OrganisationRole,
   OrganisationUserStatus,
   ProvisioningStatus,
@@ -90,6 +91,39 @@ export function buildOrganisationContractPeriodsQuery(
 
 export type OrganisationContractPeriodsQueryResult = QueryData<
   ReturnType<typeof buildOrganisationContractPeriodsQuery>
+>;
+
+export function buildOrganisationCohortsQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  options: {
+    page: number;
+    pageSize: number;
+    order: 'name' | 'startsOn' | 'endsOn';
+    dir: 'asc' | 'desc';
+    status?: GroupStatus;
+  },
+) {
+  const first = (options.page - 1) * options.pageSize;
+  const order =
+    options.order === 'endsOn'
+      ? 'ends_on'
+      : options.order === 'startsOn'
+        ? 'starts_on'
+        : 'name';
+  let query = client
+    .from('organisation_cohorts')
+    .select('id, name, starts_on, ends_on, status', { count: 'exact' })
+    .eq('organisation_id', organisationId)
+    .order(order, { ascending: options.dir === 'asc' })
+    .range(first, first + options.pageSize - 1);
+
+  if (options.status) query = query.eq('status', options.status);
+  return query;
+}
+
+export type OrganisationCohortsQueryResult = QueryData<
+  ReturnType<typeof buildOrganisationCohortsQuery>
 >;
 
 export function buildOrganisationMembershipsCountQuery(

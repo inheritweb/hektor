@@ -41,6 +41,7 @@ export function AdminOrganisationDetailScreen({
 
   return (
     <AdminOrganisationDetailPage
+      cohortsHref={`/admin/organisations/${organisationId}/cohorts`}
       contractPeriodsHref={`/admin/organisations/${organisationId}/contract-periods`}
       organisation={organisation.data.data}
       provisionsHref={`/admin/organisations/${organisationId}/provisioned-users`}

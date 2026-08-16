@@ -1,6 +1,7 @@
 import {
   getOrganisation,
   listOrganisationContractPeriods,
+  listOrganisationCohorts,
   listOrganisationUserProvisions,
   listOrganisationUsers,
   listOrganisations,
@@ -25,6 +26,11 @@ export const useAdminGetOrganisation = makeQuery(
 
 export const useAdminGetOrganisationContractPeriods = makeQuery(
   listOrganisationContractPeriods,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminGetOrganisationCohorts = makeQuery(
+  listOrganisationCohorts,
   ADMIN_ORGANISATIONS_QUERY_KEY,
 );
 

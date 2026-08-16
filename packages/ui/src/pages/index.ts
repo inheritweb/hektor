@@ -4,6 +4,8 @@ export * from './AdminOrganisationDetailPage';
 
 export * from './AdminOrganisationContractPeriodsPage';
 
+export * from './AdminOrganisationCohortsPage';
+
 export * from './AdminOrganisationUsersPage';
 
 export * from './AdminOrganisationUserProvisionsPage';

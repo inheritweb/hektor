@@ -7,6 +7,7 @@ describe('AdminOrganisationDetailPage', () => {
   it('presents organisation details, collections, and user counts', () => {
     render(
       <AdminOrganisationDetailPage
+        cohortsHref="/admin/organisations/organisation-id/cohorts"
         contractPeriodsHref="/admin/organisations/organisation-id/contract-periods"
         organisation={{
           id: 'organisation-id',
@@ -62,6 +63,9 @@ describe('AdminOrganisationDetailPage', () => {
     expect(screen.getByText('Awaiting account linking')).toBeTruthy();
     expect(screen.getByText('Clinical Practice A')).toBeTruthy();
     expect(screen.getByText('September 2026')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'View cohorts' }).getAttribute('href'),
+    ).toBe('/admin/organisations/organisation-id/cohorts');
     expect(
       screen
         .getByRole('link', { name: 'View contract periods' })

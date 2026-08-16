@@ -16,6 +16,7 @@ const client = createIntegrationDatabaseClient();
 const {
   getOrganisation,
   listOrganisationContractPeriods,
+  listOrganisationCohorts,
   listOrganisations,
   listOrganisationUserProvisions,
   listOrganisationUsers,
@@ -276,6 +277,29 @@ describe('organisation services', () => {
         endsOn: '2027-09-01',
         seats: { allowed: 100, activated: 0, remaining: 100 },
       }),
+    ]);
+  });
+
+  it('lists organisation cohorts', async () => {
+    const response = await listOrganisationCohorts(
+      { organisationId },
+      {
+        page: 1,
+        pageSize: 20,
+        order: 'startsOn',
+        dir: SortDirection.Descending,
+      },
+    );
+
+    expect(response.context.totalRecords).toBe(1);
+    expect(response.data).toEqual([
+      {
+        id: cohortId,
+        name: 'September 2026',
+        startsOn: '2026-09-01',
+        endsOn: '2029-09-01',
+        status: 'active',
+      },
     ]);
   });
 

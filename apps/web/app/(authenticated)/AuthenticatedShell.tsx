@@ -47,28 +47,36 @@ export function breadcrumbsForPath(
       home,
       { label: 'Admin' },
       { label: 'Organisations', href: '/admin/organisations' },
-      ...(pathname.endsWith('/contract-periods')
+      ...(pathname.endsWith('/cohorts')
         ? [
             {
               label: organisationName,
-              href: pathname.slice(0, -17),
+              href: pathname.slice(0, -8),
             },
-            { label: 'Contract periods' },
+            { label: 'Cohorts' },
           ]
-        : pathname.endsWith('/provisioned-users')
-        ? [
-            {
-              label: organisationName,
-              href: pathname.slice(0, -18),
-            },
-            { label: 'Provisioned users' },
-          ]
-        : pathname.endsWith('/users')
+        : pathname.endsWith('/contract-periods')
           ? [
-              { label: organisationName, href: pathname.slice(0, -6) },
-              { label: 'Users' },
+              {
+                label: organisationName,
+                href: pathname.slice(0, -17),
+              },
+              { label: 'Contract periods' },
             ]
-          : [{ label: organisationName }]),
+          : pathname.endsWith('/provisioned-users')
+            ? [
+                {
+                  label: organisationName,
+                  href: pathname.slice(0, -18),
+                },
+                { label: 'Provisioned users' },
+              ]
+            : pathname.endsWith('/users')
+              ? [
+                  { label: organisationName, href: pathname.slice(0, -6) },
+                  { label: 'Users' },
+                ]
+              : [{ label: organisationName }]),
     ];
   }
 

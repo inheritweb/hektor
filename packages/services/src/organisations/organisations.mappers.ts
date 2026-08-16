@@ -18,6 +18,7 @@ import {
 } from '@hektor/types';
 
 import type {
+  OrganisationCohortsQueryResult,
   OrganisationDetailQueryResult,
   OrganisationContractPeriodsQueryResult,
   OrganisationMembershipsQueryResult,
@@ -60,8 +61,10 @@ export function mapOrganisationContractPeriod(
   };
 }
 
-function mapCohortSummary(
-  record: OrganisationDetailQueryResult['cohorts'][number],
+export function mapOrganisationCohortSummary(
+  record:
+    | OrganisationDetailQueryResult['cohorts'][number]
+    | OrganisationCohortsQueryResult[number],
 ): OrganisationCohortSummary {
   return {
     id: record.id,
@@ -97,7 +100,7 @@ export function mapOrganisation(
   return {
     ...mapOrganisationSummary(record),
     contractPeriods: record.contractPeriods.map(mapOrganisationContractPeriod),
-    cohorts: record.cohorts.map(mapCohortSummary),
+    cohorts: record.cohorts.map(mapOrganisationCohortSummary),
     groups: record.groups.map(mapGroupSummary),
     usersSummary,
     userProvisionsSummary,

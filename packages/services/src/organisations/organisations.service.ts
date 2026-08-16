@@ -4,6 +4,9 @@ import type {
   ListOrganisationContractPeriodsParams,
   ListOrganisationContractPeriodsQuery,
   ListOrganisationContractPeriodsResponse,
+  ListOrganisationCohortsParams,
+  ListOrganisationCohortsQuery,
+  ListOrganisationCohortsResponse,
   ListOrganisationUserProvisionsParams,
   ListOrganisationUserProvisionsQuery,
   ListOrganisationUserProvisionsResponse,
@@ -27,6 +30,7 @@ import { mapUserSummary } from '../users/users.mappers';
 import {
   mapOrganisation,
   mapOrganisationContractPeriod,
+  mapOrganisationCohortSummary,
   mapOrganisationMembershipUserSummary,
   mapOrganisationSummary,
   mapOrganisationUserProvision,
@@ -34,6 +38,7 @@ import {
 import {
   buildOrganisationDetailQuery,
   buildOrganisationContractPeriodsQuery,
+  buildOrganisationCohortsQuery,
   buildOrganisationMembershipsCountQuery,
   buildOrganisationMembershipsQuery,
   buildOrganisationSummariesQuery,
@@ -268,6 +273,35 @@ export function createOrganisationsService(client: DatabaseClient) {
     };
   }
 
+  async function listOrganisationCohorts(
+    params: ListOrganisationCohortsParams,
+    query: ListOrganisationCohortsQuery,
+  ): Promise<ListOrganisationCohortsResponse> {
+    const { data, error, count } = await buildOrganisationCohortsQuery(
+      client,
+      params.organisationId,
+      query,
+    );
+
+    if (error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to list organisation cohorts',
+        internalMessage: error.message,
+        cause: error,
+      });
+    }
+
+    return {
+      context: {
+        page: query.page,
+        pageSize: query.pageSize,
+        totalRecords: count ?? 0,
+        sort: { order: query.order, dir: query.dir },
+      },
+      data: data.map(mapOrganisationCohortSummary),
+    };
+  }
+
   async function listOrganisationUserProvisions(
     params: ListOrganisationUserProvisionsParams,
     query: ListOrganisationUserProvisionsQuery,
@@ -320,6 +354,7 @@ export function createOrganisationsService(client: DatabaseClient) {
 
   return {
     getOrganisation,
+    listOrganisationCohorts,
     listOrganisationContractPeriods,
     listOrganisations,
     listOrganisationUserProvisions,
