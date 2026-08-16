@@ -8,12 +8,12 @@ const {
   createAdminSupabaseClientMock,
   createOrganisationsServiceMock,
   getUserMock,
-  listOrganisationUsersMock,
+  listOrganisationUserProvisionsMock,
 } = vi.hoisted(() => ({
   createAdminSupabaseClientMock: vi.fn(),
   createOrganisationsServiceMock: vi.fn(),
   getUserMock: vi.fn(),
-  listOrganisationUsersMock: vi.fn(),
+  listOrganisationUserProvisionsMock: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -32,17 +32,16 @@ vi.mock('@hektor/services/organisations', () => ({
 
 import { GET } from './route';
 
-describe('GET /api/admin/organisations/:organisationId/users', () => {
+describe('GET /api/admin/organisations/:organisationId/user-provisions', () => {
   beforeEach(() => {
-    createAdminSupabaseClientMock.mockReset();
     createOrganisationsServiceMock.mockReturnValue({
-      listOrganisationUsers: listOrganisationUsersMock,
+      listOrganisationUserProvisions: listOrganisationUserProvisionsMock,
     });
     getUserMock.mockReset();
-    listOrganisationUsersMock.mockReset();
+    listOrganisationUserProvisionsMock.mockReset();
   });
 
-  it('lists organisation users through the privileged service client', async () => {
+  it('lists provisions through the privileged service client', async () => {
     const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
     const adminClient = { auth: { admin: {} } };
     const responseData = {
@@ -61,17 +60,17 @@ describe('GET /api/admin/organisations/:organisationId/users', () => {
       error: null,
     });
     createAdminSupabaseClientMock.mockReturnValue(adminClient);
-    listOrganisationUsersMock.mockResolvedValue(responseData);
+    listOrganisationUserProvisionsMock.mockResolvedValue(responseData);
 
     const response = await callApiEndpoint(GET, {
-      path: `/api/admin/organisations/${organisationId}/users`,
+      path: `/api/admin/organisations/${organisationId}/user-provisions`,
       params: { organisationId },
     });
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual(responseData);
     expect(createOrganisationsServiceMock).toHaveBeenCalledWith(adminClient);
-    expect(listOrganisationUsersMock).toHaveBeenCalledWith(
+    expect(listOrganisationUserProvisionsMock).toHaveBeenCalledWith(
       { organisationId },
       {
         page: 1,

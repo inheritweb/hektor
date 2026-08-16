@@ -1,21 +1,27 @@
 import {
-  type CohortSummary,
-  GroupStatus,
   type Organisation,
+  type OrganisationCohortSummary,
   type OrganisationContractPeriod,
   type OrganisationGroupSummary,
   type OrganisationMembershipUserSummary,
   type OrganisationSummary,
+  type OrganisationUserProvision,
+  type OrganisationUserProvisionsSummary,
   type OrganisationUsersSummary,
-  OrganisationStatus,
+  GroupStatus,
   OrganisationRole,
+  OrganisationStatus,
   OrganisationUserStatus,
-  ScimResourceStatus,
+  ProvisioningMethod,
+  ProvisioningStatus,
+  type UserSummary,
 } from '@hektor/types';
+
 import type {
   OrganisationDetailQueryResult,
+  OrganisationMembershipsQueryResult,
   OrganisationSummaryQueryResult,
-  OrganisationUsersQueryResult,
+  OrganisationUserProvisionsQueryResult,
 } from './organisations.queries';
 
 function mapDateTime(value: string) {
@@ -53,7 +59,7 @@ function mapContractPeriod(
 
 function mapCohortSummary(
   record: OrganisationDetailQueryResult['cohorts'][number],
-): CohortSummary {
+): OrganisationCohortSummary {
   return {
     id: record.id,
     name: record.name,
@@ -63,19 +69,27 @@ function mapCohortSummary(
   };
 }
 
-function mapGroupSummary(
-  record: OrganisationDetailQueryResult['groups'][number],
-): OrganisationGroupSummary {
+function mapGroupSummary(record: {
+  id: string;
+  name: string;
+  provisioning_method: 'scim' | 'csv' | 'manual' | null;
+  source_external_id: string | null;
+  status: 'active' | 'archived';
+}): OrganisationGroupSummary {
   return {
     id: record.id,
     name: record.name,
     status: record.status as GroupStatus,
+    provisioningMethod:
+      (record.provisioning_method as ProvisioningMethod | null) ?? undefined,
+    sourceExternalId: record.source_external_id ?? undefined,
   };
 }
 
 export function mapOrganisation(
   record: OrganisationDetailQueryResult,
   usersSummary: OrganisationUsersSummary,
+  userProvisionsSummary: OrganisationUserProvisionsSummary,
 ): Organisation {
   return {
     ...mapOrganisationSummary(record),
@@ -83,22 +97,60 @@ export function mapOrganisation(
     cohorts: record.cohorts.map(mapCohortSummary),
     groups: record.groups.map(mapGroupSummary),
     usersSummary,
+    userProvisionsSummary,
     createdAt: mapDateTime(record.created_at),
     updatedAt: mapDateTime(record.updated_at),
   };
 }
 
-export function mapOrganisationUserSummary(
-  record: OrganisationUsersQueryResult[number],
+export function mapOrganisationMembershipUserSummary(
+  record: OrganisationMembershipsQueryResult[number],
+  user: UserSummary,
 ): OrganisationMembershipUserSummary {
   return {
     id: record.id,
-    userId: record.user_id ?? undefined,
-    userName: record.user_name,
-    displayName: record.display_name ?? undefined,
+    user,
     role: record.role as OrganisationRole,
     status: record.status as OrganisationUserStatus,
-    scimStatus: record.scim_status as ScimResourceStatus,
-    linked: record.user_id !== null,
+  };
+}
+
+export function mapOrganisationUserProvision(
+  record: OrganisationUserProvisionsQueryResult[number],
+): OrganisationUserProvision {
+  return {
+    id: record.id,
+    organisation: {
+      id: record.organisation.id,
+      name: record.organisation.name,
+      slug: record.organisation.slug,
+      status: record.organisation.status as OrganisationStatus,
+    },
+    cohort: record.cohort
+      ? {
+          id: record.cohort.id,
+          name: record.cohort.name,
+          startsOn: record.cohort.starts_on,
+          endsOn: record.cohort.ends_on,
+          status: record.cohort.status as GroupStatus,
+        }
+      : undefined,
+    groups: record.groupLinks.map(({ group }) => mapGroupSummary(group)),
+    organisationUserId: record.organisation_user_id ?? undefined,
+    provisioningMethod: record.provisioning_method as ProvisioningMethod,
+    sourceExternalId: record.source_external_id ?? undefined,
+    provisionedUserName: record.provisioned_user_name,
+    provisionedDisplayName: record.provisioned_display_name ?? undefined,
+    provisionedGivenName: record.provisioned_given_name ?? undefined,
+    provisionedFamilyName: record.provisioned_family_name ?? undefined,
+    provisionedRole: record.provisioned_role as OrganisationRole,
+    status: record.status as ProvisioningStatus,
+    lastSynchronizedAt: record.last_synchronized_at
+      ? mapDateTime(record.last_synchronized_at)
+      : undefined,
+    linkedAt: record.linked_at ? mapDateTime(record.linked_at) : undefined,
+    revokedAt: record.revoked_at ? mapDateTime(record.revoked_at) : undefined,
+    createdAt: mapDateTime(record.created_at),
+    updatedAt: mapDateTime(record.updated_at),
   };
 }

@@ -1,3 +1,5 @@
+import type { UserSummary } from './users';
+
 export enum OrganisationStatus {
   Active = 'active',
   Suspended = 'suspended',
@@ -15,11 +17,18 @@ export enum OrganisationUserStatus {
   Suspended = 'suspended',
 }
 
-export enum ScimResourceStatus {
-  NotManaged = 'not_managed',
-  Active = 'active',
+export enum ProvisioningMethod {
+  Scim = 'scim',
+  Csv = 'csv',
+  Manual = 'manual',
+}
+
+export enum ProvisioningStatus {
+  Pending = 'pending',
+  Linked = 'linked',
   Inactive = 'inactive',
-  Deleted = 'deleted',
+  Revoked = 'revoked',
+  Failed = 'failed',
 }
 
 export enum GroupStatus {
@@ -48,24 +57,30 @@ export interface Organisation {
   slug: string;
   status: OrganisationStatus;
   contractPeriods: OrganisationContractPeriod[];
-  cohorts: CohortSummary[];
+  cohorts: OrganisationCohortSummary[];
   groups: OrganisationGroupSummary[];
   usersSummary: OrganisationUsersSummary;
+  userProvisionsSummary: OrganisationUserProvisionsSummary;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface OrganisationUsersSummary {
   total: number;
-  linked: number;
-  awaitingAccountLinking: number;
   learners: number;
   tutors: number;
   organisationAdmins: number;
   suspended: number;
 }
 
-export interface Cohort {
+export interface OrganisationUserProvisionsSummary {
+  total: number;
+  pending: number;
+  inactive: number;
+  failed: number;
+}
+
+export interface OrganisationCohort {
   id: string;
   name: string;
   startsOn: string;
@@ -83,29 +98,24 @@ export interface OrganisationGroup {
   name: string;
   status: GroupStatus;
   organisation: OrganisationSummary;
-  cohort?: CohortSummary;
+  cohort?: OrganisationCohortSummary;
   users: OrganisationMembershipUserSummary[];
+  provisioningMethod?: ProvisioningMethod;
+  sourceExternalId?: string;
+  lastSynchronizedAt?: string;
+  sourceDeletedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface OrganisationMembership {
   id: string;
-  userId?: string;
-  userName: string;
-  displayName?: string;
+  user: UserSummary;
   role: OrganisationRole;
   status: OrganisationUserStatus;
-  scimStatus: ScimResourceStatus;
-  linked: boolean;
   organisation: OrganisationSummary;
-  cohort?: CohortSummary;
+  cohort?: OrganisationCohortSummary;
   groups: OrganisationGroupSummary[];
-  externalId?: string;
-  givenName?: string;
-  familyName?: string;
-  linkedAt?: string;
-  lastScimSyncAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -115,8 +125,34 @@ export interface OrganisationMembershipSummary {
   organisation: OrganisationSummary;
   role: OrganisationRole;
   status: OrganisationUserStatus;
-  provisioningStatus: ScimResourceStatus;
-  institutionalUserName: string;
+}
+
+export interface OrganisationMembershipUserSummary {
+  id: string;
+  user: UserSummary;
+  role: OrganisationRole;
+  status: OrganisationUserStatus;
+}
+
+export interface OrganisationUserProvision {
+  id: string;
+  organisation: OrganisationSummary;
+  cohort?: OrganisationCohortSummary;
+  groups: OrganisationGroupSummary[];
+  organisationUserId?: string;
+  provisioningMethod: ProvisioningMethod;
+  sourceExternalId?: string;
+  provisionedUserName: string;
+  provisionedDisplayName?: string;
+  provisionedGivenName?: string;
+  provisionedFamilyName?: string;
+  provisionedRole: OrganisationRole;
+  status: ProvisioningStatus;
+  lastSynchronizedAt?: string;
+  linkedAt?: string;
+  revokedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type OrganisationSummary = Pick<
@@ -124,24 +160,12 @@ export type OrganisationSummary = Pick<
   'id' | 'name' | 'slug' | 'status'
 >;
 
-export type CohortSummary = Pick<
-  Cohort,
+export type OrganisationCohortSummary = Pick<
+  OrganisationCohort,
   'id' | 'name' | 'startsOn' | 'endsOn' | 'status'
 >;
 
 export type OrganisationGroupSummary = Pick<
   OrganisationGroup,
-  'id' | 'name' | 'status'
->;
-
-export type OrganisationMembershipUserSummary = Pick<
-  OrganisationMembership,
-  | 'id'
-  | 'userId'
-  | 'userName'
-  | 'displayName'
-  | 'role'
-  | 'status'
-  | 'scimStatus'
-  | 'linked'
+  'id' | 'name' | 'status' | 'provisioningMethod' | 'sourceExternalId'
 >;

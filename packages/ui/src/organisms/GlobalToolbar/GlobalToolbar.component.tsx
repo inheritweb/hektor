@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { LuChevronRight, LuHouse } from 'react-icons/lu';
 
+import { NavigationLink } from '../../context';
+
 export interface GlobalToolbarBreadcrumb {
   href?: string;
   label: string;
@@ -30,7 +32,7 @@ export function GlobalToolbar({ breadcrumbs, tools }: GlobalToolbarProps) {
                   />
                 ) : null}
                 {breadcrumb.href && !current ? (
-                  <a
+                  <NavigationLink
                     aria-label={index === 0 ? breadcrumb.label : undefined}
                     className="text-muted-foreground/80 transition-colors hover:text-foreground"
                     href={breadcrumb.href}
@@ -40,7 +42,7 @@ export function GlobalToolbar({ breadcrumbs, tools }: GlobalToolbarProps) {
                     ) : (
                       breadcrumb.label
                     )}
-                  </a>
+                  </NavigationLink>
                 ) : (
                   <span
                     aria-label={index === 0 ? breadcrumb.label : undefined}

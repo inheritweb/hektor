@@ -5,7 +5,6 @@ import {
   type OrganisationMembershipSummary,
   OrganisationStatus,
   OrganisationUserStatus,
-  ScimResourceStatus,
 } from '../organisations';
 import {
   IdentityProvider,
@@ -44,8 +43,6 @@ export const organisationMembershipSummarySchema = z.object({
   }),
   role: z.enum(OrganisationRole),
   status: z.enum(OrganisationUserStatus),
-  provisioningStatus: z.enum(ScimResourceStatus),
-  institutionalUserName: z.string().min(1),
 }) satisfies z.ZodType<OrganisationMembershipSummary>;
 
 export const userSummarySchema = z.object({

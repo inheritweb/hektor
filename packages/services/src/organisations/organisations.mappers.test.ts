@@ -42,20 +42,29 @@ describe('organisation mappers', () => {
           id: 'group-id',
           name: 'Clinical Practice A',
           status: 'active',
+          provisioning_method: null,
+          source_external_id: null,
         },
       ],
     } satisfies OrganisationDetailQueryResult;
 
     expect(
-      mapOrganisation(record, {
-        total: 12,
-        linked: 10,
-        awaitingAccountLinking: 2,
-        learners: 8,
-        tutors: 3,
-        organisationAdmins: 1,
-        suspended: 1,
-      }),
+      mapOrganisation(
+        record,
+        {
+          total: 12,
+          learners: 8,
+          tutors: 3,
+          organisationAdmins: 1,
+          suspended: 1,
+        },
+        {
+          total: 2,
+          pending: 2,
+          inactive: 0,
+          failed: 0,
+        },
+      ),
     ).toEqual({
       id: 'organisation-id',
       name: 'Example University',
@@ -89,16 +98,22 @@ describe('organisation mappers', () => {
           id: 'group-id',
           name: 'Clinical Practice A',
           status: 'active',
+          provisioningMethod: undefined,
+          sourceExternalId: undefined,
         },
       ],
       usersSummary: {
         total: 12,
-        linked: 10,
-        awaitingAccountLinking: 2,
         learners: 8,
         tutors: 3,
         organisationAdmins: 1,
         suspended: 1,
+      },
+      userProvisionsSummary: {
+        total: 2,
+        pending: 2,
+        inactive: 0,
+        failed: 0,
       },
       createdAt: '2026-08-14T10:00:00.000Z',
       updatedAt: '2026-08-14T11:00:00.000Z',

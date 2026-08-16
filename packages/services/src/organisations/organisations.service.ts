@@ -1,29 +1,53 @@
 import type {
   GetOrganisationParams,
   GetOrganisationResponse,
-  ListOrganisationsQuery,
-  ListOrganisationsResponse,
+  ListOrganisationUserProvisionsParams,
+  ListOrganisationUserProvisionsQuery,
+  ListOrganisationUserProvisionsResponse,
   ListOrganisationUsersParams,
   ListOrganisationUsersQuery,
   ListOrganisationUsersResponse,
+  ListOrganisationsQuery,
+  ListOrganisationsResponse,
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
-import { OrganisationRole, OrganisationUserStatus } from '@hektor/types';
+import {
+  OrganisationRole,
+  OrganisationUserStatus,
+  ProvisioningStatus,
+} from '@hektor/types';
 
-import { createServiceError } from '../errors';
 import type { DatabaseClient } from '../database';
+import { createServiceError } from '../errors';
+import { mapUserSummary } from '../users/users.mappers';
 
 import {
   mapOrganisation,
+  mapOrganisationMembershipUserSummary,
   mapOrganisationSummary,
-  mapOrganisationUserSummary,
+  mapOrganisationUserProvision,
 } from './organisations.mappers';
 import {
   buildOrganisationDetailQuery,
+  buildOrganisationMembershipsCountQuery,
+  buildOrganisationMembershipsQuery,
   buildOrganisationSummariesQuery,
-  buildOrganisationUsersCountQuery,
-  buildOrganisationUsersQuery,
+  buildOrganisationUserProvisionsCountQuery,
+  buildOrganisationUserProvisionsQuery,
 } from './organisations.queries';
+
+function paginate<T>(items: T[], page: number, pageSize: number) {
+  const first = (page - 1) * pageSize;
+  return items.slice(first, first + pageSize);
+}
+
+function includesQuery(values: Array<string | undefined>, query?: string) {
+  if (!query) return true;
+  const normalized = query.toLocaleLowerCase();
+  return values.some((value) =>
+    value?.toLocaleLowerCase().includes(normalized),
+  );
+}
 
 export function createOrganisationsService(client: DatabaseClient) {
   async function listOrganisations(
@@ -58,29 +82,39 @@ export function createOrganisationsService(client: DatabaseClient) {
   ): Promise<GetOrganisationResponse> {
     const [
       detail,
-      total,
-      linked,
+      users,
       learners,
       tutors,
       organisationAdmins,
       suspended,
+      provisions,
+      pendingProvisions,
+      inactiveProvisions,
+      failedProvisions,
     ] = await Promise.all([
       buildOrganisationDetailQuery(client, params.organisationId),
-      buildOrganisationUsersCountQuery(client, params.organisationId),
-      buildOrganisationUsersCountQuery(client, params.organisationId, {
-        linked: true,
-      }),
-      buildOrganisationUsersCountQuery(client, params.organisationId, {
+      buildOrganisationMembershipsCountQuery(client, params.organisationId),
+      buildOrganisationMembershipsCountQuery(client, params.organisationId, {
         role: OrganisationRole.Learner,
       }),
-      buildOrganisationUsersCountQuery(client, params.organisationId, {
+      buildOrganisationMembershipsCountQuery(client, params.organisationId, {
         role: OrganisationRole.Tutor,
       }),
-      buildOrganisationUsersCountQuery(client, params.organisationId, {
+      buildOrganisationMembershipsCountQuery(client, params.organisationId, {
         role: OrganisationRole.OrganisationAdmin,
       }),
-      buildOrganisationUsersCountQuery(client, params.organisationId, {
+      buildOrganisationMembershipsCountQuery(client, params.organisationId, {
         status: OrganisationUserStatus.Suspended,
+      }),
+      buildOrganisationUserProvisionsCountQuery(client, params.organisationId),
+      buildOrganisationUserProvisionsCountQuery(client, params.organisationId, {
+        status: ProvisioningStatus.Pending,
+      }),
+      buildOrganisationUserProvisionsCountQuery(client, params.organisationId, {
+        status: ProvisioningStatus.Inactive,
+      }),
+      buildOrganisationUserProvisionsCountQuery(client, params.organisationId, {
+        status: ProvisioningStatus.Failed,
       }),
     ]);
     const { data, error } = detail;
@@ -101,14 +135,18 @@ export function createOrganisationsService(client: DatabaseClient) {
       );
     }
 
-    const countError = [
-      total,
-      linked,
+    const counts = [
+      users,
       learners,
       tutors,
       organisationAdmins,
       suspended,
-    ].find((result) => result.error)?.error;
+      provisions,
+      pendingProvisions,
+      inactiveProvisions,
+      failedProvisions,
+    ];
+    const countError = counts.find((result) => result.error)?.error;
 
     if (countError) {
       throw createServiceError(HektorErrorCode.InternalServerError, {
@@ -118,19 +156,23 @@ export function createOrganisationsService(client: DatabaseClient) {
       });
     }
 
-    const totalUsers = total.count ?? 0;
-    const linkedUsers = linked.count ?? 0;
-
     return {
-      data: mapOrganisation(data, {
-        total: totalUsers,
-        linked: linkedUsers,
-        awaitingAccountLinking: Math.max(totalUsers - linkedUsers, 0),
-        learners: learners.count ?? 0,
-        tutors: tutors.count ?? 0,
-        organisationAdmins: organisationAdmins.count ?? 0,
-        suspended: suspended.count ?? 0,
-      }),
+      data: mapOrganisation(
+        data,
+        {
+          total: users.count ?? 0,
+          learners: learners.count ?? 0,
+          tutors: tutors.count ?? 0,
+          organisationAdmins: organisationAdmins.count ?? 0,
+          suspended: suspended.count ?? 0,
+        },
+        {
+          total: provisions.count ?? 0,
+          pending: pendingProvisions.count ?? 0,
+          inactive: inactiveProvisions.count ?? 0,
+          failed: failedProvisions.count ?? 0,
+        },
+      ),
     };
   }
 
@@ -138,10 +180,10 @@ export function createOrganisationsService(client: DatabaseClient) {
     params: ListOrganisationUsersParams,
     query: ListOrganisationUsersQuery,
   ): Promise<ListOrganisationUsersResponse> {
-    const { data, error, count } = await buildOrganisationUsersQuery(
+    const { data, error } = await buildOrganisationMembershipsQuery(
       client,
       params.organisationId,
-      query,
+      { role: query.role, status: query.status },
     );
 
     if (error) {
@@ -152,16 +194,100 @@ export function createOrganisationsService(client: DatabaseClient) {
       });
     }
 
+    const users = await Promise.all(
+      data.map(async (membership) => {
+        const { data: authData, error: authError } =
+          await client.auth.admin.getUserById(membership.user_id);
+        if (authError) {
+          throw createServiceError(HektorErrorCode.InternalServerError, {
+            message: 'Unable to list organisation users',
+            internalMessage: authError.message,
+            cause: authError,
+          });
+        }
+        return mapOrganisationMembershipUserSummary(
+          membership,
+          mapUserSummary(authData.user),
+        );
+      }),
+    );
+    const filtered = users.filter(({ user }) =>
+      includesQuery([user.displayName, user.email], query.query),
+    );
+    const direction = query.dir === 'asc' ? 1 : -1;
+    filtered.sort((left, right) => {
+      const leftValue =
+        query.order === 'role' ? left.role : left.user.displayName;
+      const rightValue =
+        query.order === 'role' ? right.role : right.user.displayName;
+      return leftValue.localeCompare(rightValue) * direction;
+    });
+
     return {
       context: {
         page: query.page,
         pageSize: query.pageSize,
-        totalRecords: count ?? 0,
+        totalRecords: filtered.length,
         sort: { order: query.order, dir: query.dir },
       },
-      data: data.map(mapOrganisationUserSummary),
+      data: paginate(filtered, query.page, query.pageSize),
     };
   }
 
-  return { getOrganisation, listOrganisations, listOrganisationUsers };
+  async function listOrganisationUserProvisions(
+    params: ListOrganisationUserProvisionsParams,
+    query: ListOrganisationUserProvisionsQuery,
+  ): Promise<ListOrganisationUserProvisionsResponse> {
+    const { data, error } = await buildOrganisationUserProvisionsQuery(
+      client,
+      params.organisationId,
+      { role: query.role, status: query.status },
+    );
+
+    if (error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to list provisioned users',
+        internalMessage: error.message,
+        cause: error,
+      });
+    }
+
+    const provisions = data
+      .map(mapOrganisationUserProvision)
+      .filter((item) =>
+        includesQuery(
+          [item.provisionedDisplayName, item.provisionedUserName],
+          query.query,
+        ),
+      );
+    const direction = query.dir === 'asc' ? 1 : -1;
+    provisions.sort((left, right) => {
+      const leftValue =
+        query.order === 'role'
+          ? left.provisionedRole
+          : (left.provisionedDisplayName ?? left.provisionedUserName);
+      const rightValue =
+        query.order === 'role'
+          ? right.provisionedRole
+          : (right.provisionedDisplayName ?? right.provisionedUserName);
+      return leftValue.localeCompare(rightValue) * direction;
+    });
+
+    return {
+      context: {
+        page: query.page,
+        pageSize: query.pageSize,
+        totalRecords: provisions.length,
+        sort: { order: query.order, dir: query.dir },
+      },
+      data: paginate(provisions, query.page, query.pageSize),
+    };
+  }
+
+  return {
+    getOrganisation,
+    listOrganisations,
+    listOrganisationUserProvisions,
+    listOrganisationUsers,
+  };
 }

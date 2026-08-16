@@ -16,12 +16,16 @@ describe('AdminOrganisationDetailPage', () => {
           updatedAt: '2026-08-15T11:00:00.000Z',
           usersSummary: {
             total: 42,
-            linked: 38,
-            awaitingAccountLinking: 4,
             learners: 34,
             tutors: 6,
             organisationAdmins: 2,
             suspended: 1,
+          },
+          userProvisionsSummary: {
+            total: 4,
+            pending: 4,
+            inactive: 0,
+            failed: 0,
           },
           contractPeriods: [
             {
@@ -48,19 +52,22 @@ describe('AdminOrganisationDetailPage', () => {
             },
           ],
         }}
+        provisionsHref="/admin/organisations/organisation-id/provisioned-users"
         usersHref="/admin/organisations/organisation-id/users"
       />,
     );
 
-    expect(
-      screen.getByRole('heading', { name: 'Northbridge University' }),
-    ).toBeTruthy();
-    expect(screen.getByText('northbridge-university')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Users' })).toBeTruthy();
     expect(screen.getByText('Awaiting account linking')).toBeTruthy();
     expect(screen.getByText('Clinical Practice A')).toBeTruthy();
     expect(screen.getByText('September 2026')).toBeTruthy();
     expect(
       screen.getByRole('link', { name: 'View users' }).getAttribute('href'),
     ).toBe('/admin/organisations/organisation-id/users');
+    expect(
+      screen
+        .getByRole('link', { name: 'View provisioned users' })
+        .getAttribute('href'),
+    ).toBe('/admin/organisations/organisation-id/provisioned-users');
   });
 });

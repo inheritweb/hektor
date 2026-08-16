@@ -4,6 +4,8 @@ export * from './AdminOrganisationDetailPage';
 
 export * from './AdminOrganisationUsersPage';
 
+export * from './AdminOrganisationUserProvisionsPage';
+
 export * from './AdminUserDetailPage';
 
 export * from './AdminUsersPage';

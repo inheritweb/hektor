@@ -5,10 +5,10 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import {
   useAdminGetOrganisation,
-  useAdminGetOrganisationUsers,
+  useAdminGetOrganisationUserProvisions,
 } from '@hektor/query/organisations';
 import { SortDirection } from '@hektor/types/contracts';
-import { AdminOrganisationUsersPage } from '@hektor/ui/pages';
+import { AdminOrganisationUserProvisionsPage } from '@hektor/ui/pages';
 
 const PAGE_SIZE = 20;
 
@@ -17,7 +17,7 @@ function positiveInteger(value: string | null, fallback: number) {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-export function AdminOrganisationUsersScreen({
+export function AdminOrganisationUserProvisionsScreen({
   organisationId,
 }: {
   organisationId: string;
@@ -29,7 +29,7 @@ export function AdminOrganisationUsersScreen({
   const organisation = useAdminGetOrganisation({
     params: { organisationId },
   });
-  const users = useAdminGetOrganisationUsers({
+  const provisions = useAdminGetOrganisationUserProvisions({
     params: { organisationId },
     query: {
       page,
@@ -48,15 +48,15 @@ export function AdminOrganisationUsersScreen({
   };
 
   return (
-    <AdminOrganisationUsersPage
-      error={users.error?.message ?? organisation.error?.message}
-      loading={users.isPending || organisation.isPending}
+    <AdminOrganisationUserProvisionsPage
+      error={provisions.error?.message ?? organisation.error?.message}
+      loading={provisions.isPending || organisation.isPending}
       onPageChange={onPageChange}
       organisationName={organisation.data?.data.name ?? 'Organisation'}
       page={page}
       pageSize={PAGE_SIZE}
-      totalRecords={users.data?.context.totalRecords ?? 0}
-      users={users.data?.data ?? []}
+      provisions={provisions.data?.data ?? []}
+      totalRecords={provisions.data?.context.totalRecords ?? 0}
     />
   );
 }

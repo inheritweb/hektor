@@ -5,7 +5,6 @@ import {
   OrganisationStatus,
   OrganisationUserStatus,
   PlatformRole,
-  ScimResourceStatus,
   type CurrentUser,
   type UserIdentity,
   type UserListItem,
@@ -51,8 +50,18 @@ export function mapOrganisationMembershipSummary(
     },
     role: membership.role as OrganisationRole,
     status: membership.status as OrganisationUserStatus,
-    provisioningStatus: membership.scim_status as ScimResourceStatus,
-    institutionalUserName: membership.user_name,
+  };
+}
+
+export function mapUserSummary(user: User) {
+  const mapped = mapCurrentUser(user, []);
+
+  return {
+    id: mapped.id,
+    displayName: mapped.displayName,
+    platformRole: mapped.platformRole,
+    email: mapped.email,
+    avatarUrl: mapped.avatarUrl,
   };
 }
 

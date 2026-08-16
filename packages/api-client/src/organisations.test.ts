@@ -6,6 +6,7 @@ import { SortDirection } from '@hektor/types/contracts';
 import { Client } from './client';
 import {
   getOrganisation,
+  listOrganisationUserProvisions,
   listOrganisations,
   listOrganisationUsers,
 } from './organisations';
@@ -58,12 +59,16 @@ describe('admin organisation API methods', () => {
         groups: [],
         usersSummary: {
           total: 0,
-          linked: 0,
-          awaitingAccountLinking: 0,
           learners: 0,
           tutors: 0,
           organisationAdmins: 0,
           suspended: 0,
+        },
+        userProvisionsSummary: {
+          total: 0,
+          pending: 0,
+          inactive: 0,
+          failed: 0,
         },
         createdAt: '2026-08-15T10:00:00.000Z',
         updatedAt: '2026-08-15T11:00:00.000Z',
@@ -93,7 +98,7 @@ describe('admin organisation API methods', () => {
         page: 1,
         pageSize: 20,
         totalRecords: 0,
-        sort: { order: 'userName', dir: SortDirection.Ascending },
+        sort: { order: 'displayName', dir: SortDirection.Ascending },
       },
       data: [],
     };
@@ -111,13 +116,49 @@ describe('admin organisation API methods', () => {
         query: {
           page: 1,
           pageSize: 20,
-          order: 'userName',
+          order: 'displayName',
           dir: SortDirection.Ascending,
         },
       }),
     ).resolves.toEqual(response);
     expect(fetcher).toHaveBeenCalledWith(
-      `https://hektor.test/api/admin/organisations/${organisationId}/users?page=1&pageSize=20&order=userName&dir=asc`,
+      `https://hektor.test/api/admin/organisations/${organisationId}/users?page=1&pageSize=20&order=displayName&dir=asc`,
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('requests provisioned users independently', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const response = {
+      context: {
+        page: 1,
+        pageSize: 20,
+        totalRecords: 0,
+        sort: { order: 'displayName', dir: SortDirection.Ascending },
+      },
+      data: [],
+    };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json(response));
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+
+    await expect(
+      listOrganisationUserProvisions(client, {
+        params: { organisationId },
+        query: {
+          page: 1,
+          pageSize: 20,
+          order: 'displayName',
+          dir: SortDirection.Ascending,
+        },
+      }),
+    ).resolves.toEqual(response);
+    expect(fetcher).toHaveBeenCalledWith(
+      `https://hektor.test/api/admin/organisations/${organisationId}/user-provisions?page=1&pageSize=20&order=displayName&dir=asc`,
       expect.objectContaining({ method: 'GET' }),
     );
   });

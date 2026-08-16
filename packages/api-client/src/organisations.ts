@@ -1,5 +1,6 @@
 import {
   getOrganisationContract,
+  listOrganisationUserProvisionsContract,
   listOrganisationUsersContract,
   listOrganisationsContract,
 } from '@hektor/types/contracts/organisations';
@@ -12,4 +13,8 @@ export const getOrganisation = registerApiMethod(getOrganisationContract);
 
 export const listOrganisationUsers = registerApiMethod(
   listOrganisationUsersContract,
+);
+
+export const listOrganisationUserProvisions = registerApiMethod(
+  listOrganisationUserProvisionsContract,
 );

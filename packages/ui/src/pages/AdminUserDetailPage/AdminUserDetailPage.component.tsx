@@ -10,6 +10,7 @@ import {
 
 import { buttonVariants } from '../../atoms/Button';
 import { createTableColumn, Table } from '../../atoms/Table';
+import { NavigationLink } from '../../context';
 
 export interface AdminUserIdentityViewModel {
   createdAt?: string;
@@ -21,13 +22,11 @@ export interface AdminUserIdentityViewModel {
 
 export interface AdminUserMembershipViewModel {
   id: string;
-  institutionalUserName: string;
   organisation: {
     id: string;
     name: string;
     status: string;
   };
-  provisioningStatus: string;
   role: string;
   status: string;
 }
@@ -85,19 +84,12 @@ const membershipColumns = [
       </div>
     ),
   }),
-  membershipColumn.accessor('institutionalUserName', {
-    header: 'Institutional identity',
-  }),
   membershipColumn.accessor('role', {
     header: 'Role',
     cell: ({ value }) => <span className="capitalize">{readable(value)}</span>,
   }),
   membershipColumn.accessor('status', {
     header: 'Membership',
-    cell: ({ value }) => <span className="capitalize">{readable(value)}</span>,
-  }),
-  membershipColumn.accessor('provisioningStatus', {
-    header: 'Provisioning',
     cell: ({ value }) => <span className="capitalize">{readable(value)}</span>,
   }),
 ];
@@ -108,13 +100,13 @@ export function AdminUserDetailPage({
 }: AdminUserDetailPageProps) {
   return (
     <div className="space-y-12">
-      <a
+      <NavigationLink
         className={buttonVariants({ size: 'sm', variant: 'ghost' })}
         href={backHref}
       >
         <LuArrowLeft aria-hidden="true" />
         Users
-      </a>
+      </NavigationLink>
 
       <header className="flex flex-col gap-6 sm:flex-row sm:items-center">
         <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-xl font-semibold text-primary">

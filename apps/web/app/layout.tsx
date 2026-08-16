@@ -6,6 +6,8 @@ import { QueryProvider } from '@hektor/query';
 import { TooltipProvider } from '@hektor/ui/atoms';
 import { ThemeProvider } from '@hektor/ui/context';
 
+import { NextNavigationProvider } from '@/lib/navigation/NextNavigationProvider';
+
 import './styles.css';
 
 const titleFont = DM_Sans({
@@ -26,9 +28,11 @@ export default function RootLayout({
     <html className={titleFont.variable} lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <QueryProvider>
-            <TooltipProvider>{children}</TooltipProvider>
-          </QueryProvider>
+          <NextNavigationProvider>
+            <QueryProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+            </QueryProvider>
+          </NextNavigationProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -34,8 +34,6 @@ const meta = {
         },
         role: 'tutor',
         status: 'active',
-        provisioningStatus: 'active',
-        institutionalUserName: 'a.morgan@northshire.ac.uk',
       },
     ],
   },

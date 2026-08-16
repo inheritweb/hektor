@@ -1,5 +1,6 @@
 import {
   getOrganisation,
+  listOrganisationUserProvisions,
   listOrganisationUsers,
   listOrganisations,
 } from '@hektor/api-client/organisations';
@@ -23,5 +24,10 @@ export const useAdminGetOrganisation = makeQuery(
 
 export const useAdminGetOrganisationUsers = makeQuery(
   listOrganisationUsers,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminGetOrganisationUserProvisions = makeQuery(
+  listOrganisationUserProvisions,
   ADMIN_ORGANISATIONS_QUERY_KEY,
 );

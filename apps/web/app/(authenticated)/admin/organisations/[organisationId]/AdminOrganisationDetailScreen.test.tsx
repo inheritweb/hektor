@@ -26,12 +26,16 @@ describe('AdminOrganisationDetailScreen', () => {
           groups: [],
           usersSummary: {
             total: 0,
-            linked: 0,
-            awaitingAccountLinking: 0,
             learners: 0,
             tutors: 0,
             organisationAdmins: 0,
             suspended: 0,
+          },
+          userProvisionsSummary: {
+            total: 0,
+            pending: 0,
+            inactive: 0,
+            failed: 0,
           },
           createdAt: '2026-08-01T10:00:00.000Z',
           updatedAt: '2026-08-15T10:00:00.000Z',
@@ -47,8 +51,6 @@ describe('AdminOrganisationDetailScreen', () => {
     expect(useAdminGetOrganisationMock).toHaveBeenCalledWith({
       params: { organisationId },
     });
-    expect(
-      screen.getByRole('heading', { name: 'Northbridge University' }),
-    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Users' })).toBeTruthy();
   });
 });

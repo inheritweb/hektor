@@ -5,7 +5,6 @@ import {
   OrganisationRole,
   OrganisationStatus,
   OrganisationUserStatus,
-  ScimResourceStatus,
 } from '@hektor/types';
 import type { User } from '@supabase/supabase-js';
 
@@ -38,10 +37,8 @@ describe('user mappers', () => {
     const memberships = [
       {
         id: 'ecbfcbf1-ea33-47cd-a2a2-bbc87d21f8cd',
-        user_name: 'a.morgan@northshire.ac.uk',
         role: 'tutor',
         status: 'active',
-        scim_status: 'active',
         organisation: {
           id: '6b14eb81-81f9-47e9-b55e-a78f6a4c4013',
           name: 'Northshire University',
@@ -77,8 +74,6 @@ describe('user mappers', () => {
           },
           role: OrganisationRole.Tutor,
           status: OrganisationUserStatus.Active,
-          provisioningStatus: ScimResourceStatus.Active,
-          institutionalUserName: 'a.morgan@northshire.ac.uk',
         },
       ],
       createdAt: '2026-08-15T10:00:00.000Z',

@@ -13,8 +13,12 @@ import { createOrganisationsService } from './organisations.service';
 
 const client = createIntegrationDatabaseClient();
 
-const { getOrganisation, listOrganisations, listOrganisationUsers } =
-  createOrganisationsService(client);
+const {
+  getOrganisation,
+  listOrganisations,
+  listOrganisationUserProvisions,
+  listOrganisationUsers,
+} = createOrganisationsService(client);
 
 const organisationId = randomUUID();
 
@@ -24,14 +28,35 @@ const contractPeriodId = randomUUID();
 
 const groupId = randomUUID();
 
-const learnerId = randomUUID();
+const learnerMembershipId = randomUUID();
 
-const tutorId = randomUUID();
+const tutorMembershipId = randomUUID();
+
+const provisionId = randomUUID();
+
+let learnerUserId: string;
+
+let tutorUserId: string;
 
 const slug = `integration-${organisationId}`;
 
 describe('organisation services', () => {
   beforeAll(async () => {
+    const learner = await client.auth.admin.createUser({
+      email: `learner-${organisationId}@integration.example`,
+      email_confirm: true,
+      user_metadata: { full_name: 'Integration Learner' },
+    });
+    const tutor = await client.auth.admin.createUser({
+      email: `tutor-${organisationId}@integration.example`,
+      email_confirm: true,
+      user_metadata: { full_name: 'Integration Tutor' },
+    });
+    if (learner.error) throw learner.error;
+    if (tutor.error) throw tutor.error;
+    learnerUserId = learner.data.user.id;
+    tutorUserId = tutor.data.user.id;
+
     const { error: organisationError } = await client
       .from('organisations')
       .insert({
@@ -42,13 +67,15 @@ describe('organisation services', () => {
 
     if (organisationError) throw organisationError;
 
-    const { error: cohortError } = await client.from('cohorts').insert({
-      id: cohortId,
-      organisation_id: organisationId,
-      name: 'September 2026',
-      starts_on: '2026-09-01',
-      ends_on: '2029-09-01',
-    });
+    const { error: cohortError } = await client
+      .from('organisation_cohorts')
+      .insert({
+        id: cohortId,
+        organisation_id: organisationId,
+        name: 'September 2026',
+        starts_on: '2026-09-01',
+        ends_on: '2029-09-01',
+      });
 
     if (cohortError) throw cohortError;
 
@@ -64,12 +91,14 @@ describe('organisation services', () => {
 
     if (contractError) throw contractError;
 
-    const { error: groupError } = await client.from('groups').insert({
-      id: groupId,
-      organisation_id: organisationId,
-      cohort_id: cohortId,
-      name: 'Clinical Practice A',
-    });
+    const { error: groupError } = await client
+      .from('organisation_groups')
+      .insert({
+        id: groupId,
+        organisation_id: organisationId,
+        organisation_cohort_id: cohortId,
+        name: 'Clinical Practice A',
+      });
 
     if (groupError) throw groupError;
 
@@ -77,37 +106,62 @@ describe('organisation services', () => {
       .from('organisation_users')
       .insert([
         {
-          id: learnerId,
+          id: learnerMembershipId,
           organisation_id: organisationId,
-          cohort_id: cohortId,
-          user_name: 'learner@integration.example',
+          organisation_cohort_id: cohortId,
+          user_id: learnerUserId,
           role: 'learner',
           status: 'active',
         },
         {
-          id: tutorId,
+          id: tutorMembershipId,
           organisation_id: organisationId,
-          user_name: 'tutor@integration.example',
+          user_id: tutorUserId,
           role: 'tutor',
           status: 'suspended',
         },
       ]);
 
     if (usersError) throw usersError;
+
+    const { error: provisionError } = await client
+      .from('organisation_user_provisions')
+      .insert({
+        id: provisionId,
+        organisation_id: organisationId,
+        provisioning_method: 'csv',
+        provisioned_user_name: 'pending@integration.example',
+        provisioned_display_name: 'Pending Learner',
+        provisioned_role: 'learner',
+      });
+
+    if (provisionError) throw provisionError;
   });
 
   afterAll(async () => {
     await client
+      .from('organisation_user_provisions')
+      .delete()
+      .eq('organisation_id', organisationId);
+    await client
       .from('organisation_users')
       .delete()
       .eq('organisation_id', organisationId);
-    await client.from('groups').delete().eq('organisation_id', organisationId);
+    await client
+      .from('organisation_groups')
+      .delete()
+      .eq('organisation_id', organisationId);
     await client
       .from('organisation_contract_periods')
       .delete()
       .eq('organisation_id', organisationId);
-    await client.from('cohorts').delete().eq('organisation_id', organisationId);
+    await client
+      .from('organisation_cohorts')
+      .delete()
+      .eq('organisation_id', organisationId);
     await client.from('organisations').delete().eq('id', organisationId);
+    if (learnerUserId) await client.auth.admin.deleteUser(learnerUserId);
+    if (tutorUserId) await client.auth.admin.deleteUser(tutorUserId);
   });
 
   it('lists organisations through the real Supabase query', async () => {
@@ -151,12 +205,16 @@ describe('organisation services', () => {
       ],
       usersSummary: {
         total: 2,
-        linked: 0,
-        awaitingAccountLinking: 2,
         learners: 1,
         tutors: 1,
         organisationAdmins: 0,
         suspended: 1,
+      },
+      userProvisionsSummary: {
+        total: 1,
+        pending: 1,
+        inactive: 0,
+        failed: 0,
       },
       contractPeriods: [
         {
@@ -171,13 +229,13 @@ describe('organisation services', () => {
     });
   });
 
-  it('lists linked and awaiting organisation users', async () => {
+  it('lists canonical organisation users', async () => {
     const response = await listOrganisationUsers(
       { organisationId },
       {
         page: 1,
         pageSize: 20,
-        order: 'userName',
+        order: 'displayName',
         dir: SortDirection.Ascending,
       },
     );
@@ -185,15 +243,37 @@ describe('organisation services', () => {
     expect(response.context.totalRecords).toBe(2);
     expect(response.data).toEqual([
       expect.objectContaining({
-        id: learnerId,
+        id: learnerMembershipId,
         role: 'learner',
-        linked: false,
+        user: expect.objectContaining({ displayName: 'Integration Learner' }),
       }),
       expect.objectContaining({
-        id: tutorId,
+        id: tutorMembershipId,
         role: 'tutor',
         status: 'suspended',
-        linked: false,
+        user: expect.objectContaining({ displayName: 'Integration Tutor' }),
+      }),
+    ]);
+  });
+
+  it('lists provisioned users independently', async () => {
+    const response = await listOrganisationUserProvisions(
+      { organisationId },
+      {
+        page: 1,
+        pageSize: 20,
+        order: 'displayName',
+        dir: SortDirection.Ascending,
+      },
+    );
+
+    expect(response.context.totalRecords).toBe(1);
+    expect(response.data).toEqual([
+      expect.objectContaining({
+        id: provisionId,
+        provisionedDisplayName: 'Pending Learner',
+        provisionedUserName: 'pending@integration.example',
+        status: 'pending',
       }),
     ]);
   });

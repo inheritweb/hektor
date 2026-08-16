@@ -47,12 +47,20 @@ export function breadcrumbsForPath(
       home,
       { label: 'Admin' },
       { label: 'Organisations', href: '/admin/organisations' },
-      ...(pathname.endsWith('/users')
+      ...(pathname.endsWith('/provisioned-users')
         ? [
-            { label: organisationName, href: pathname.slice(0, -6) },
-            { label: 'Users' },
+            {
+              label: organisationName,
+              href: pathname.slice(0, -18),
+            },
+            { label: 'Provisioned users' },
           ]
-        : [{ label: organisationName }]),
+        : pathname.endsWith('/users')
+          ? [
+              { label: organisationName, href: pathname.slice(0, -6) },
+              { label: 'Users' },
+            ]
+          : [{ label: organisationName }]),
     ];
   }
 
@@ -120,8 +128,7 @@ export function AuthenticatedShell({
       .filter(
         (membership) =>
           membership.organisation.status === 'active' &&
-          membership.status === 'active' &&
-          ['not_managed', 'active'].includes(membership.provisioningStatus),
+          membership.status === 'active',
       )
       .map((membership) => ({
         id: membership.organisation.id,

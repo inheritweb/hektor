@@ -8,7 +8,7 @@ export function createUsersQueries(client: DatabaseClient) {
       .from('organisation_users')
       .select(
         `
-        id, user_name, role, status, scim_status,
+        id, role, status,
         organisation:organisations!inner (id, name, slug, status)
       `,
       )

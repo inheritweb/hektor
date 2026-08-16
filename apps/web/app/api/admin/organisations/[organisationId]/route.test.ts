@@ -58,12 +58,16 @@ describe('GET /api/admin/organisations/:organisationId', () => {
       groups: [],
       usersSummary: {
         total: 0,
-        linked: 0,
-        awaitingAccountLinking: 0,
         learners: 0,
         tutors: 0,
         organisationAdmins: 0,
         suspended: 0,
+      },
+      userProvisionsSummary: {
+        total: 0,
+        pending: 0,
+        inactive: 0,
+        failed: 0,
       },
       createdAt: '2026-08-15T10:00:00.000Z',
       updatedAt: '2026-08-15T11:00:00.000Z',

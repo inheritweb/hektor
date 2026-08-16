@@ -322,64 +322,60 @@ acting inside a test organisation also needs an `organisation_users` record.
 
 ### 8. Organisation-management schema
 
-#### 8.1 Independent access and provisioning state
+#### 8.1 Users, memberships, and provisions
 
-Hektor access state and SCIM provisioning state are independent:
+Hektor access is granted only by a canonical organisation membership:
 
 ```text
 effective access =
   organisation.status == active
   AND organisation_user.status == active
-  AND organisation_user.scim_status IN (not_managed, active)
-  AND organisation_user.user_id IS NOT NULL
 ```
 
-Initial code enums are:
+The relevant lifecycle enums are:
 
 ```text
 OrganisationStatus: active | suspended | archived
 OrganisationUserStatus: active | suspended
-ScimResourceStatus: not_managed | active | inactive | deleted
+ProvisioningMethod: scim | csv | manual
+ProvisioningStatus: pending | linked | inactive | revoked | failed
 ```
 
-An organisation suspension blocks every organisation user without changing
-their individual or SCIM states. An individual Hektor suspension remains in
-force if Entra later sends `active: true`. SCIM `active: false` changes only the
-SCIM state. A pending first login is represented by a null `user_id`, not by
-overloading either lifecycle enum.
+`organisation_users` is a durable link between an organisation and a canonical
+Hektor user. It contains organisation context such as role, cohort, and
+membership status, but no copied name, email, or provisioning state.
 
-SCIM Users have the standard `active` attribute. Standard SCIM Groups do not;
-group lifecycle is represented by creation, update, membership PATCH operations,
-and deletion. Hektor records external group deletion independently of a mapped
-teaching group's own active/archive state.
+`organisation_user_provisions` contains identities asserted through SCIM, CSV,
+or manual provisioning. A provision may later link to an organisation user, but
+its asserted profile fields never replace canonical user details. Pending and
+revoked provisions cannot grant access. Unprovisioning suspends the relevant
+membership without deleting the user's personal account.
 
 #### 8.2 Cohorts and groups
 
-Hektor owns educational cohorts and teaching groups. Entra SCIM groups can be
-mapped to them but do not define their educational meaning.
+Users see one organisation group concept regardless of how a group was created.
+Provisioning provenance determines who controls it.
 
 ```text
-cohorts
-groups                         group may belong to a cohort
-group_users                    Hektor teaching membership
-external_groups                SCIM group identity and lifecycle
-external_group_mappings        optional external → Hektor group mapping
+organisation_cohorts
+organisation_groups                         group may belong to a cohort
+organisation_group_users                    canonical user membership
+organisation_provisioned_group_users        unresolved provision membership
 ```
 
-Organisation administrators can map an Entra group, while tutors can create
-Hektor-only teaching groups. Future learning activities can target a cohort,
-group, individual learner, or authenticated share link without changing the
-identity model.
+An organisation group has an optional provisioning method and external source
+identifier. A group without provisioning metadata is locally managed. A
+SCIM-managed group remains the same domain entity but is normally read-only in
+Hektor and synchronized from its authoritative source.
 
 A cohort represents the complete undergraduate programme intake, normally
 three years for undergraduate nursing. A learner has at most one cohort within
 an organisation and may belong to several teaching or study groups. Groups may
 exist without a cohort.
 
-Entra administrators choose which SCIM groups are meaningful to Hektor. A
-provisioned group can be mapped to a Hektor teaching group when it represents a
-study or teaching audience; unrelated directory groups remain unmapped and do
-not affect the educational structure.
+Group membership for an unresolved provision is kept separately from canonical
+organisation group membership. It is materialized as an
+`organisation_group_users` record when account linking succeeds.
 
 #### 8.3 Seats
 

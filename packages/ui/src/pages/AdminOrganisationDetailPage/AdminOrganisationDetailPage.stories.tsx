@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { OrganisationDetailsRail } from '../../organisms';
+
 import { AdminOrganisationDetailPage } from './AdminOrganisationDetailPage.component';
 
 const organisation = {
@@ -11,12 +13,16 @@ const organisation = {
   updatedAt: '2026-08-15T11:00:00.000Z',
   usersSummary: {
     total: 42,
-    linked: 38,
-    awaitingAccountLinking: 4,
     learners: 34,
     tutors: 6,
     organisationAdmins: 2,
     suspended: 1,
+  },
+  userProvisionsSummary: {
+    total: 4,
+    pending: 4,
+    inactive: 0,
+    failed: 0,
   },
   contractPeriods: [
     {
@@ -46,8 +52,15 @@ const meta = {
   component: AdminOrganisationDetailPage,
   args: {
     organisation,
+    provisionsHref: `/admin/organisations/${organisation.id}/provisioned-users`,
     usersHref: `/admin/organisations/${organisation.id}/users`,
   },
+  render: (args) => (
+    <div className="grid items-start gap-10 lg:grid-cols-[minmax(14rem,0.7fr)_minmax(0,2fr)] lg:gap-14">
+      <OrganisationDetailsRail organisation={args.organisation} />
+      <AdminOrganisationDetailPage {...args} />
+    </div>
+  ),
 } satisfies Meta<typeof AdminOrganisationDetailPage>;
 
 export default meta;
@@ -65,12 +78,16 @@ export const WithoutCollections: Story = {
       groups: [],
       usersSummary: {
         total: 0,
-        linked: 0,
-        awaitingAccountLinking: 0,
         learners: 0,
         tutors: 0,
         organisationAdmins: 0,
         suspended: 0,
+      },
+      userProvisionsSummary: {
+        total: 0,
+        pending: 0,
+        inactive: 0,
+        failed: 0,
       },
     },
   },

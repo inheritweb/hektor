@@ -23,8 +23,6 @@ export interface ProfileOrganisationViewModel {
   };
   role: string;
   status: string;
-  provisioningStatus: string;
-  institutionalUserName: string;
 }
 
 export interface ProfilePageProps {
@@ -188,9 +186,6 @@ export function ProfilePage({
                     <h3 className="font-semibold">
                       {membership.organisation.name}
                     </h3>
-                    <p className="mt-1 truncate text-sm text-muted-foreground">
-                      {membership.institutionalUserName}
-                    </p>
                     <div className="mt-4 flex flex-wrap gap-2 text-xs capitalize">
                       <span className="bg-primary/10 px-2.5 py-1 font-medium text-primary">
                         {readable(membership.role)}
@@ -198,15 +193,6 @@ export function ProfilePage({
                       <span className="bg-accent px-2.5 py-1 text-accent-foreground">
                         {readable(membership.status)}
                       </span>
-                      {membership.provisioningStatus !== 'not_managed' ? (
-                        <span className="flex items-center gap-1.5 bg-accent px-2.5 py-1 text-accent-foreground">
-                          <LuShieldCheck
-                            aria-hidden="true"
-                            className="size-3.5"
-                          />
-                          SCIM {readable(membership.provisioningStatus)}
-                        </span>
-                      ) : null}
                     </div>
                   </div>
                 </div>

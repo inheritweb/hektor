@@ -2,19 +2,23 @@ import { z } from 'zod';
 
 import {
   type Organisation,
+  type OrganisationCohortSummary,
   type OrganisationContractPeriod,
   type OrganisationGroupSummary,
   type OrganisationMembershipUserSummary,
   type OrganisationSummary,
+  type OrganisationUserProvision,
+  type OrganisationUserProvisionsSummary,
   type OrganisationUsersSummary,
-  type CohortSummary,
   GroupStatus,
   OrganisationRole,
   OrganisationStatus,
   OrganisationUserStatus,
-  ScimResourceStatus,
+  ProvisioningMethod,
+  ProvisioningStatus,
 } from '../organisations';
 import { PlatformRole } from '../users';
+import { userSummarySchema } from './users';
 import {
   type ContractOutput,
   type ContractParams,
@@ -32,40 +36,64 @@ export const organisationSummarySchema = z.object({
   status: z.enum(OrganisationStatus),
 }) satisfies z.ZodType<OrganisationSummary>;
 
-export const cohortSummarySchema = z.object({
+export const organisationCohortSummarySchema = z.object({
   id: z.uuid(),
   name: z.string().min(1),
   startsOn: z.iso.date(),
   endsOn: z.iso.date(),
   status: z.enum(GroupStatus),
-}) satisfies z.ZodType<CohortSummary>;
+}) satisfies z.ZodType<OrganisationCohortSummary>;
 
 export const organisationGroupSummarySchema = z.object({
   id: z.uuid(),
   name: z.string().min(1),
   status: z.enum(GroupStatus),
+  provisioningMethod: z.enum(ProvisioningMethod).optional(),
+  sourceExternalId: z.string().min(1).optional(),
 }) satisfies z.ZodType<OrganisationGroupSummary>;
 
 export const organisationUsersSummarySchema = z.object({
   total: z.number().int().nonnegative(),
-  linked: z.number().int().nonnegative(),
-  awaitingAccountLinking: z.number().int().nonnegative(),
   learners: z.number().int().nonnegative(),
   tutors: z.number().int().nonnegative(),
   organisationAdmins: z.number().int().nonnegative(),
   suspended: z.number().int().nonnegative(),
 }) satisfies z.ZodType<OrganisationUsersSummary>;
 
+export const organisationUserProvisionsSummarySchema = z.object({
+  total: z.number().int().nonnegative(),
+  pending: z.number().int().nonnegative(),
+  inactive: z.number().int().nonnegative(),
+  failed: z.number().int().nonnegative(),
+}) satisfies z.ZodType<OrganisationUserProvisionsSummary>;
+
 export const organisationMembershipUserSummarySchema = z.object({
   id: z.uuid(),
-  userId: z.uuid().optional(),
-  userName: z.string().min(1),
-  displayName: z.string().min(1).optional(),
+  user: userSummarySchema,
   role: z.enum(OrganisationRole),
   status: z.enum(OrganisationUserStatus),
-  scimStatus: z.enum(ScimResourceStatus),
-  linked: z.boolean(),
 }) satisfies z.ZodType<OrganisationMembershipUserSummary>;
+
+export const organisationUserProvisionSchema = z.object({
+  id: z.uuid(),
+  organisation: organisationSummarySchema,
+  cohort: organisationCohortSummarySchema.optional(),
+  groups: z.array(organisationGroupSummarySchema),
+  organisationUserId: z.uuid().optional(),
+  provisioningMethod: z.enum(ProvisioningMethod),
+  sourceExternalId: z.string().min(1).optional(),
+  provisionedUserName: z.string().min(1),
+  provisionedDisplayName: z.string().min(1).optional(),
+  provisionedGivenName: z.string().min(1).optional(),
+  provisionedFamilyName: z.string().min(1).optional(),
+  provisionedRole: z.enum(OrganisationRole),
+  status: z.enum(ProvisioningStatus),
+  lastSynchronizedAt: z.iso.datetime().optional(),
+  linkedAt: z.iso.datetime().optional(),
+  revokedAt: z.iso.datetime().optional(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+}) satisfies z.ZodType<OrganisationUserProvision>;
 
 export const contractPeriodSchema = z.object({
   id: z.uuid(),
@@ -82,9 +110,10 @@ export const contractPeriodSchema = z.object({
 
 export const organisationSchema = organisationSummarySchema.extend({
   contractPeriods: z.array(contractPeriodSchema),
-  cohorts: z.array(cohortSummarySchema),
+  cohorts: z.array(organisationCohortSummarySchema),
   groups: z.array(organisationGroupSummarySchema),
   usersSummary: organisationUsersSummarySchema,
+  userProvisionsSummary: organisationUserProvisionsSummarySchema,
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 }) satisfies z.ZodType<Organisation>;
@@ -113,10 +142,29 @@ export const listOrganisationUsersContract = defineContract({
   access: { type: 'platform', roles: [PlatformRole.Admin] },
   params: z.object({ organisationId: z.uuid() }),
   query: paginationQuerySchema.extend({
-    order: z.enum(['userName', 'role']).default('userName'),
+    order: z.enum(['displayName', 'role']).default('displayName'),
+    role: z.enum(OrganisationRole).optional(),
+    status: z.enum(OrganisationUserStatus).optional(),
+    query: z.string().trim().min(1).optional(),
   }),
   output: hektorCollectionResponseSchema(
     z.array(organisationMembershipUserSummarySchema),
+  ),
+});
+
+export const listOrganisationUserProvisionsContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/organisations/:organisationId/user-provisions',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  query: paginationQuerySchema.extend({
+    order: z.enum(['displayName', 'role']).default('displayName'),
+    role: z.enum(OrganisationRole).optional(),
+    status: z.enum(ProvisioningStatus).optional(),
+    query: z.string().trim().min(1).optional(),
+  }),
+  output: hektorCollectionResponseSchema(
+    z.array(organisationUserProvisionSchema),
   ),
 });
 
@@ -146,4 +194,16 @@ export type ListOrganisationUsersQuery = ContractQuery<
 
 export type ListOrganisationUsersResponse = ContractOutput<
   typeof listOrganisationUsersContract
+>;
+
+export type ListOrganisationUserProvisionsParams = ContractParams<
+  typeof listOrganisationUserProvisionsContract
+>;
+
+export type ListOrganisationUserProvisionsQuery = ContractQuery<
+  typeof listOrganisationUserProvisionsContract
+>;
+
+export type ListOrganisationUserProvisionsResponse = ContractOutput<
+  typeof listOrganisationUserProvisionsContract
 >;

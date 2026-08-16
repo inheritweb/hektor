@@ -32,8 +32,6 @@ describe('AdminUserDetailPage', () => {
               },
               role: 'organisation_admin',
               status: 'active',
-              provisioningStatus: 'active',
-              institutionalUserName: 'alex@northbridge.example',
             },
           ],
         }}

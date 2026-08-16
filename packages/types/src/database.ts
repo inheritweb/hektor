@@ -34,7 +34,7 @@ export type Database = {
   };
   public: {
     Tables: {
-      cohorts: {
+      organisation_cohorts: {
         Row: {
           created_at: string;
           ends_on: string;
@@ -67,192 +67,7 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'cohorts_organisation_id_fkey';
-            columns: ['organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'organisations';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      external_group_users: {
-        Row: {
-          created_at: string;
-          external_group_id: string;
-          organisation_id: string;
-          organisation_user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          external_group_id: string;
-          organisation_id: string;
-          organisation_user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          external_group_id?: string;
-          organisation_id?: string;
-          organisation_user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'external_group_users_external_group_id_organisation_id_fkey';
-            columns: ['external_group_id', 'organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'external_groups';
-            referencedColumns: ['id', 'organisation_id'];
-          },
-          {
-            foreignKeyName: 'external_group_users_organisation_id_fkey';
-            columns: ['organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'organisations';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'external_group_users_organisation_user_id_organisation_id_fkey';
-            columns: ['organisation_user_id', 'organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'organisation_users';
-            referencedColumns: ['id', 'organisation_id'];
-          },
-        ];
-      };
-      external_groups: {
-        Row: {
-          created_at: string;
-          display_name: string;
-          external_id: string;
-          group_id: string | null;
-          id: string;
-          last_scim_sync_at: string;
-          organisation_id: string;
-          scim_deleted_at: string | null;
-          scim_status: Database['public']['Enums']['scim_resource_status'];
-          updated_at: string;
-        };
-        Insert: {
-          created_at?: string;
-          display_name: string;
-          external_id: string;
-          group_id?: string | null;
-          id?: string;
-          last_scim_sync_at?: string;
-          organisation_id: string;
-          scim_deleted_at?: string | null;
-          scim_status?: Database['public']['Enums']['scim_resource_status'];
-          updated_at?: string;
-        };
-        Update: {
-          created_at?: string;
-          display_name?: string;
-          external_id?: string;
-          group_id?: string | null;
-          id?: string;
-          last_scim_sync_at?: string;
-          organisation_id?: string;
-          scim_deleted_at?: string | null;
-          scim_status?: Database['public']['Enums']['scim_resource_status'];
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'external_groups_group_id_organisation_id_fkey';
-            columns: ['group_id', 'organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'groups';
-            referencedColumns: ['id', 'organisation_id'];
-          },
-          {
-            foreignKeyName: 'external_groups_organisation_id_fkey';
-            columns: ['organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'organisations';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      group_users: {
-        Row: {
-          created_at: string;
-          group_id: string;
-          organisation_id: string;
-          organisation_user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          group_id: string;
-          organisation_id: string;
-          organisation_user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          group_id?: string;
-          organisation_id?: string;
-          organisation_user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'group_users_group_id_organisation_id_fkey';
-            columns: ['group_id', 'organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'groups';
-            referencedColumns: ['id', 'organisation_id'];
-          },
-          {
-            foreignKeyName: 'group_users_organisation_id_fkey';
-            columns: ['organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'organisations';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'group_users_organisation_user_id_organisation_id_fkey';
-            columns: ['organisation_user_id', 'organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'organisation_users';
-            referencedColumns: ['id', 'organisation_id'];
-          },
-        ];
-      };
-      groups: {
-        Row: {
-          cohort_id: string | null;
-          created_at: string;
-          id: string;
-          name: string;
-          organisation_id: string;
-          status: Database['public']['Enums']['group_status'];
-          updated_at: string;
-        };
-        Insert: {
-          cohort_id?: string | null;
-          created_at?: string;
-          id?: string;
-          name: string;
-          organisation_id: string;
-          status?: Database['public']['Enums']['group_status'];
-          updated_at?: string;
-        };
-        Update: {
-          cohort_id?: string | null;
-          created_at?: string;
-          id?: string;
-          name?: string;
-          organisation_id?: string;
-          status?: Database['public']['Enums']['group_status'];
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'groups_cohort_id_organisation_id_fkey';
-            columns: ['cohort_id', 'organisation_id'];
-            isOneToOne: false;
-            referencedRelation: 'cohorts';
-            referencedColumns: ['id', 'organisation_id'];
-          },
-          {
-            foreignKeyName: 'groups_organisation_id_fkey';
+            foreignKeyName: 'organisation_cohorts_organisation_id_fkey';
             columns: ['organisation_id'];
             isOneToOne: false;
             referencedRelation: 'organisations';
@@ -291,6 +106,152 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: 'organisation_contract_periods_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      organisation_group_users: {
+        Row: {
+          created_at: string;
+          organisation_group_id: string;
+          organisation_id: string;
+          organisation_user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          organisation_group_id: string;
+          organisation_id: string;
+          organisation_user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          organisation_group_id?: string;
+          organisation_id?: string;
+          organisation_user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organisation_group_users_organisation_group_id_organisatio_fkey';
+            columns: ['organisation_group_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_groups';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_group_users_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'organisation_group_users_organisation_user_id_organisation_fkey';
+            columns: ['organisation_user_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_users';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+        ];
+      };
+      organisation_groups: {
+        Row: {
+          created_at: string;
+          id: string;
+          last_synchronized_at: string | null;
+          name: string;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          provisioning_method:
+            Database['public']['Enums']['provisioning_method'] | null;
+          source_deleted_at: string | null;
+          source_external_id: string | null;
+          status: Database['public']['Enums']['group_status'];
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          last_synchronized_at?: string | null;
+          name: string;
+          organisation_cohort_id?: string | null;
+          organisation_id: string;
+          provisioning_method?:
+            Database['public']['Enums']['provisioning_method'] | null;
+          source_deleted_at?: string | null;
+          source_external_id?: string | null;
+          status?: Database['public']['Enums']['group_status'];
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          last_synchronized_at?: string | null;
+          name?: string;
+          organisation_cohort_id?: string | null;
+          organisation_id?: string;
+          provisioning_method?:
+            Database['public']['Enums']['provisioning_method'] | null;
+          source_deleted_at?: string | null;
+          source_external_id?: string | null;
+          status?: Database['public']['Enums']['group_status'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organisation_groups_organisation_cohort_id_organisation_id_fkey';
+            columns: ['organisation_cohort_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_cohorts';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_groups_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      organisation_provisioned_group_users: {
+        Row: {
+          created_at: string;
+          organisation_group_id: string;
+          organisation_id: string;
+          organisation_user_provision_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          organisation_group_id: string;
+          organisation_id: string;
+          organisation_user_provision_id: string;
+        };
+        Update: {
+          created_at?: string;
+          organisation_group_id?: string;
+          organisation_id?: string;
+          organisation_user_provision_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organisation_provisioned_grou_organisation_group_id_organi_fkey';
+            columns: ['organisation_group_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_groups';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_provisioned_grou_organisation_user_provision__fkey';
+            columns: ['organisation_user_provision_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_user_provisions';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_provisioned_group_users_organisation_id_fkey';
             columns: ['organisation_id'];
             isOneToOne: false;
             referencedRelation: 'organisations';
@@ -341,70 +302,125 @@ export type Database = {
           },
         ];
       };
-      organisation_users: {
+      organisation_user_provisions: {
         Row: {
-          cohort_id: string | null;
           created_at: string;
-          display_name: string | null;
-          external_id: string | null;
-          family_name: string | null;
-          given_name: string | null;
           id: string;
-          last_scim_sync_at: string | null;
+          last_synchronized_at: string | null;
           linked_at: string | null;
+          organisation_cohort_id: string | null;
           organisation_id: string;
-          role: Database['public']['Enums']['organisation_role'];
-          scim_deleted_at: string | null;
-          scim_status: Database['public']['Enums']['scim_resource_status'];
-          status: Database['public']['Enums']['organisation_user_status'];
+          organisation_user_id: string | null;
+          provisioned_display_name: string | null;
+          provisioned_family_name: string | null;
+          provisioned_given_name: string | null;
+          provisioned_role: Database['public']['Enums']['organisation_role'];
+          provisioned_user_name: string;
+          provisioning_method: Database['public']['Enums']['provisioning_method'];
+          revoked_at: string | null;
+          source_external_id: string | null;
+          status: Database['public']['Enums']['provisioning_status'];
           updated_at: string;
-          user_id: string | null;
-          user_name: string;
         };
         Insert: {
-          cohort_id?: string | null;
           created_at?: string;
-          display_name?: string | null;
-          external_id?: string | null;
-          family_name?: string | null;
-          given_name?: string | null;
           id?: string;
-          last_scim_sync_at?: string | null;
+          last_synchronized_at?: string | null;
           linked_at?: string | null;
+          organisation_cohort_id?: string | null;
           organisation_id: string;
-          role: Database['public']['Enums']['organisation_role'];
-          scim_deleted_at?: string | null;
-          scim_status?: Database['public']['Enums']['scim_resource_status'];
-          status?: Database['public']['Enums']['organisation_user_status'];
+          organisation_user_id?: string | null;
+          provisioned_display_name?: string | null;
+          provisioned_family_name?: string | null;
+          provisioned_given_name?: string | null;
+          provisioned_role: Database['public']['Enums']['organisation_role'];
+          provisioned_user_name: string;
+          provisioning_method: Database['public']['Enums']['provisioning_method'];
+          revoked_at?: string | null;
+          source_external_id?: string | null;
+          status?: Database['public']['Enums']['provisioning_status'];
           updated_at?: string;
-          user_id?: string | null;
-          user_name: string;
         };
         Update: {
-          cohort_id?: string | null;
           created_at?: string;
-          display_name?: string | null;
-          external_id?: string | null;
-          family_name?: string | null;
-          given_name?: string | null;
           id?: string;
-          last_scim_sync_at?: string | null;
+          last_synchronized_at?: string | null;
           linked_at?: string | null;
+          organisation_cohort_id?: string | null;
           organisation_id?: string;
-          role?: Database['public']['Enums']['organisation_role'];
-          scim_deleted_at?: string | null;
-          scim_status?: Database['public']['Enums']['scim_resource_status'];
-          status?: Database['public']['Enums']['organisation_user_status'];
+          organisation_user_id?: string | null;
+          provisioned_display_name?: string | null;
+          provisioned_family_name?: string | null;
+          provisioned_given_name?: string | null;
+          provisioned_role?: Database['public']['Enums']['organisation_role'];
+          provisioned_user_name?: string;
+          provisioning_method?: Database['public']['Enums']['provisioning_method'];
+          revoked_at?: string | null;
+          source_external_id?: string | null;
+          status?: Database['public']['Enums']['provisioning_status'];
           updated_at?: string;
-          user_id?: string | null;
-          user_name?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'organisation_users_cohort_id_organisation_id_fkey';
-            columns: ['cohort_id', 'organisation_id'];
+            foreignKeyName: 'organisation_user_provisions_organisation_cohort_id_organi_fkey';
+            columns: ['organisation_cohort_id', 'organisation_id'];
             isOneToOne: false;
-            referencedRelation: 'cohorts';
+            referencedRelation: 'organisation_cohorts';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_user_provisions_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'organisation_user_provisions_organisation_user_id_organisa_fkey';
+            columns: ['organisation_user_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_users';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+        ];
+      };
+      organisation_users: {
+        Row: {
+          created_at: string;
+          id: string;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          role: Database['public']['Enums']['organisation_role'];
+          status: Database['public']['Enums']['organisation_user_status'];
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          organisation_cohort_id?: string | null;
+          organisation_id: string;
+          role: Database['public']['Enums']['organisation_role'];
+          status?: Database['public']['Enums']['organisation_user_status'];
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          organisation_cohort_id?: string | null;
+          organisation_id?: string;
+          role?: Database['public']['Enums']['organisation_role'];
+          status?: Database['public']['Enums']['organisation_user_status'];
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organisation_users_organisation_cohort_id_organisation_id_fkey';
+            columns: ['organisation_cohort_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_cohorts';
             referencedColumns: ['id', 'organisation_id'];
           },
           {
@@ -462,7 +478,9 @@ export type Database = {
       organisation_role: 'org_admin' | 'tutor' | 'learner';
       organisation_status: 'active' | 'suspended' | 'archived';
       organisation_user_status: 'active' | 'suspended';
-      scim_resource_status: 'not_managed' | 'active' | 'inactive' | 'deleted';
+      provisioning_method: 'scim' | 'csv' | 'manual';
+      provisioning_status:
+        'pending' | 'linked' | 'inactive' | 'revoked' | 'failed';
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -597,7 +615,14 @@ export const Constants = {
       organisation_role: ['org_admin', 'tutor', 'learner'],
       organisation_status: ['active', 'suspended', 'archived'],
       organisation_user_status: ['active', 'suspended'],
-      scim_resource_status: ['not_managed', 'active', 'inactive', 'deleted'],
+      provisioning_method: ['scim', 'csv', 'manual'],
+      provisioning_status: [
+        'pending',
+        'linked',
+        'inactive',
+        'revoked',
+        'failed',
+      ],
     },
   },
 } as const;

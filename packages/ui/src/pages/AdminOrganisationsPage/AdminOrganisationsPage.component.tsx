@@ -1,4 +1,5 @@
 import { createTableColumn } from '../../atoms/Table';
+import { NavigationLink } from '../../context';
 import { Grid } from '../../organisms/Grid';
 
 export interface AdminOrganisationListItemViewModel {
@@ -65,12 +66,12 @@ export function AdminOrganisationsPage({
           className: 'last:pr-3',
           header: <span className="sr-only">Actions</span>,
           cell: ({ row }) => (
-            <a
+            <NavigationLink
               className="inline-flex rounded px-2 py-1 font-semibold text-primary hover:bg-accent/20 hover:underline"
               href={getOrganisationHref(row)}
             >
               View
-            </a>
+            </NavigationLink>
           ),
         }),
       ]

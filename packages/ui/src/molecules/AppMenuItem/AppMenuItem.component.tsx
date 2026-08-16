@@ -4,6 +4,7 @@ import type { IconType } from 'react-icons';
 
 import { Button, buttonVariants } from '../../atoms/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../atoms/Tooltip';
+import { NavigationLink } from '../../context';
 import { cn } from '#lib/utils';
 
 export interface AppMenuItemProps {
@@ -44,7 +45,7 @@ export function AppMenuItem({
     onClick: onSelect,
   };
   const item = href ? (
-    <a
+    <NavigationLink
       {...sharedProps}
       className={cn(
         buttonVariants({
@@ -56,7 +57,7 @@ export function AppMenuItem({
       href={href}
     >
       {content}
-    </a>
+    </NavigationLink>
   ) : (
     <Button
       {...sharedProps}

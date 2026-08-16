@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '../../atoms/Select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../atoms/Tooltip';
+import { NavigationLink } from '../../context';
 
 export interface UserContextOption {
   id: string;
@@ -70,7 +71,7 @@ export function UserWidget({
       <Tooltip>
         <TooltipTrigger
           render={
-            <a
+            <NavigationLink
               aria-label={`Open profile for ${displayName}`}
               className="flex justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
               href={profileHref}
@@ -87,7 +88,7 @@ export function UserWidget({
   return (
     <section aria-label="Signed-in user" className="w-full space-y-3">
       <div className="flex min-w-0 items-center gap-3">
-        <a
+        <NavigationLink
           className="flex min-w-0 flex-1 items-center gap-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           href={profileHref}
         >
@@ -102,7 +103,7 @@ export function UserWidget({
               </span>
             ) : null}
           </span>
-        </a>
+        </NavigationLink>
         <Tooltip>
           <TooltipTrigger
             render={

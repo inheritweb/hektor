@@ -42,6 +42,7 @@ export function AdminOrganisationDetailScreen({
   return (
     <AdminOrganisationDetailPage
       organisation={organisation.data.data}
+      provisionsHref={`/admin/organisations/${organisationId}/provisioned-users`}
       usersHref={`/admin/organisations/${organisationId}/users`}
     />
   );
