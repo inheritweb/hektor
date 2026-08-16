@@ -1,0 +1,22 @@
+@layer base, starlight, theme, components, utilities;
+
+@import '@astrojs/starlight-tailwind';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import '@hektor/tailwind-config' layer(theme);
+@import '@hektor/ui-astro/styles.css';
+
+@theme {
+  --font-sans: var(--hektor-font-title);
+  --color-accent-50: var(--hektor-secondary);
+  --color-accent-100: var(--hektor-secondary);
+  --color-accent-200: var(--hektor-accent);
+  --color-accent-300: var(--hektor-accent);
+  --color-accent-400: var(--hektor-primary);
+  --color-accent-500: var(--hektor-primary);
+  --color-accent-600: var(--hektor-primary);
+  --color-accent-700: var(--hektor-primary-foreground);
+  --color-accent-800: var(--hektor-primary-foreground);
+  --color-accent-900: var(--hektor-primary-foreground);
+  --color-accent-950: var(--hektor-primary-foreground);
+}

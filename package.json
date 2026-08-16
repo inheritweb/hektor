@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "prettier": "3.9.6",
+    "prettier-plugin-astro": "0.14.1",
     "supabase": "2.110.0",
     "turbo": "2.10.9",
     "vercel": "58.8.0"

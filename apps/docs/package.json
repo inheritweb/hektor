@@ -1,0 +1,30 @@
+{
+  "name": "@hektor/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "dev": "astro dev --host 0.0.0.0 --port 4322",
+    "lint": "eslint .",
+    "preview": "astro preview --host 0.0.0.0 --port 4322",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.41.7",
+    "@hektor/tailwind-config": "workspace:*",
+    "@hektor/ui-astro": "workspace:*",
+    "astro": "7.2.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@astrojs/starlight-tailwind": "5.0.0",
+    "@hektor/eslint-config": "workspace:*",
+    "@hektor/typescript-config": "workspace:*",
+    "@tailwindcss/vite": "4.3.3",
+    "eslint": "^9.39.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "vite": "8.2.0"
+  }
+}
