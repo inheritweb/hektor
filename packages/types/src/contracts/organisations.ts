@@ -11,6 +11,7 @@ import {
   type OrganisationMembershipUserSummary,
   type OrganisationSummary,
   type OrganisationUserProvision,
+  type OrganisationUserProvisionDetail,
   type OrganisationUserProvisionsSummary,
   type OrganisationUsersSummary,
   GroupStatus,
@@ -135,6 +136,11 @@ export const organisationUserProvisionSchema = z.object({
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 }) satisfies z.ZodType<OrganisationUserProvision>;
+
+export const organisationUserProvisionDetailSchema =
+  organisationUserProvisionSchema.extend({
+    linkedUser: userSummarySchema.optional(),
+  }) satisfies z.ZodType<OrganisationUserProvisionDetail>;
 
 export const contractPeriodSchema = z.object({
   id: z.uuid(),
@@ -265,6 +271,14 @@ export const listOrganisationUserProvisionsContract = defineContract({
   ),
 });
 
+export const getOrganisationUserProvisionContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/organisations/:organisationId/user-provisions/:provisionId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), provisionId: z.uuid() }),
+  output: hektorResponseSchema(organisationUserProvisionDetailSchema),
+});
+
 export type ListOrganisationsQuery = ContractQuery<
   typeof listOrganisationsContract
 >;
@@ -355,4 +369,12 @@ export type ListOrganisationUserProvisionsQuery = ContractQuery<
 
 export type ListOrganisationUserProvisionsResponse = ContractOutput<
   typeof listOrganisationUserProvisionsContract
+>;
+
+export type GetOrganisationUserProvisionParams = ContractParams<
+  typeof getOrganisationUserProvisionContract
+>;
+
+export type GetOrganisationUserProvisionResponse = ContractOutput<
+  typeof getOrganisationUserProvisionContract
 >;

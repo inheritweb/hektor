@@ -328,3 +328,46 @@ export function buildOrganisationUserProvisionsQuery(
 export type OrganisationUserProvisionsQueryResult = QueryData<
   ReturnType<typeof buildOrganisationUserProvisionsQuery>
 >;
+
+export function buildOrganisationUserProvisionDetailQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  provisionId: string,
+) {
+  return client
+    .from('organisation_user_provisions')
+    .select(
+      `
+      id,
+      organisation_user_id,
+      provisioning_method,
+      source_external_id,
+      provisioned_user_name,
+      provisioned_display_name,
+      provisioned_given_name,
+      provisioned_family_name,
+      provisioned_role,
+      status,
+      last_synchronized_at,
+      linked_at,
+      revoked_at,
+      created_at,
+      updated_at,
+      organisation:organisations (id, name, slug, status),
+      cohort:organisation_cohorts (id, name, starts_on, ends_on, status),
+      membership:organisation_users (id, user_id, role, status),
+      groupLinks:organisation_provisioned_group_users (
+        group:organisation_groups (
+          id, name, status, provisioning_method, source_external_id
+        )
+      )
+    `,
+    )
+    .eq('organisation_id', organisationId)
+    .eq('id', provisionId)
+    .single();
+}
+
+export type OrganisationUserProvisionDetailQueryResult = QueryData<
+  ReturnType<typeof buildOrganisationUserProvisionDetailQuery>
+>;

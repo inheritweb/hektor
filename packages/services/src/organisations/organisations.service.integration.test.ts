@@ -17,6 +17,7 @@ const {
   getOrganisation,
   getOrganisationCohort,
   getOrganisationGroup,
+  getOrganisationUserProvision,
   listOrganisationContractPeriods,
   listOrganisationCohorts,
   listOrganisationGroups,
@@ -38,6 +39,8 @@ const learnerMembershipId = randomUUID();
 const tutorMembershipId = randomUUID();
 
 const provisionId = randomUUID();
+
+const linkedProvisionId = randomUUID();
 
 let learnerUserId: string;
 
@@ -131,14 +134,35 @@ describe('organisation services', () => {
 
     const { error: provisionError } = await client
       .from('organisation_user_provisions')
-      .insert({
-        id: provisionId,
-        organisation_id: organisationId,
-        provisioning_method: 'csv',
-        provisioned_user_name: 'pending@integration.example',
-        provisioned_display_name: 'Pending Learner',
-        provisioned_role: 'learner',
-      });
+      .insert([
+        {
+          id: provisionId,
+          organisation_id: organisationId,
+          organisation_cohort_id: cohortId,
+          provisioning_method: 'csv',
+          source_external_id: `csv-${provisionId}`,
+          provisioned_user_name: 'pending@integration.example',
+          provisioned_display_name: 'Pending Learner',
+          provisioned_given_name: 'Pending',
+          provisioned_family_name: 'Learner',
+          provisioned_role: 'learner',
+          status: 'pending',
+        },
+        {
+          id: linkedProvisionId,
+          organisation_id: organisationId,
+          organisation_user_id: learnerMembershipId,
+          organisation_cohort_id: cohortId,
+          provisioning_method: 'scim',
+          source_external_id: `scim-${linkedProvisionId}`,
+          provisioned_user_name: `learner-${organisationId}@integration.example`,
+          provisioned_display_name: 'Provisioned Integration Learner',
+          provisioned_role: 'learner',
+          status: 'linked',
+          linked_at: '2026-08-16T11:00:00.000Z',
+          last_synchronized_at: '2026-08-16T10:00:00.000Z',
+        },
+      ]);
 
     if (provisionError) throw provisionError;
 
@@ -234,7 +258,7 @@ describe('organisation services', () => {
         suspended: 1,
       },
       userProvisionsSummary: {
-        total: 1,
+        total: 2,
         pending: 1,
         inactive: 0,
         failed: 0,
@@ -408,15 +432,51 @@ describe('organisation services', () => {
       },
     );
 
-    expect(response.context.totalRecords).toBe(1);
-    expect(response.data).toEqual([
-      expect.objectContaining({
-        id: provisionId,
-        provisionedDisplayName: 'Pending Learner',
-        provisionedUserName: 'pending@integration.example',
-        status: 'pending',
-      }),
-    ]);
+    expect(response.context.totalRecords).toBe(2);
+    expect(response.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: provisionId,
+          provisionedDisplayName: 'Pending Learner',
+          provisionedUserName: 'pending@integration.example',
+          status: 'pending',
+        }),
+        expect.objectContaining({
+          id: linkedProvisionId,
+          organisationUserId: learnerMembershipId,
+          status: 'linked',
+        }),
+      ]),
+    );
+  });
+
+  it('loads provision detail with assignments and optional canonical user', async () => {
+    const pending = await getOrganisationUserProvision({
+      organisationId,
+      provisionId,
+    });
+    expect(pending.data).toMatchObject({
+      id: provisionId,
+      cohort: { id: cohortId },
+      groups: [{ id: groupId }],
+      linkedUser: undefined,
+      provisionedGivenName: 'Pending',
+      sourceExternalId: `csv-${provisionId}`,
+    });
+
+    const linked = await getOrganisationUserProvision({
+      organisationId,
+      provisionId: linkedProvisionId,
+    });
+    expect(linked.data).toMatchObject({
+      id: linkedProvisionId,
+      organisationUserId: learnerMembershipId,
+      linkedUser: {
+        id: learnerUserId,
+        displayName: 'Integration Learner',
+      },
+      status: 'linked',
+    });
   });
 
   it('raises a not-found service error', async () => {

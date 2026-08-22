@@ -1,5 +1,6 @@
 import { createTableColumn } from '../../atoms/Table';
 import { Grid } from '../../organisms/Grid';
+import { NavigationLink } from '../../context';
 
 export interface AdminOrganisationUserProvisionListItemViewModel {
   id: string;
@@ -14,6 +15,9 @@ export interface AdminOrganisationUserProvisionsPageProps {
   error?: string;
   loading?: boolean;
   onPageChange: (page: number) => void;
+  getProvisionHref?: (
+    provision: AdminOrganisationUserProvisionListItemViewModel,
+  ) => string;
   organisationName: string;
   page: number;
   pageSize: number;
@@ -61,6 +65,7 @@ const columns = [
 
 export function AdminOrganisationUserProvisionsPage({
   error,
+  getProvisionHref,
   loading,
   onPageChange,
   organisationName,
@@ -69,10 +74,28 @@ export function AdminOrganisationUserProvisionsPage({
   provisions,
   totalRecords,
 }: AdminOrganisationUserProvisionsPageProps) {
+  const resolvedColumns = getProvisionHref
+    ? [
+        ...columns,
+        column.display('actions', {
+          align: 'right',
+          header: <span className="sr-only">Actions</span>,
+          cell: ({ row }) => (
+            <NavigationLink
+              className="mr-2 inline-flex px-2 py-1 font-semibold text-primary hover:bg-accent/35"
+              href={getProvisionHref(row)}
+            >
+              View
+            </NavigationLink>
+          ),
+        }),
+      ]
+    : columns;
+
   return (
     <Grid
       caption={`Provisioned users in ${organisationName}`}
-      columns={columns}
+      columns={resolvedColumns}
       empty="This organisation has no provisioned users."
       error={error}
       getRowId={(provision) => provision.id}

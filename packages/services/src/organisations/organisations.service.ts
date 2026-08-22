@@ -5,6 +5,8 @@ import type {
   GetOrganisationCohortResponse,
   GetOrganisationGroupParams,
   GetOrganisationGroupResponse,
+  GetOrganisationUserProvisionParams,
+  GetOrganisationUserProvisionResponse,
   ListOrganisationContractPeriodsParams,
   ListOrganisationContractPeriodsQuery,
   ListOrganisationContractPeriodsResponse,
@@ -44,6 +46,7 @@ import {
   mapOrganisationMembershipUserSummary,
   mapOrganisationSummary,
   mapOrganisationUserProvision,
+  mapOrganisationUserProvisionDetail,
 } from './organisations.mappers';
 import {
   buildOrganisationDetailQuery,
@@ -57,6 +60,7 @@ import {
   buildOrganisationSummariesQuery,
   buildOrganisationUserProvisionsCountQuery,
   buildOrganisationUserProvisionsQuery,
+  buildOrganisationUserProvisionDetailQuery,
 } from './organisations.queries';
 
 function paginate<T>(items: T[], page: number, pageSize: number) {
@@ -488,10 +492,53 @@ export function createOrganisationsService(client: DatabaseClient) {
     };
   }
 
+  async function getOrganisationUserProvision(
+    params: GetOrganisationUserProvisionParams,
+  ): Promise<GetOrganisationUserProvisionResponse> {
+    const { data, error } = await buildOrganisationUserProvisionDetailQuery(
+      client,
+      params.organisationId,
+      params.provisionId,
+    );
+
+    if (error) {
+      throw createServiceError(
+        error.code === 'PGRST116'
+          ? HektorErrorCode.NotFound
+          : HektorErrorCode.InternalServerError,
+        {
+          message:
+            error.code === 'PGRST116'
+              ? 'Provisioned user not found'
+              : 'Unable to get provisioned user',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    let linkedUser;
+    if (data.membership) {
+      const { data: authData, error: authError } =
+        await client.auth.admin.getUserById(data.membership.user_id);
+      if (authError) {
+        throw createServiceError(HektorErrorCode.InternalServerError, {
+          message: 'Unable to get provisioned user',
+          internalMessage: authError.message,
+          cause: authError,
+        });
+      }
+      linkedUser = mapUserSummary(authData.user);
+    }
+
+    return { data: mapOrganisationUserProvisionDetail(data, linkedUser) };
+  }
+
   return {
     getOrganisationCohort,
     getOrganisationGroup,
     getOrganisation,
+    getOrganisationUserProvision,
     listOrganisationCohorts,
     listOrganisationGroups,
     listOrganisationContractPeriods,

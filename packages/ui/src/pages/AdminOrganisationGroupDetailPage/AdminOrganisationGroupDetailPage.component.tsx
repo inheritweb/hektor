@@ -28,6 +28,7 @@ export interface AdminOrganisationGroupDetailViewModel {
 }
 
 export interface AdminOrganisationGroupDetailPageProps {
+  getProvisionHref?: (provision: ProvisionedUser) => string;
   getUserHref?: (membership: GroupUser) => string;
   group: AdminOrganisationGroupDetailViewModel;
 }
@@ -87,6 +88,7 @@ const provisionColumns = [
 ];
 
 export function AdminOrganisationGroupDetailPage({
+  getProvisionHref,
   getUserHref,
   group,
 }: AdminOrganisationGroupDetailPageProps) {
@@ -107,6 +109,23 @@ export function AdminOrganisationGroupDetailPage({
         }),
       ]
     : userColumns;
+  const resolvedProvisionColumns = getProvisionHref
+    ? [
+        ...provisionColumns,
+        provisionColumn.display('actions', {
+          align: 'right',
+          header: <span className="sr-only">Actions</span>,
+          cell: ({ row }) => (
+            <NavigationLink
+              className="font-semibold text-primary hover:underline"
+              href={getProvisionHref(row)}
+            >
+              View
+            </NavigationLink>
+          ),
+        }),
+      ]
+    : provisionColumns;
   return (
     <div className="space-y-10">
       <header>
@@ -156,7 +175,7 @@ export function AdminOrganisationGroupDetailPage({
           <Table
             caption={`Provisioned users in ${group.name}`}
             className="mt-4"
-            columns={provisionColumns}
+            columns={resolvedProvisionColumns}
             getRowId={(item) => item.id}
             highlight
             rows={group.provisionedUsers}

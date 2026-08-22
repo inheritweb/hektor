@@ -165,6 +165,10 @@ export interface OrganisationUserProvision {
   updatedAt: string;
 }
 
+export interface OrganisationUserProvisionDetail extends OrganisationUserProvision {
+  linkedUser?: UserSummary;
+}
+
 export type OrganisationSummary = Pick<
   Organisation,
   'id' | 'name' | 'slug' | 'status'

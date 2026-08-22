@@ -2,6 +2,7 @@ import {
   getOrganisationContract,
   getOrganisationCohortContract,
   getOrganisationGroupContract,
+  getOrganisationUserProvisionContract,
   listOrganisationContractPeriodsContract,
   listOrganisationCohortsContract,
   listOrganisationGroupsContract,
@@ -22,6 +23,10 @@ export const getOrganisationCohort = registerApiMethod(
 
 export const getOrganisationGroup = registerApiMethod(
   getOrganisationGroupContract,
+);
+
+export const getOrganisationUserProvision = registerApiMethod(
+  getOrganisationUserProvisionContract,
 );
 
 export const listOrganisationContractPeriods = registerApiMethod(

@@ -6,6 +6,7 @@ export {
   mapOrganisationGroupSummary,
   mapOrganisationGroup,
   mapOrganisationSummary,
+  mapOrganisationUserProvisionDetail,
 } from './organisations.mappers';
 
 export {
@@ -16,6 +17,7 @@ export {
   buildOrganisationGroupsQuery,
   buildOrganisationGroupDetailQuery,
   buildOrganisationSummariesQuery,
+  buildOrganisationUserProvisionDetailQuery,
 } from './organisations.queries';
 
 export { createOrganisationsService } from './organisations.service';

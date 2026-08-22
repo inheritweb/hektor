@@ -50,6 +50,9 @@ export function AdminOrganisationUserProvisionsScreen({
   return (
     <AdminOrganisationUserProvisionsPage
       error={provisions.error?.message ?? organisation.error?.message}
+      getProvisionHref={(provision) =>
+        `/admin/organisations/${organisationId}/provisioned-users/${provision.id}`
+      }
       loading={provisions.isPending || organisation.isPending}
       onPageChange={onPageChange}
       organisationName={organisation.data?.data.name ?? 'Organisation'}

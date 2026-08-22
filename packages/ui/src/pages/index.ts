@@ -16,6 +16,8 @@ export * from './AdminOrganisationUsersPage';
 
 export * from './AdminOrganisationUserProvisionsPage';
 
+export * from './AdminOrganisationUserProvisionDetailPage';
+
 export * from './AdminUserDetailPage';
 
 export * from './AdminUsersPage';

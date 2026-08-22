@@ -9,6 +9,7 @@ import {
   type OrganisationMembershipUserSummary,
   type OrganisationSummary,
   type OrganisationUserProvision,
+  type OrganisationUserProvisionDetail,
   type OrganisationUserProvisionsSummary,
   type OrganisationUsersSummary,
   GroupStatus,
@@ -30,6 +31,7 @@ import type {
   OrganisationMembershipsQueryResult,
   OrganisationSummaryQueryResult,
   OrganisationUserProvisionsQueryResult,
+  OrganisationUserProvisionDetailQueryResult,
 } from './organisations.queries';
 
 function mapDateTime(value: string) {
@@ -215,5 +217,15 @@ export function mapOrganisationUserProvision(
     revokedAt: record.revoked_at ? mapDateTime(record.revoked_at) : undefined,
     createdAt: mapDateTime(record.created_at),
     updatedAt: mapDateTime(record.updated_at),
+  };
+}
+
+export function mapOrganisationUserProvisionDetail(
+  record: OrganisationUserProvisionDetailQueryResult,
+  linkedUser?: UserSummary,
+): OrganisationUserProvisionDetail {
+  return {
+    ...mapOrganisationUserProvision(record),
+    linkedUser,
   };
 }
