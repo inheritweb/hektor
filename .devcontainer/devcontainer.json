@@ -11,10 +11,14 @@
       "dockerDashComposeVersion": "v2"
     }
   },
-  "forwardPorts": [3000, 54321, 54322, 54323, 54324],
+  "forwardPorts": [3000, 3001, 54321, 54322, 54323, 54324],
   "portsAttributes": {
     "3000": {
       "label": "Hektor web app",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "Hektor simulator",
       "onAutoForward": "notify"
     },
     "54321": {

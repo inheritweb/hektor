@@ -1,10 +1,10 @@
 import type { QueryData } from '@supabase/supabase-js';
 
-import type {
-  GroupStatus,
-  OrganisationRole,
-  OrganisationUserStatus,
-  ProvisioningMethod,
+import {
+  type GroupStatus,
+  type OrganisationRole,
+  type OrganisationUserStatus,
+  type ProvisioningMethod,
   ProvisioningStatus,
 } from '@hektor/types';
 
@@ -401,5 +401,43 @@ export function transitionOrganisationUserProvisionQuery(
     ...(options.organisationUserId
       ? { target_organisation_user_id: options.organisationUserId }
       : {}),
+  });
+}
+
+export function buildProvisionAcceptanceQuery(
+  client: DatabaseClient,
+  provisionId: string,
+) {
+  return client
+    .from('organisation_user_provisions')
+    .select(
+      `
+      id, organisation_user_id, provisioning_method, source_external_id,
+      provisioned_user_name, provisioned_display_name, provisioned_given_name,
+      provisioned_family_name, provisioned_role, status, last_synchronized_at,
+      linked_at, revoked_at, created_at, updated_at,
+      organisation:organisations (id, name, slug, status),
+      cohort:organisation_cohorts (id, name, starts_on, ends_on, status),
+      membership:organisation_users (id, user_id, role, status),
+      groupLinks:organisation_provisioned_group_users (
+        group:organisation_groups (
+          id, name, status, provisioning_method, source_external_id
+        )
+      )
+    `,
+    )
+    .eq('id', provisionId)
+    .single();
+}
+
+export function acceptOrganisationUserProvisionQuery(
+  client: DatabaseClient,
+  provisionId: string,
+  userId: string,
+) {
+  return client.rpc('accept_organisation_user_provision', {
+    target_provision_id: provisionId,
+    expected_status: ProvisioningStatus.Pending,
+    target_user_id: userId,
   });
 }

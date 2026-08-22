@@ -1,9 +1,11 @@
 import {
   autoLinkOrganisationUserProvision,
+  acceptOrganisationUserProvision,
   getOrganisation,
   getOrganisationCohort,
   getOrganisationGroup,
   getOrganisationUserProvision,
+  getProvisionAcceptance,
   listOrganisationContractPeriods,
   listOrganisationCohorts,
   listOrganisationGroups,
@@ -79,4 +81,14 @@ export const useAdminTransitionOrganisationUserProvision = makeMutation(
 export const useAdminAutoLinkOrganisationUserProvision = makeMutation(
   autoLinkOrganisationUserProvision,
   ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useGetProvisionAcceptance = makeQuery(getProvisionAcceptance, [
+  'provisioning',
+  'acceptance',
+]);
+
+export const useAcceptOrganisationUserProvision = makeMutation(
+  acceptOrganisationUserProvision,
+  ['provisioning', 'acceptance'],
 );

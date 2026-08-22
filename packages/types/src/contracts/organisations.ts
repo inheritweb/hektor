@@ -317,6 +317,23 @@ export const autoLinkOrganisationUserProvisionContract = defineContract({
   output: hektorResponseSchema(provisioningAutoLinkResultSchema),
 });
 
+export const getProvisionAcceptanceContract = defineContract({
+  method: 'GET',
+  path: '/api/provisioning/:provisionId',
+  access: { type: 'authenticated' },
+  params: z.object({ provisionId: z.uuid() }),
+  output: hektorResponseSchema(organisationUserProvisionDetailSchema),
+});
+
+export const acceptOrganisationUserProvisionContract = defineContract({
+  method: 'POST',
+  path: '/api/provisioning/:provisionId/accept',
+  access: { type: 'authenticated' },
+  params: z.object({ provisionId: z.uuid() }),
+  body: emptyObjectSchema,
+  output: hektorResponseSchema(provisioningLifecycleResultSchema),
+});
+
 export type ListOrganisationsQuery = ContractQuery<
   typeof listOrganisationsContract
 >;
@@ -427,4 +444,12 @@ export type TransitionOrganisationUserProvisionResponse = ContractOutput<
 
 export type AutoLinkOrganisationUserProvisionResponse = ContractOutput<
   typeof autoLinkOrganisationUserProvisionContract
+>;
+
+export type GetProvisionAcceptanceResponse = ContractOutput<
+  typeof getProvisionAcceptanceContract
+>;
+
+export type AcceptOrganisationUserProvisionResponse = ContractOutput<
+  typeof acceptOrganisationUserProvisionContract
 >;

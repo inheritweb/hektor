@@ -20,6 +20,10 @@
     "./organisations": {
       "types": "./src/organisations/index.ts",
       "import": "./src/organisations/index.ts"
+    },
+    "./simulator": {
+      "types": "./src/simulator/index.ts",
+      "import": "./src/simulator/index.ts"
     }
   },
   "scripts": {

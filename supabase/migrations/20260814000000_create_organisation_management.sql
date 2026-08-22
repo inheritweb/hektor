@@ -276,6 +276,19 @@ begin
         revoked_at = null
     where id = provision.id
     returning * into provision;
+
+    insert into public.organisation_group_users (
+      organisation_id,
+      organisation_group_id,
+      organisation_user_id
+    )
+    select
+      provision.organisation_id,
+      provision_group.organisation_group_id,
+      membership.id
+    from public.organisation_provisioned_group_users provision_group
+    where provision_group.organisation_user_provision_id = provision.id
+    on conflict (organisation_group_id, organisation_user_id) do nothing;
   elsif lifecycle_action = 'deactivate' then
     if provision.status <> 'linked' or provision.organisation_user_id is null then
       raise exception using errcode = '22023', message = 'invalid_provision_transition';
@@ -353,6 +366,69 @@ begin
 end;
 $$;
 
+create function public.accept_organisation_user_provision(
+  target_provision_id uuid,
+  expected_status public.provisioning_status,
+  target_user_id uuid
+)
+returns public.organisation_user_provisions
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  provision public.organisation_user_provisions;
+  membership public.organisation_users;
+begin
+  select * into provision
+  from public.organisation_user_provisions
+  where id = target_provision_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'provision_not_found';
+  end if;
+  if provision.status <> expected_status or provision.status <> 'pending' then
+    raise exception using errcode = 'P0001', message = 'provision_status_conflict';
+  end if;
+  if not exists (
+    select 1 from public.organisations
+    where id = provision.organisation_id and status = 'active'
+  ) then
+    raise exception using errcode = 'P0001', message = 'organisation_not_active';
+  end if;
+
+  select * into membership
+  from public.organisation_users
+  where organisation_id = provision.organisation_id
+    and user_id = target_user_id
+  for update;
+
+  if not found then
+    insert into public.organisation_users (
+      organisation_id,
+      user_id,
+      organisation_cohort_id,
+      role,
+      status
+    ) values (
+      provision.organisation_id,
+      target_user_id,
+      provision.organisation_cohort_id,
+      provision.provisioned_role,
+      'suspended'
+    ) returning * into membership;
+  end if;
+
+  return public.transition_organisation_user_provision(
+    provision.id,
+    provision.status,
+    'link',
+    membership.id
+  );
+end;
+$$;
+
 revoke all on function public.transition_organisation_user_provision(
   uuid,
   public.provisioning_status,
@@ -363,6 +439,16 @@ grant execute on function public.transition_organisation_user_provision(
   uuid,
   public.provisioning_status,
   text,
+  uuid
+) to service_role;
+revoke all on function public.accept_organisation_user_provision(
+  uuid,
+  public.provisioning_status,
+  uuid
+) from public;
+grant execute on function public.accept_organisation_user_provision(
+  uuid,
+  public.provisioning_status,
   uuid
 ) to service_role;
 

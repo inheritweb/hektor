@@ -1868,6 +1868,34 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@hektor/simulator@workspace:apps/simulator":
+  version: 0.0.0-use.local
+  resolution: "@hektor/simulator@workspace:apps/simulator"
+  dependencies:
+    "@hektor/eslint-config": "workspace:*"
+    "@hektor/services": "workspace:*"
+    "@hektor/tailwind-config": "workspace:*"
+    "@hektor/types": "workspace:*"
+    "@hektor/typescript-config": "workspace:*"
+    "@hektor/ui": "workspace:*"
+    "@supabase/ssr": "npm:0.12.4"
+    "@supabase/supabase-js": "npm:2.111.0"
+    "@t3-oss/env-nextjs": "npm:0.13.11"
+    "@tailwindcss/postcss": "npm:4.3.3"
+    "@types/node": "npm:^24.0.0"
+    "@types/react": "npm:19.2.17"
+    "@types/react-dom": "npm:^19.2.0"
+    dotenv-cli: "npm:11.0.0"
+    eslint: "npm:^9.39.0"
+    next: "npm:16.2.12"
+    react: "npm:19.2.8"
+    react-dom: "npm:19.2.8"
+    tailwindcss: "npm:4.3.3"
+    typescript: "npm:6.0.3"
+    zod: "npm:4.4.3"
+  languageName: unknown
+  linkType: soft
+
 "@hektor/tailwind-config@workspace:*, @hektor/tailwind-config@workspace:packages/tailwind-config":
   version: 0.0.0-use.local
   resolution: "@hektor/tailwind-config@workspace:packages/tailwind-config"

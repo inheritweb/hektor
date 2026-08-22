@@ -23,3 +23,7 @@ export * from './AdminUserDetailPage';
 export * from './AdminUsersPage';
 
 export * from './ProfilePage';
+
+export * from './ProvisionAcceptancePage';
+
+export * from './InstitutionalAccessUnavailablePage';

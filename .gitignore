@@ -10,7 +10,7 @@ node_modules/
 .vercel/
 **/.astro/
 **/dist/
-apps/web/.next/
+**/.next/
 apps/web/playwright-report/
 apps/web/test-results/
 packages/ui/storybook-static/

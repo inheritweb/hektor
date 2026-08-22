@@ -30,6 +30,7 @@ import {
   ProvisioningAutoLinkOutcome,
   ProvisioningLifecycleAction,
   OrganisationRole,
+  OrganisationStatus,
   OrganisationUserStatus,
   ProvisioningStatus,
 } from '@hektor/types';
@@ -63,6 +64,8 @@ import {
   buildOrganisationUserProvisionsCountQuery,
   buildOrganisationUserProvisionsQuery,
   buildOrganisationUserProvisionDetailQuery,
+  buildProvisionAcceptanceQuery,
+  acceptOrganisationUserProvisionQuery,
   buildOrganisationMembershipForUserQuery,
   transitionOrganisationUserProvisionQuery,
 } from './organisations.queries';
@@ -85,6 +88,77 @@ function includesQuery(values: Array<string | undefined>, query?: string) {
 }
 
 export function createOrganisationsService(client: DatabaseClient) {
+  async function getProvisionAcceptance(options: {
+    provisionId: string;
+    userId: string;
+    email?: string;
+    emailVerified: boolean;
+  }) {
+    const { data, error } = await buildProvisionAcceptanceQuery(
+      client,
+      options.provisionId,
+    );
+    const identityMatches =
+      options.emailVerified &&
+      options.email?.trim().toLocaleLowerCase() ===
+        data?.provisioned_user_name.trim().toLocaleLowerCase();
+
+    if (error || !data || !identityMatches) {
+      throw createServiceError(HektorErrorCode.NotFound, {
+        message: 'Provision invitation not found',
+        internalMessage: error?.message,
+        cause: error,
+      });
+    }
+    if (data.status !== ProvisioningStatus.Pending) {
+      throw createServiceError(HektorErrorCode.Conflict, {
+        message: 'This provision invitation is no longer available',
+      });
+    }
+    if (data.organisation.status !== OrganisationStatus.Active) {
+      throw createServiceError(HektorErrorCode.Conflict, {
+        message: 'This organisation is not currently accepting invitations',
+      });
+    }
+
+    return { data: mapOrganisationUserProvisionDetail(data) };
+  }
+
+  async function acceptOrganisationUserProvision(options: {
+    provisionId: string;
+    userId: string;
+    email?: string;
+    emailVerified: boolean;
+  }) {
+    await getProvisionAcceptance(options);
+    const { data, error } = await acceptOrganisationUserProvisionQuery(
+      client,
+      options.provisionId,
+      options.userId,
+    );
+
+    if (error) {
+      const conflict =
+        error.message.includes('provision_status_conflict') ||
+        error.message.includes('learner_seat_capacity_exhausted') ||
+        error.message.includes('organisation_not_active');
+      throw createServiceError(
+        conflict
+          ? HektorErrorCode.Conflict
+          : HektorErrorCode.InternalServerError,
+        {
+          message: error.message.includes('learner_seat_capacity_exhausted')
+            ? 'The organisation has no learner seats available'
+            : 'Unable to accept provision invitation',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return { data: { id: data.id, status: ProvisioningStatus.Linked } };
+  }
+
   async function transitionOrganisationUserProvision(options: {
     provisionId: string;
     expectedStatus: ProvisioningStatus;
@@ -690,11 +764,13 @@ export function createOrganisationsService(client: DatabaseClient) {
   }
 
   return {
+    acceptOrganisationUserProvision,
     autoLinkOrganisationUserProvision,
     getOrganisationCohort,
     getOrganisationGroup,
     getOrganisation,
     getOrganisationUserProvision,
+    getProvisionAcceptance,
     listOrganisationCohorts,
     listOrganisationGroups,
     listOrganisationContractPeriods,

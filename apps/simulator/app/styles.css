@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+@import '@hektor/tailwind-config';
+@import '@hektor/ui/styles.css';
+@source '../../../packages/ui/src/**/*.{ts,tsx}';
+
+@layer base {
+  body {
+    @apply m-0 bg-background text-foreground antialiased;
+  }
+}

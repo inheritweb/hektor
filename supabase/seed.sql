@@ -55,6 +55,7 @@ with seed_users (
   ('e8cfae07-e6e3-4062-b62b-c0b3e4e019a6', 'Marcus Green', 'marcus.green@example.test', null, null, null, null, false),
   ('7ebb481d-de29-4826-998b-682a688fed11', 'Eleanor Brooks', 'eleanor.brooks@example.test', null, null, null, null, false),
   ('1a72a6ec-5b70-436c-ba9d-d318cd5e2617', 'Tomás Silva', 'tomas.silva@example.test', null, null, null, null, false),
+  ('370ec940-70cd-43d4-8bdc-8d933e5250e5', 'Isla Phillips', 'isla.phillips@northbridge.example', null, null, null, null, false),
 
   ('a058bcd6-bab1-4558-a115-4b347a305154', 'Maya Patel', 'maya.patel@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'org_admin', 'scim', false),
   ('b8f5c104-1d91-4a9a-bd6d-1401c0745b41', 'Daniel Okafor', 'daniel.okafor@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'org_admin', 'scim', false),

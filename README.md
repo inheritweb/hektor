@@ -77,10 +77,10 @@ On every start, it launches Supabase and updates the local Supabase values in
 the ignored root `.env`. Existing unrelated variables in that file are
 preserved.
 
-Start the application:
+Start the product application and its development simulator:
 
 ```sh
-yarn dev
+yarn dev:app
 ```
 
 The main local services are:
@@ -88,6 +88,7 @@ The main local services are:
 | Service         | Address                                                   |
 | --------------- | --------------------------------------------------------- |
 | Web application | http://localhost:3000                                     |
+| Simulator       | http://localhost:3001                                     |
 | Supabase API    | http://localhost:54321                                    |
 | PostgreSQL      | `postgresql://postgres:postgres@localhost:54322/postgres` |
 | Supabase Studio | http://localhost:54323                                    |
@@ -132,6 +133,7 @@ changed.
 | Command                | What it does                                 |
 | ---------------------- | -------------------------------------------- |
 | `yarn dev`             | Runs all persistent development tasks        |
+| `yarn dev:app`         | Runs the web app and development simulator   |
 | `yarn dev:web`         | Runs only the web application                |
 | `yarn build`           | Creates all production builds                |
 | `yarn ci`              | Runs checks, tests, app and Storybook builds |

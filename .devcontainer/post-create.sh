@@ -19,9 +19,10 @@ cat <<'EOF'
 ==========================================================
   Hektor dev container ready.
   Web:              http://localhost:3000
+  Simulator:        http://localhost:3001
   Supabase API:     http://localhost:54321
   Supabase Studio:  http://localhost:54323
   Supabase Mailpit: http://localhost:54324
-  Start all apps:   yarn dev
+  Start app suite:  yarn dev:app
 ==========================================================
 EOF

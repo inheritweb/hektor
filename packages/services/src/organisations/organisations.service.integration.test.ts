@@ -20,11 +20,13 @@ import { createOrganisationsService } from './organisations.service';
 const client = createIntegrationDatabaseClient();
 
 const {
+  acceptOrganisationUserProvision,
   autoLinkOrganisationUserProvision,
   getOrganisation,
   getOrganisationCohort,
   getOrganisationGroup,
   getOrganisationUserProvision,
+  getProvisionAcceptance,
   listOrganisationContractPeriods,
   listOrganisationCohorts,
   listOrganisationGroups,
@@ -574,6 +576,92 @@ describe('organisation services', () => {
       role: 'org_admin',
       status: 'active',
     });
+  });
+
+  it('accepts a matching institutional provision and materialises its assignments', async () => {
+    const email = `institutional-${organisationId}@integration.example`;
+    const user = await client.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: { full_name: 'Institutional Learner' },
+    });
+    if (user.error) throw user.error;
+    const acceptanceProvisionId = randomUUID();
+    const { error: provisionError } = await client
+      .from('organisation_user_provisions')
+      .insert({
+        id: acceptanceProvisionId,
+        organisation_id: organisationId,
+        organisation_cohort_id: cohortId,
+        provisioning_method: 'scim',
+        provisioned_user_name: email,
+        provisioned_display_name: 'Institutional Learner',
+        provisioned_role: 'learner',
+      });
+    if (provisionError) throw provisionError;
+    const { error: groupError } = await client
+      .from('organisation_provisioned_group_users')
+      .insert({
+        organisation_id: organisationId,
+        organisation_group_id: groupId,
+        organisation_user_provision_id: acceptanceProvisionId,
+      });
+    if (groupError) throw groupError;
+
+    const identity = {
+      provisionId: acceptanceProvisionId,
+      userId: user.data.user.id,
+      email,
+      emailVerified: true,
+    };
+    const preview = await getProvisionAcceptance(identity);
+    expect(preview.data.organisation.name).toBe('Integration Test University');
+
+    await acceptOrganisationUserProvision(identity);
+    const { data: membership } = await client
+      .from('organisation_users')
+      .select('id, role, status, organisation_cohort_id')
+      .eq('organisation_id', organisationId)
+      .eq('user_id', user.data.user.id)
+      .single();
+    expect(membership).toMatchObject({
+      role: 'learner',
+      status: 'active',
+      organisation_cohort_id: cohortId,
+    });
+    const { count } = await client
+      .from('organisation_group_users')
+      .select('organisation_user_id', { count: 'exact', head: true })
+      .eq('organisation_group_id', groupId)
+      .eq('organisation_user_id', membership!.id);
+    expect(count).toBe(1);
+    await expect(
+      acceptOrganisationUserProvision(identity),
+    ).rejects.toMatchObject({
+      code: HektorErrorCode.Conflict,
+    });
+
+    await client
+      .from('organisation_user_provisions')
+      .delete()
+      .eq('id', acceptanceProvisionId);
+    await client
+      .from('organisation_seat_activations')
+      .delete()
+      .eq('organisation_user_id', membership!.id);
+    await client.from('organisation_users').delete().eq('id', membership!.id);
+    await client.auth.admin.deleteUser(user.data.user.id);
+  });
+
+  it('does not disclose a provision to a different institutional identity', async () => {
+    await expect(
+      getProvisionAcceptance({
+        provisionId,
+        userId: learnerUserId,
+        email: 'different@integration.example',
+        emailVerified: true,
+      }),
+    ).rejects.toMatchObject({ code: HektorErrorCode.NotFound });
   });
 
   it('leaves an unmatched identity pending', async () => {

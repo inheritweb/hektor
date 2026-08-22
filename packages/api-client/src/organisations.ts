@@ -1,9 +1,11 @@
 import {
   autoLinkOrganisationUserProvisionContract,
+  acceptOrganisationUserProvisionContract,
   getOrganisationContract,
   getOrganisationCohortContract,
   getOrganisationGroupContract,
   getOrganisationUserProvisionContract,
+  getProvisionAcceptanceContract,
   listOrganisationContractPeriodsContract,
   listOrganisationCohortsContract,
   listOrganisationGroupsContract,
@@ -57,4 +59,12 @@ export const transitionOrganisationUserProvision = registerApiMethod(
 
 export const autoLinkOrganisationUserProvision = registerApiMethod(
   autoLinkOrganisationUserProvisionContract,
+);
+
+export const getProvisionAcceptance = registerApiMethod(
+  getProvisionAcceptanceContract,
+);
+
+export const acceptOrganisationUserProvision = registerApiMethod(
+  acceptOrganisationUserProvisionContract,
 );

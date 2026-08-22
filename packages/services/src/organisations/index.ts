@@ -19,6 +19,8 @@ export {
   buildOrganisationSummariesQuery,
   buildOrganisationUserProvisionDetailQuery,
   buildOrganisationMembershipForUserQuery,
+  buildProvisionAcceptanceQuery,
+  acceptOrganisationUserProvisionQuery,
   transitionOrganisationUserProvisionQuery,
 } from './organisations.queries';
 

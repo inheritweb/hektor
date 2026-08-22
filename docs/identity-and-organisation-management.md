@@ -364,6 +364,35 @@ links to it immediately. A verified user without a membership must accept the
 prepared relationship before it is linked; an unresolved identity remains
 pending.
 
+Institutional authentication is normalized into a verified identity before it
+reaches the provisioning domain. A matching pending provision signs in or
+creates the canonical Hektor user, then presents an explicit organisation
+acceptance screen. Confirmation atomically creates or reuses the durable
+membership, enforces learner capacity, links the provision, and materializes
+its canonical group memberships. An institutional identity with neither an
+existing membership nor a matching provision receives no organisation access.
+
+Local acceptance journeys use explicitly seeded identities and normal local
+authentication. Tests which exercise first-time institutional account creation
+create isolated fixtures and remove them afterwards; navigating to a test view
+must not create users or memberships as a side effect.
+
+The separate development application at `http://localhost:3001` exercises a
+small catalogue of named identity scenarios. It mocks the trusted result of
+institutional SSO rather than the external SAML or OIDC exchange itself. A
+simulated SSO identity must still have an existing membership or matching
+provision before Hektor creates an account or session. Tokenised invitation
+scenarios use the normal verified identity and provision-acceptance boundaries.
+Simulator-only privileged behavior is exposed solely through the explicit
+`@hektor/services/simulator` entrypoint and is not imported by the web app.
+
+The simulator only initiates these journeys. Post-authentication outcomes use
+the same standalone identity experience intended for production: neither the
+provision-acceptance screen nor an institutional-access refusal renders the
+authenticated application navigation. An identity from a recognised
+institution without a membership or provision is directed to an explanatory
+screen and no canonical account is created.
+
 #### 8.2 Cohorts and groups
 
 Users see one organisation group concept regardless of how a group was created.
