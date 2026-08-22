@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 
 import { NavigationProvider } from '../../context';
 
@@ -73,5 +74,18 @@ describe('AdminOrganisationUserProvisionDetailPage', () => {
     expect(
       screen.getByText('This provision has not been linked to a Hektor user.'),
     ).toBeTruthy();
+  });
+
+  it('runs a supplied lifecycle action', async () => {
+    const onSelect = vi.fn();
+    render(
+      <AdminOrganisationUserProvisionDetailPage
+        actions={[{ label: 'Deactivate', onSelect }]}
+        provision={provision}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Deactivate' }));
+    expect(onSelect).toHaveBeenCalledOnce();
   });
 });

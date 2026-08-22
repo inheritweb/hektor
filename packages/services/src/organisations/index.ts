@@ -18,6 +18,13 @@ export {
   buildOrganisationGroupDetailQuery,
   buildOrganisationSummariesQuery,
   buildOrganisationUserProvisionDetailQuery,
+  buildOrganisationMembershipForUserQuery,
+  transitionOrganisationUserProvisionQuery,
 } from './organisations.queries';
 
 export { createOrganisationsService } from './organisations.service';
+
+export {
+  canTransitionProvisioningStatus,
+  getProvisioningTransition,
+} from './provisioning-lifecycle';

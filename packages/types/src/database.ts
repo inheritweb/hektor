@@ -265,18 +265,21 @@ export type Database = {
           organisation_contract_period_id: string;
           organisation_id: string;
           organisation_user_id: string;
+          released_at: string | null;
         };
         Insert: {
           activated_at?: string;
           organisation_contract_period_id: string;
           organisation_id: string;
           organisation_user_id: string;
+          released_at?: string | null;
         };
         Update: {
           activated_at?: string;
           organisation_contract_period_id?: string;
           organisation_id?: string;
           organisation_user_id?: string;
+          released_at?: string | null;
         };
         Relationships: [
           {
@@ -472,6 +475,39 @@ export type Database = {
         Returns: boolean;
       };
       is_platform_admin: { Args: never; Returns: boolean };
+      transition_organisation_user_provision: {
+        Args: {
+          expected_status: Database['public']['Enums']['provisioning_status'];
+          lifecycle_action: string;
+          target_organisation_user_id?: string;
+          target_provision_id: string;
+        };
+        Returns: {
+          created_at: string;
+          id: string;
+          last_synchronized_at: string | null;
+          linked_at: string | null;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          organisation_user_id: string | null;
+          provisioned_display_name: string | null;
+          provisioned_family_name: string | null;
+          provisioned_given_name: string | null;
+          provisioned_role: Database['public']['Enums']['organisation_role'];
+          provisioned_user_name: string;
+          provisioning_method: Database['public']['Enums']['provisioning_method'];
+          revoked_at: string | null;
+          source_external_id: string | null;
+          status: Database['public']['Enums']['provisioning_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_user_provisions';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       group_status: 'active' | 'archived';

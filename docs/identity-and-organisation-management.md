@@ -351,6 +351,19 @@ its asserted profile fields never replace canonical user details. Pending and
 revoked provisions cannot grant access. Unprovisioning suspends the relevant
 membership without deleting the user's personal account.
 
+A provision follows an explicit lifecycle. Pending provisions may link or fail;
+failed provisions may be retried; linked provisions may become inactive; and an
+inactive provision may reactivate the same durable membership. Revocation is
+terminal for that assertion. A later SCIM enablement creates a new provision
+which may link back to the existing membership. Once linked, a provision cannot
+fail, and at most one non-revoked provision controls a membership at a time.
+
+Automatic linking uses a normalized, verified canonical email. If that user
+already has an organisation membership with the asserted role, the provision
+links to it immediately. A verified user without a membership must accept the
+prepared relationship before it is linked; an unresolved identity remains
+pending.
+
 #### 8.2 Cohorts and groups
 
 Users see one organisation group concept regardless of how a group was created.
@@ -379,10 +392,10 @@ organisation group membership. It is materialized as an
 
 #### 8.3 Seats
 
-Only a learner who has completed a successful first login consumes an
-organisation seat. `org_admin`, `tutor`, and platform `admin` users do not
-consume seats. SCIM provisioning establishes eligibility but does not consume a
-seat.
+An active learner membership consumes an organisation seat regardless of
+whether it was added manually or established through SCIM, CSV, or another
+provisioning flow. `org_admin`, `tutor`, and platform `admin` users do not
+consume learner seats.
 
 Seat usage is measured within a contract period, so it is kept separate from the
 organisation-user lifecycle:
@@ -397,15 +410,16 @@ organisation_contract_periods
 organisation_seat_activations
 ├── organisation_contract_period_id
 ├── organisation_user_id
-└── activated_at
+├── activated_at
+└── released_at
 ```
 
 There is at most one activation for an organisation user in a contract period.
-On successful learner login, Hektor links a pending `organisation_users` record
-when necessary and idempotently inserts the activation for the current contract
-period. Later logins in the same period do not consume another seat; the first
-login in a new period creates that period's activation. SCIM never writes seat
-activation records directly.
+Activating or linking a learner idempotently acquires the current contract
+period's seat. Suspending the durable membership releases it while retaining the
+activation record for audit; reactivation must reacquire capacity. If capacity
+is exhausted, linking or reactivation fails atomically and leaves the provision
+in its prior state.
 
 To be specified further: all columns, constraints, domains, SSO connections,
 SCIM credentials, provisioning events, and audit events.

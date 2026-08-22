@@ -2,7 +2,13 @@ import { randomUUID } from 'node:crypto';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { OrganisationStatus, SortDirection } from '@hektor/types';
+import {
+  OrganisationStatus,
+  ProvisioningAutoLinkOutcome,
+  ProvisioningLifecycleAction,
+  ProvisioningStatus,
+  SortDirection,
+} from '@hektor/types';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import { organisationSchema } from '@hektor/types/contracts/organisations';
 
@@ -14,6 +20,7 @@ import { createOrganisationsService } from './organisations.service';
 const client = createIntegrationDatabaseClient();
 
 const {
+  autoLinkOrganisationUserProvision,
   getOrganisation,
   getOrganisationCohort,
   getOrganisationGroup,
@@ -24,6 +31,7 @@ const {
   listOrganisations,
   listOrganisationUserProvisions,
   listOrganisationUsers,
+  transitionOrganisationUserProvision,
 } = createOrganisationsService(client);
 
 const organisationId = randomUUID();
@@ -92,7 +100,7 @@ describe('organisation services', () => {
       .insert({
         id: contractPeriodId,
         organisation_id: organisationId,
-        starts_on: '2026-09-01',
+        starts_on: '2026-01-01',
         ends_on: '2027-09-01',
         learner_seat_allowance: 100,
       });
@@ -318,7 +326,7 @@ describe('organisation services', () => {
     expect(response.data).toEqual([
       expect.objectContaining({
         id: contractPeriodId,
-        startsOn: '2026-09-01',
+        startsOn: '2026-01-01',
         endsOn: '2027-09-01',
         seats: { allowed: 100, activated: 0, remaining: 100 },
       }),
@@ -477,6 +485,275 @@ describe('organisation services', () => {
       },
       status: 'linked',
     });
+  });
+
+  it('suspends and reactivates a durable membership with its provision', async () => {
+    await transitionOrganisationUserProvision({
+      provisionId: linkedProvisionId,
+      expectedStatus: ProvisioningStatus.Linked,
+      action: ProvisioningLifecycleAction.Deactivate,
+    });
+
+    const inactiveProvision = await getOrganisationUserProvision({
+      organisationId,
+      provisionId: linkedProvisionId,
+    });
+    expect(inactiveProvision.data.status).toBe(ProvisioningStatus.Inactive);
+
+    const { data: suspendedMembership } = await client
+      .from('organisation_users')
+      .select('status')
+      .eq('id', learnerMembershipId)
+      .single();
+    expect(suspendedMembership?.status).toBe('suspended');
+    const { data: releasedSeat } = await client
+      .from('organisation_seat_activations')
+      .select('released_at')
+      .eq('organisation_contract_period_id', contractPeriodId)
+      .eq('organisation_user_id', learnerMembershipId)
+      .single();
+    expect(releasedSeat?.released_at).not.toBeNull();
+
+    await transitionOrganisationUserProvision({
+      provisionId: linkedProvisionId,
+      expectedStatus: ProvisioningStatus.Inactive,
+      action: ProvisioningLifecycleAction.Reactivate,
+    });
+
+    const { data: activeMembership } = await client
+      .from('organisation_users')
+      .select('status')
+      .eq('id', learnerMembershipId)
+      .single();
+    expect(activeMembership?.status).toBe('active');
+    const { data: activeSeat } = await client
+      .from('organisation_seat_activations')
+      .select('released_at')
+      .eq('organisation_contract_period_id', contractPeriodId)
+      .eq('organisation_user_id', learnerMembershipId)
+      .single();
+    expect(activeSeat?.released_at).toBeNull();
+  });
+
+  it('automatically links a verified identity with an existing membership', async () => {
+    const automaticProvisionId = randomUUID();
+    const { error } = await client.from('organisation_user_provisions').insert({
+      id: automaticProvisionId,
+      organisation_id: organisationId,
+      provisioning_method: 'scim',
+      provisioned_user_name: `tutor-${organisationId}@integration.example`,
+      provisioned_role: 'org_admin',
+      status: 'pending',
+    });
+    if (error) throw error;
+
+    const result = await autoLinkOrganisationUserProvision({
+      organisationId,
+      provisionId: automaticProvisionId,
+    });
+
+    expect(result.data).toEqual({
+      outcome: ProvisioningAutoLinkOutcome.Linked,
+      organisationUserId: tutorMembershipId,
+    });
+
+    const linked = await getOrganisationUserProvision({
+      organisationId,
+      provisionId: automaticProvisionId,
+    });
+    expect(linked.data).toMatchObject({
+      organisationUserId: tutorMembershipId,
+      status: ProvisioningStatus.Linked,
+    });
+    const { data: assertedMembership } = await client
+      .from('organisation_users')
+      .select('role, status')
+      .eq('id', tutorMembershipId)
+      .single();
+    expect(assertedMembership).toEqual({
+      role: 'org_admin',
+      status: 'active',
+    });
+  });
+
+  it('leaves an unmatched identity pending', async () => {
+    const result = await autoLinkOrganisationUserProvision({
+      organisationId,
+      provisionId,
+    });
+
+    expect(result.data).toEqual({
+      outcome: ProvisioningAutoLinkOutcome.PendingIdentityVerification,
+    });
+  });
+
+  it('persists failure and retry without allowing stale transitions', async () => {
+    await transitionOrganisationUserProvision({
+      provisionId,
+      expectedStatus: ProvisioningStatus.Pending,
+      action: ProvisioningLifecycleAction.Fail,
+    });
+    await expect(
+      transitionOrganisationUserProvision({
+        provisionId,
+        expectedStatus: ProvisioningStatus.Pending,
+        action: ProvisioningLifecycleAction.Revoke,
+      }),
+    ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+    await transitionOrganisationUserProvision({
+      provisionId,
+      expectedStatus: ProvisioningStatus.Failed,
+      action: ProvisioningLifecycleAction.Retry,
+    });
+
+    const retried = await getOrganisationUserProvision({
+      organisationId,
+      provisionId,
+    });
+    expect(retried.data.status).toBe(ProvisioningStatus.Pending);
+  });
+
+  it('revokes terminally and permits a new provision for the durable membership', async () => {
+    const { data: tutorProvision } = await client
+      .from('organisation_user_provisions')
+      .select('id')
+      .eq('organisation_user_id', tutorMembershipId)
+      .eq('status', 'linked')
+      .single();
+    if (!tutorProvision) throw new Error('Expected linked tutor provision');
+
+    await transitionOrganisationUserProvision({
+      provisionId: tutorProvision.id,
+      expectedStatus: ProvisioningStatus.Linked,
+      action: ProvisioningLifecycleAction.Revoke,
+    });
+    await expect(
+      transitionOrganisationUserProvision({
+        provisionId: tutorProvision.id,
+        expectedStatus: ProvisioningStatus.Revoked,
+        action: ProvisioningLifecycleAction.Reactivate,
+      }),
+    ).rejects.toMatchObject({ code: HektorErrorCode.UnprocessableEntity });
+
+    const replacementId = randomUUID();
+    const { error } = await client.from('organisation_user_provisions').insert({
+      id: replacementId,
+      organisation_id: organisationId,
+      provisioning_method: 'scim',
+      source_external_id: `replacement-${replacementId}`,
+      provisioned_user_name: `tutor-${organisationId}@integration.example`,
+      provisioned_role: 'tutor',
+    });
+    if (error) throw error;
+
+    const replacement = await autoLinkOrganisationUserProvision({
+      organisationId,
+      provisionId: replacementId,
+    });
+    expect(replacement.data.outcome).toBe(ProvisioningAutoLinkOutcome.Linked);
+    const { data: updatedMembership } = await client
+      .from('organisation_users')
+      .select('role, status')
+      .eq('id', tutorMembershipId)
+      .single();
+    expect(updatedMembership).toEqual({ role: 'tutor', status: 'active' });
+  });
+
+  it('requires acceptance when a verified account has no organisation membership', async () => {
+    const user = await client.auth.admin.createUser({
+      email: `acceptance-${organisationId}@integration.example`,
+      email_confirm: true,
+    });
+    if (user.error) throw user.error;
+    const acceptanceProvisionId = randomUUID();
+    const { error } = await client.from('organisation_user_provisions').insert({
+      id: acceptanceProvisionId,
+      organisation_id: organisationId,
+      provisioning_method: 'manual',
+      provisioned_user_name: `acceptance-${organisationId}@integration.example`,
+      provisioned_role: 'learner',
+    });
+    if (error) throw error;
+
+    const result = await autoLinkOrganisationUserProvision({
+      organisationId,
+      provisionId: acceptanceProvisionId,
+    });
+    expect(result.data.outcome).toBe(
+      ProvisioningAutoLinkOutcome.PendingMembershipAcceptance,
+    );
+    await client
+      .from('organisation_user_provisions')
+      .delete()
+      .eq('id', acceptanceProvisionId);
+    await client.auth.admin.deleteUser(user.data.user.id);
+  });
+
+  it('leaves provision and membership unchanged when learner capacity is exhausted', async () => {
+    await client
+      .from('organisation_contract_periods')
+      .update({ learner_seat_allowance: 1 })
+      .eq('id', contractPeriodId);
+    const secondLearner = await client.auth.admin.createUser({
+      email: `capacity-${organisationId}@integration.example`,
+      email_confirm: true,
+    });
+    if (secondLearner.error) throw secondLearner.error;
+    const secondMembershipId = randomUUID();
+    const capacityProvisionId = randomUUID();
+    const { error: membershipError } = await client
+      .from('organisation_users')
+      .insert({
+        id: secondMembershipId,
+        organisation_id: organisationId,
+        user_id: secondLearner.data.user.id,
+        role: 'learner',
+        status: 'suspended',
+      });
+    if (membershipError) throw membershipError;
+    const { error: provisionError } = await client
+      .from('organisation_user_provisions')
+      .insert({
+        id: capacityProvisionId,
+        organisation_id: organisationId,
+        provisioning_method: 'manual',
+        provisioned_user_name: `capacity-${organisationId}@integration.example`,
+        provisioned_role: 'learner',
+      });
+    if (provisionError) throw provisionError;
+
+    await expect(
+      autoLinkOrganisationUserProvision({
+        organisationId,
+        provisionId: capacityProvisionId,
+      }),
+    ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+    const [provision, membership] = await Promise.all([
+      client
+        .from('organisation_user_provisions')
+        .select('status, organisation_user_id')
+        .eq('id', capacityProvisionId)
+        .single(),
+      client
+        .from('organisation_users')
+        .select('status')
+        .eq('id', secondMembershipId)
+        .single(),
+    ]);
+    expect(provision.data).toEqual({
+      status: 'pending',
+      organisation_user_id: null,
+    });
+    expect(membership.data?.status).toBe('suspended');
+    await client
+      .from('organisation_user_provisions')
+      .delete()
+      .eq('id', capacityProvisionId);
+    await client
+      .from('organisation_users')
+      .delete()
+      .eq('id', secondMembershipId);
+    await client.auth.admin.deleteUser(secondLearner.data.user.id);
   });
 
   it('raises a not-found service error', async () => {

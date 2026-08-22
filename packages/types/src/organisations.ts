@@ -31,6 +31,31 @@ export enum ProvisioningStatus {
   Failed = 'failed',
 }
 
+export enum ProvisioningLifecycleAction {
+  Link = 'link',
+  Deactivate = 'deactivate',
+  Reactivate = 'reactivate',
+  Revoke = 'revoke',
+  Fail = 'fail',
+  Retry = 'retry',
+}
+
+export enum ProvisioningAutoLinkOutcome {
+  Linked = 'linked',
+  PendingIdentityVerification = 'pending_identity_verification',
+  PendingMembershipAcceptance = 'pending_membership_acceptance',
+}
+
+export interface ProvisioningLifecycleResult {
+  id: string;
+  status: ProvisioningStatus;
+}
+
+export interface ProvisioningAutoLinkResult {
+  outcome: ProvisioningAutoLinkOutcome;
+  organisationUserId?: string;
+}
+
 export enum GroupStatus {
   Active = 'active',
   Archived = 'archived',

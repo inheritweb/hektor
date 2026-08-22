@@ -1,4 +1,5 @@
 import { NavigationLink } from '../../context';
+import { Button } from '../../atoms';
 
 interface Summary {
   id: string;
@@ -32,6 +33,14 @@ export interface AdminOrganisationUserProvisionDetailViewModel {
 }
 
 export interface AdminOrganisationUserProvisionDetailPageProps {
+  actions?: readonly {
+    disabled?: boolean;
+    label: string;
+    onSelect: () => void;
+    variant?: 'default' | 'outline' | 'destructive';
+  }[];
+  actionError?: string;
+  actionMessage?: string;
   getGroupHref?: (group: Summary) => string;
   getUserHref?: (user: LinkedUser) => string;
   provision: AdminOrganisationUserProvisionDetailViewModel;
@@ -53,6 +62,9 @@ function Value({ children }: { children?: React.ReactNode }) {
 }
 
 export function AdminOrganisationUserProvisionDetailPage({
+  actions = [],
+  actionError,
+  actionMessage,
   getGroupHref,
   getUserHref,
   provision,
@@ -74,6 +86,30 @@ export function AdminOrganisationUserProvisionDetailPage({
           {provision.provisionedUserName} ·{' '}
           {provision.provisioningMethod.toUpperCase()}
         </p>
+        {actions.length ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {actions.map((action) => (
+              <Button
+                disabled={action.disabled}
+                key={action.label}
+                onClick={action.onSelect}
+                variant={action.variant}
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        ) : null}
+        {actionError ? (
+          <p className="mt-3 text-sm text-destructive" role="alert">
+            {actionError}
+          </p>
+        ) : null}
+        {actionMessage ? (
+          <p className="mt-3 text-sm text-muted-foreground" role="status">
+            {actionMessage}
+          </p>
+        ) : null}
       </header>
 
       <section>

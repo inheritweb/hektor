@@ -14,20 +14,26 @@ import {
   type OrganisationUserProvisionDetail,
   type OrganisationUserProvisionsSummary,
   type OrganisationUsersSummary,
+  type ProvisioningAutoLinkResult,
+  type ProvisioningLifecycleResult,
   GroupStatus,
   OrganisationRole,
   OrganisationStatus,
   OrganisationUserStatus,
   ProvisioningMethod,
+  ProvisioningAutoLinkOutcome,
+  ProvisioningLifecycleAction,
   ProvisioningStatus,
 } from '../organisations';
 import { PlatformRole } from '../users';
 import { userSummarySchema } from './users';
 import {
   type ContractOutput,
+  type ContractBody,
   type ContractParams,
   type ContractQuery,
   defineContract,
+  emptyObjectSchema,
   hektorCollectionResponseSchema,
   hektorResponseSchema,
   paginationQuerySchema,
@@ -279,6 +285,38 @@ export const getOrganisationUserProvisionContract = defineContract({
   output: hektorResponseSchema(organisationUserProvisionDetailSchema),
 });
 
+export const provisioningLifecycleResultSchema = z.object({
+  id: z.uuid(),
+  status: z.enum(ProvisioningStatus),
+}) satisfies z.ZodType<ProvisioningLifecycleResult>;
+
+export const transitionOrganisationUserProvisionContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/organisations/:organisationId/user-provisions/:provisionId/lifecycle',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), provisionId: z.uuid() }),
+  body: z.object({
+    action: z.enum(ProvisioningLifecycleAction),
+    expectedStatus: z.enum(ProvisioningStatus),
+    organisationUserId: z.uuid().optional(),
+  }),
+  output: hektorResponseSchema(provisioningLifecycleResultSchema),
+});
+
+export const provisioningAutoLinkResultSchema = z.object({
+  outcome: z.enum(ProvisioningAutoLinkOutcome),
+  organisationUserId: z.uuid().optional(),
+}) satisfies z.ZodType<ProvisioningAutoLinkResult>;
+
+export const autoLinkOrganisationUserProvisionContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/user-provisions/:provisionId/auto-link',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), provisionId: z.uuid() }),
+  body: emptyObjectSchema,
+  output: hektorResponseSchema(provisioningAutoLinkResultSchema),
+});
+
 export type ListOrganisationsQuery = ContractQuery<
   typeof listOrganisationsContract
 >;
@@ -377,4 +415,16 @@ export type GetOrganisationUserProvisionParams = ContractParams<
 
 export type GetOrganisationUserProvisionResponse = ContractOutput<
   typeof getOrganisationUserProvisionContract
+>;
+
+export type TransitionOrganisationUserProvisionBody = ContractBody<
+  typeof transitionOrganisationUserProvisionContract
+>;
+
+export type TransitionOrganisationUserProvisionResponse = ContractOutput<
+  typeof transitionOrganisationUserProvisionContract
+>;
+
+export type AutoLinkOrganisationUserProvisionResponse = ContractOutput<
+  typeof autoLinkOrganisationUserProvisionContract
 >;

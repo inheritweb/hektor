@@ -1,4 +1,5 @@
 import {
+  autoLinkOrganisationUserProvisionContract,
   getOrganisationContract,
   getOrganisationCohortContract,
   getOrganisationGroupContract,
@@ -9,6 +10,7 @@ import {
   listOrganisationUserProvisionsContract,
   listOrganisationUsersContract,
   listOrganisationsContract,
+  transitionOrganisationUserProvisionContract,
 } from '@hektor/types/contracts/organisations';
 
 import { registerApiMethod } from './api-method';
@@ -47,4 +49,12 @@ export const listOrganisationUsers = registerApiMethod(
 
 export const listOrganisationUserProvisions = registerApiMethod(
   listOrganisationUserProvisionsContract,
+);
+
+export const transitionOrganisationUserProvision = registerApiMethod(
+  transitionOrganisationUserProvisionContract,
+);
+
+export const autoLinkOrganisationUserProvision = registerApiMethod(
+  autoLinkOrganisationUserProvisionContract,
 );

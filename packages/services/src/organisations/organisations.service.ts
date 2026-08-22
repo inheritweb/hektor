@@ -27,6 +27,8 @@ import type {
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import {
+  ProvisioningAutoLinkOutcome,
+  ProvisioningLifecycleAction,
   OrganisationRole,
   OrganisationUserStatus,
   ProvisioningStatus,
@@ -61,7 +63,13 @@ import {
   buildOrganisationUserProvisionsCountQuery,
   buildOrganisationUserProvisionsQuery,
   buildOrganisationUserProvisionDetailQuery,
+  buildOrganisationMembershipForUserQuery,
+  transitionOrganisationUserProvisionQuery,
 } from './organisations.queries';
+import {
+  canTransitionProvisioningStatus,
+  getProvisioningTransition,
+} from './provisioning-lifecycle';
 
 function paginate<T>(items: T[], page: number, pageSize: number) {
   const first = (page - 1) * pageSize;
@@ -77,6 +85,153 @@ function includesQuery(values: Array<string | undefined>, query?: string) {
 }
 
 export function createOrganisationsService(client: DatabaseClient) {
+  async function transitionOrganisationUserProvision(options: {
+    provisionId: string;
+    expectedStatus: ProvisioningStatus;
+    action: ProvisioningLifecycleAction;
+    organisationUserId?: string;
+  }) {
+    if (
+      !canTransitionProvisioningStatus(options.expectedStatus, options.action)
+    ) {
+      throw createServiceError(HektorErrorCode.UnprocessableEntity, {
+        message: 'Invalid provision lifecycle transition',
+      });
+    }
+
+    const { data, error } = await transitionOrganisationUserProvisionQuery(
+      client,
+      options,
+    );
+
+    if (error) {
+      const isConflict =
+        error.message.includes('provision_status_conflict') ||
+        error.message.includes('learner_seat_capacity_exhausted');
+      throw createServiceError(
+        isConflict
+          ? HektorErrorCode.Conflict
+          : HektorErrorCode.UnprocessableEntity,
+        {
+          message: error.message.includes('learner_seat_capacity_exhausted')
+            ? 'The current contract period has no learner seats available'
+            : 'Unable to transition provision lifecycle',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return {
+      data: {
+        id: data.id,
+        status: getProvisioningTransition(
+          options.expectedStatus,
+          options.action,
+        )!,
+      },
+    };
+  }
+
+  async function autoLinkOrganisationUserProvision(options: {
+    organisationId: string;
+    provisionId: string;
+  }) {
+    const { data: provision, error: provisionError } =
+      await buildOrganisationUserProvisionDetailQuery(
+        client,
+        options.organisationId,
+        options.provisionId,
+      );
+
+    if (provisionError) {
+      throw createServiceError(
+        provisionError.code === 'PGRST116'
+          ? HektorErrorCode.NotFound
+          : HektorErrorCode.InternalServerError,
+        {
+          message:
+            provisionError.code === 'PGRST116'
+              ? 'Provisioned user not found'
+              : 'Unable to resolve provisioned user',
+          internalMessage: provisionError.message,
+          cause: provisionError,
+        },
+      );
+    }
+
+    if (provision.status !== ProvisioningStatus.Pending) {
+      throw createServiceError(HektorErrorCode.Conflict, {
+        message: 'Only a pending provision can be linked automatically',
+      });
+    }
+
+    const normalizedUserName = provision.provisioned_user_name
+      .trim()
+      .toLocaleLowerCase();
+    const { data: authData, error: authError } =
+      await client.auth.admin.listUsers({ page: 1, perPage: 1000 });
+
+    if (authError) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to resolve provisioned user',
+        internalMessage: authError.message,
+        cause: authError,
+      });
+    }
+
+    const user = authData.users.find(
+      (candidate) =>
+        candidate.email_confirmed_at &&
+        candidate.email?.trim().toLocaleLowerCase() === normalizedUserName,
+    );
+
+    if (!user) {
+      return {
+        data: {
+          outcome: ProvisioningAutoLinkOutcome.PendingIdentityVerification,
+        },
+      };
+    }
+
+    const { data: membership, error: membershipError } =
+      await buildOrganisationMembershipForUserQuery(
+        client,
+        options.organisationId,
+        user.id,
+      );
+
+    if (membershipError) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to resolve provisioned user membership',
+        internalMessage: membershipError.message,
+        cause: membershipError,
+      });
+    }
+
+    if (!membership) {
+      return {
+        data: {
+          outcome: ProvisioningAutoLinkOutcome.PendingMembershipAcceptance,
+        },
+      };
+    }
+
+    await transitionOrganisationUserProvision({
+      provisionId: provision.id,
+      expectedStatus: ProvisioningStatus.Pending,
+      action: ProvisioningLifecycleAction.Link,
+      organisationUserId: membership.id,
+    });
+
+    return {
+      data: {
+        outcome: ProvisioningAutoLinkOutcome.Linked,
+        organisationUserId: membership.id,
+      },
+    };
+  }
+
   async function listOrganisations(
     query: ListOrganisationsQuery,
   ): Promise<ListOrganisationsResponse> {
@@ -535,6 +690,7 @@ export function createOrganisationsService(client: DatabaseClient) {
   }
 
   return {
+    autoLinkOrganisationUserProvision,
     getOrganisationCohort,
     getOrganisationGroup,
     getOrganisation,
@@ -545,5 +701,6 @@ export function createOrganisationsService(client: DatabaseClient) {
     listOrganisations,
     listOrganisationUserProvisions,
     listOrganisationUsers,
+    transitionOrganisationUserProvision,
   };
 }

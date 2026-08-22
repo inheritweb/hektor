@@ -47,7 +47,7 @@ export function buildOrganisationDetailQuery(
     id, name, slug, status, created_at, updated_at,
     contractPeriods:organisation_contract_periods (
       id, starts_on, ends_on, learner_seat_allowance, created_at, updated_at,
-      activations:organisation_seat_activations (organisation_user_id)
+      activations:organisation_seat_activations (organisation_user_id, released_at)
     ),
     cohorts:organisation_cohorts (id, name, starts_on, ends_on, status),
     groups:organisation_groups (
@@ -81,7 +81,7 @@ export function buildOrganisationContractPeriodsQuery(
     .select(
       `
       id, starts_on, ends_on, learner_seat_allowance, created_at, updated_at,
-      activations:organisation_seat_activations (organisation_user_id)
+      activations:organisation_seat_activations (organisation_user_id, released_at)
     `,
       { count: 'exact' },
     )
@@ -371,3 +371,35 @@ export function buildOrganisationUserProvisionDetailQuery(
 export type OrganisationUserProvisionDetailQueryResult = QueryData<
   ReturnType<typeof buildOrganisationUserProvisionDetailQuery>
 >;
+
+export function buildOrganisationMembershipForUserQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  userId: string,
+) {
+  return client
+    .from('organisation_users')
+    .select('id, user_id, role, status')
+    .eq('organisation_id', organisationId)
+    .eq('user_id', userId)
+    .maybeSingle();
+}
+
+export function transitionOrganisationUserProvisionQuery(
+  client: DatabaseClient,
+  options: {
+    provisionId: string;
+    expectedStatus: ProvisioningStatus;
+    action: string;
+    organisationUserId?: string;
+  },
+) {
+  return client.rpc('transition_organisation_user_provision', {
+    target_provision_id: options.provisionId,
+    expected_status: options.expectedStatus,
+    lifecycle_action: options.action,
+    ...(options.organisationUserId
+      ? { target_organisation_user_id: options.organisationUserId }
+      : {}),
+  });
+}

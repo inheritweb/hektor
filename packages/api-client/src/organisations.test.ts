@@ -1,10 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { OrganisationStatus } from '@hektor/types';
+import {
+  OrganisationStatus,
+  ProvisioningLifecycleAction,
+  ProvisioningStatus,
+} from '@hektor/types';
 import { SortDirection } from '@hektor/types/contracts';
 
 import { Client } from './client';
 import {
+  autoLinkOrganisationUserProvision,
   getOrganisation,
   getOrganisationCohort,
   getOrganisationUserProvision,
@@ -14,6 +19,7 @@ import {
   listOrganisationUserProvisions,
   listOrganisations,
   listOrganisationUsers,
+  transitionOrganisationUserProvision,
 } from './organisations';
 
 describe('admin organisation API methods', () => {
@@ -354,6 +360,46 @@ describe('admin organisation API methods', () => {
     expect(fetcher).toHaveBeenCalledWith(
       `https://hektor.test/api/admin/organisations/${organisationId}/user-provisions/${provisionId}`,
       expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('sends provision lifecycle mutations to their action endpoints', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const provisionId = '03d946de-8938-46d8-93a4-e3917df0928e';
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        Response.json({ data: { id: provisionId, status: 'inactive' } }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({ data: { outcome: 'pending_identity_verification' } }),
+      );
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+
+    await transitionOrganisationUserProvision(client, {
+      params: { organisationId, provisionId },
+      body: {
+        action: ProvisioningLifecycleAction.Deactivate,
+        expectedStatus: ProvisioningStatus.Linked,
+      },
+    });
+    await autoLinkOrganisationUserProvision(client, {
+      params: { organisationId, provisionId },
+      body: {},
+    });
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('/lifecycle'),
+      expect.objectContaining({ method: 'PATCH' }),
+    );
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('/auto-link'),
+      expect.objectContaining({ method: 'POST' }),
     );
   });
 });

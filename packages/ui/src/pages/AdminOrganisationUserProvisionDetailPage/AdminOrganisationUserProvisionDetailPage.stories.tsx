@@ -41,6 +41,14 @@ export const Linked: Story = {};
 
 export const Pending: Story = {
   args: {
+    actions: [
+      { label: 'Match existing account', onSelect: () => undefined },
+      {
+        label: 'Revoke',
+        onSelect: () => undefined,
+        variant: 'destructive',
+      },
+    ],
     provision: {
       ...meta.args.provision,
       linkedAt: undefined,

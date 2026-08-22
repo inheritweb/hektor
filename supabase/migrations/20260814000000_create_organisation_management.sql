@@ -93,6 +93,9 @@ where source_external_id is not null and status <> 'revoked';
 create index organisation_user_provisions_organisation_user_id_idx
 on public.organisation_user_provisions (organisation_user_id)
 where organisation_user_id is not null;
+create unique index organisation_user_provisions_active_membership_unique
+on public.organisation_user_provisions (organisation_user_id)
+where organisation_user_id is not null and status <> 'revoked';
 create index organisation_user_provisions_organisation_cohort_id_idx
 on public.organisation_user_provisions (organisation_cohort_id)
 where organisation_cohort_id is not null;
@@ -162,12 +165,206 @@ create table public.organisation_seat_activations (
   organisation_contract_period_id uuid not null,
   organisation_user_id uuid not null,
   activated_at timestamptz not null default now(),
+  released_at timestamptz,
   primary key (organisation_contract_period_id, organisation_user_id),
   foreign key (organisation_contract_period_id, organisation_id)
     references public.organisation_contract_periods (id, organisation_id) on delete restrict,
   foreign key (organisation_user_id, organisation_id)
     references public.organisation_users (id, organisation_id) on delete restrict
 );
+
+create function public.transition_organisation_user_provision(
+  target_provision_id uuid,
+  expected_status public.provisioning_status,
+  lifecycle_action text,
+  target_organisation_user_id uuid default null
+)
+returns public.organisation_user_provisions
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  provision public.organisation_user_provisions;
+  membership public.organisation_users;
+  contract_period public.organisation_contract_periods;
+  active_seats integer;
+begin
+  select * into provision
+  from public.organisation_user_provisions
+  where id = target_provision_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'provision_not_found';
+  end if;
+
+  if provision.status <> expected_status then
+    raise exception using errcode = 'P0001', message = 'provision_status_conflict';
+  end if;
+
+  if lifecycle_action = 'link' then
+    if provision.status <> 'pending' or target_organisation_user_id is null then
+      raise exception using errcode = '22023', message = 'invalid_provision_transition';
+    end if;
+
+    select * into membership
+    from public.organisation_users
+    where id = target_organisation_user_id
+      and organisation_id = provision.organisation_id
+    for update;
+
+    if not found then
+      raise exception using errcode = '22023', message = 'membership_not_found';
+    end if;
+
+    if provision.provisioned_role = 'learner' then
+      select * into contract_period
+      from public.organisation_contract_periods
+      where organisation_id = provision.organisation_id
+        and current_date >= starts_on
+        and current_date < ends_on
+      order by starts_on desc
+      limit 1
+      for update;
+
+      if found then
+        select count(*) into active_seats
+        from public.organisation_seat_activations
+        where organisation_contract_period_id = contract_period.id
+          and released_at is null
+          and organisation_user_id <> membership.id;
+
+        if active_seats >= contract_period.learner_seat_allowance then
+          raise exception using errcode = 'P0001', message = 'learner_seat_capacity_exhausted';
+        end if;
+
+        insert into public.organisation_seat_activations (
+          organisation_id,
+          organisation_contract_period_id,
+          organisation_user_id,
+          released_at
+        ) values (
+          provision.organisation_id,
+          contract_period.id,
+          membership.id,
+          null
+        )
+        on conflict (organisation_contract_period_id, organisation_user_id)
+        do update set released_at = null, activated_at = now();
+      end if;
+    else
+      update public.organisation_seat_activations
+      set released_at = now()
+      where organisation_user_id = membership.id
+        and released_at is null;
+    end if;
+
+    update public.organisation_users
+    set role = provision.provisioned_role,
+        organisation_cohort_id = coalesce(
+          provision.organisation_cohort_id,
+          organisation_cohort_id
+        ),
+        status = 'active'
+    where id = membership.id;
+
+    update public.organisation_user_provisions
+    set organisation_user_id = membership.id,
+        status = 'linked',
+        linked_at = coalesce(linked_at, now()),
+        revoked_at = null
+    where id = provision.id
+    returning * into provision;
+  elsif lifecycle_action = 'deactivate' then
+    if provision.status <> 'linked' or provision.organisation_user_id is null then
+      raise exception using errcode = '22023', message = 'invalid_provision_transition';
+    end if;
+
+    update public.organisation_users
+    set status = 'suspended'
+    where id = provision.organisation_user_id;
+
+    update public.organisation_seat_activations
+    set released_at = now()
+    where organisation_user_id = provision.organisation_user_id
+      and released_at is null;
+
+    update public.organisation_user_provisions
+    set status = 'inactive'
+    where id = provision.id
+    returning * into provision;
+  elsif lifecycle_action = 'reactivate' then
+    if provision.status <> 'inactive' or provision.organisation_user_id is null then
+      raise exception using errcode = '22023', message = 'invalid_provision_transition';
+    end if;
+
+    return public.transition_organisation_user_provision(
+      provision.id,
+      provision.status,
+      'link_inactive',
+      provision.organisation_user_id
+    );
+  elsif lifecycle_action = 'link_inactive' then
+    if provision.status <> 'inactive' or target_organisation_user_id is null then
+      raise exception using errcode = '22023', message = 'invalid_provision_transition';
+    end if;
+
+    update public.organisation_user_provisions set status = 'pending' where id = provision.id;
+    return public.transition_organisation_user_provision(
+      provision.id,
+      'pending',
+      'link',
+      target_organisation_user_id
+    );
+  elsif lifecycle_action = 'revoke' then
+    if provision.status = 'revoked' then
+      raise exception using errcode = '22023', message = 'invalid_provision_transition';
+    end if;
+
+    if provision.organisation_user_id is not null then
+      update public.organisation_users set status = 'suspended'
+      where id = provision.organisation_user_id;
+      update public.organisation_seat_activations set released_at = now()
+      where organisation_user_id = provision.organisation_user_id and released_at is null;
+    end if;
+
+    update public.organisation_user_provisions
+    set status = 'revoked', revoked_at = now()
+    where id = provision.id
+    returning * into provision;
+  elsif lifecycle_action = 'fail' then
+    if provision.status <> 'pending' then
+      raise exception using errcode = '22023', message = 'invalid_provision_transition';
+    end if;
+    update public.organisation_user_provisions set status = 'failed'
+    where id = provision.id returning * into provision;
+  elsif lifecycle_action = 'retry' then
+    if provision.status <> 'failed' then
+      raise exception using errcode = '22023', message = 'invalid_provision_transition';
+    end if;
+    update public.organisation_user_provisions set status = 'pending'
+    where id = provision.id returning * into provision;
+  else
+    raise exception using errcode = '22023', message = 'unknown_provision_lifecycle_action';
+  end if;
+
+  return provision;
+end;
+$$;
+
+revoke all on function public.transition_organisation_user_provision(
+  uuid,
+  public.provisioning_status,
+  text,
+  uuid
+) from public;
+grant execute on function public.transition_organisation_user_provision(
+  uuid,
+  public.provisioning_status,
+  text,
+  uuid
+) to service_role;
 
 create function public.is_platform_admin()
 returns boolean

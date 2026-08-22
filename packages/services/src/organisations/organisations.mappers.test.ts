@@ -23,8 +23,8 @@ describe('organisation mappers', () => {
           created_at: '2026-08-14T10:00:00+00:00',
           updated_at: '2026-08-14T10:00:00+00:00',
           activations: [
-            { organisation_user_id: 'learner-one' },
-            { organisation_user_id: 'learner-two' },
+            { organisation_user_id: 'learner-one', released_at: null },
+            { organisation_user_id: 'learner-two', released_at: null },
           ],
         },
       ],

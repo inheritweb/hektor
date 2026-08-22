@@ -54,7 +54,9 @@ export function mapOrganisationContractPeriod(
     | OrganisationDetailQueryResult['contractPeriods'][number]
     | OrganisationContractPeriodsQueryResult[number],
 ): OrganisationContractPeriod {
-  const activated = record.activations.length;
+  const activated = record.activations.filter(
+    (activation) => !activation.released_at,
+  ).length;
   return {
     id: record.id,
     startsOn: record.starts_on,

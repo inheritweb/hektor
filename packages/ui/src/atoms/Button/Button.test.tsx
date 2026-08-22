@@ -14,6 +14,7 @@ describe('Button', () => {
 
     expect(button.tagName).toBe('BUTTON');
     expect(button.getAttribute('data-slot')).toBe('button');
+    expect(button.className).toContain('cursor-pointer');
   });
 
   it('calls its click handler', async () => {
