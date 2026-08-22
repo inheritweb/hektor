@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { DM_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { QueryProvider } from '@hektor/query';
@@ -10,22 +9,21 @@ import { NextNavigationProvider } from '@/lib/navigation/NextNavigationProvider'
 
 import './styles.css';
 
-const titleFont = DM_Sans({
-  display: 'swap',
-  subsets: ['latin'],
-  variable: '--hektor-google-title-font',
-});
-
 export const metadata: Metadata = {
   title: 'Hektor',
   description: 'Hektor web application',
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <html className={titleFont.variable} lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>
           <NextNavigationProvider>

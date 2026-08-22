@@ -1,1 +1,5 @@
+@import '@hektor/brand/styles.css';
+
+@source './';
+
 /* Shared component-level CSS belongs here when utilities alone are insufficient. */

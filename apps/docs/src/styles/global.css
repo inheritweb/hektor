@@ -20,3 +20,27 @@
   --color-accent-900: var(--hektor-primary-foreground);
   --color-accent-950: var(--hektor-primary-foreground);
 }
+
+:root {
+  --__sl-font: var(--hektor-brand-font);
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-high: oklch(0.38 0.12 155);
+  --sl-color-accent: var(--hektor-primary);
+  --sl-color-accent-low: var(--hektor-secondary);
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-high: oklch(0.88 0.12 155);
+  --sl-color-accent: var(--hektor-primary);
+  --sl-color-accent-low: oklch(0.27 0.04 155);
+}
+
+.header .site-title {
+  gap: 0.625rem;
+  font-family: var(--hektor-brand-font);
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+}

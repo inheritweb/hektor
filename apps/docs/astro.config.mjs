@@ -5,9 +5,26 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   integrations: [
     starlight({
-      title: 'Hektor Docs',
+      title: 'Hektor',
       favicon: '/favicon.svg',
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com' }],
+      logo: {
+        src: './public/favicon.svg',
+        alt: '',
+      },
+      head: [
+        {
+          tag: 'link',
+          attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        },
+        {
+          tag: 'link',
+          attrs: { rel: 'manifest', href: '/manifest.webmanifest' },
+        },
+        {
+          tag: 'meta',
+          attrs: { name: 'theme-color', content: '#59dc91' },
+        },
+      ],
       customCss: ['./src/styles/global.css'],
       sidebar: [
         {

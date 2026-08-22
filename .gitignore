@@ -8,6 +8,8 @@ node_modules/
 !.yarn/versions
 .turbo/
 .vercel/
+**/.astro/
+**/dist/
 apps/web/.next/
 apps/web/playwright-report/
 apps/web/test-results/

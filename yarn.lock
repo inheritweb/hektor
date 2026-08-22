@@ -1759,6 +1759,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource-variable/dm-sans@npm:5.2.8":
+  version: 5.2.8
+  resolution: "@fontsource-variable/dm-sans@npm:5.2.8"
+  checksum: 10c0/99971f181c343a81f72ab6d8d1354ca38bc138054e352e922a12c2be52083598446436a584b67e6e505a3e2ffdc65933c3faa290fbdb425b4768a5f4e90e12db
+  languageName: node
+  linkType: hard
+
 "@hektor/api-client@workspace:*, @hektor/api-client@workspace:packages/api-client":
   version: 0.0.0-use.local
   resolution: "@hektor/api-client@workspace:packages/api-client"
@@ -1770,6 +1777,14 @@ __metadata:
     typescript: "npm:6.0.3"
     vitest: "npm:4.1.10"
     zod: "npm:4.4.3"
+  languageName: unknown
+  linkType: soft
+
+"@hektor/brand@workspace:*, @hektor/brand@workspace:packages/brand":
+  version: 0.0.0-use.local
+  resolution: "@hektor/brand@workspace:packages/brand"
+  dependencies:
+    "@fontsource-variable/dm-sans": "npm:5.2.8"
   languageName: unknown
   linkType: soft
 
@@ -1882,6 +1897,7 @@ __metadata:
   resolution: "@hektor/ui-astro@workspace:packages/ui-astro"
   dependencies:
     "@astrojs/check": "npm:0.9.10"
+    "@hektor/brand": "workspace:*"
     "@hektor/eslint-config": "workspace:*"
     "@hektor/tailwind-config": "workspace:*"
     "@hektor/typescript-config": "workspace:*"
@@ -1896,6 +1912,7 @@ __metadata:
   resolution: "@hektor/ui@workspace:packages/ui"
   dependencies:
     "@base-ui/react": "npm:1.7.0"
+    "@hektor/brand": "workspace:*"
     "@hektor/eslint-config": "workspace:*"
     "@hektor/tailwind-config": "workspace:*"
     "@hektor/typescript-config": "workspace:*"

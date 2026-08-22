@@ -35,9 +35,7 @@
   color-scheme: light;
   --hektor-font-title: var(
     --hektor-google-title-font,
-    ui-sans-serif,
-    system-ui,
-    sans-serif
+    var(--hektor-brand-font, ui-sans-serif, system-ui, sans-serif)
   );
   --hektor-background: oklch(0.985 0.004 145);
   --hektor-foreground: oklch(0.18 0.018 145);
@@ -64,7 +62,8 @@
   --hektor-radius: 0.625rem;
 }
 
-.dark {
+.dark,
+:root[data-theme='dark'] {
   color-scheme: dark;
   --hektor-background: oklch(0.17 0.015 145);
   --hektor-foreground: oklch(0.96 0.006 145);

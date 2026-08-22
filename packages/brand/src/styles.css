@@ -1,0 +1,11 @@
+@import '@fontsource-variable/dm-sans';
+
+:root {
+  --hektor-brand-font: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+.hektor-logo-mark {
+  display: inline-block;
+  background-color: currentColor;
+  mask: url('../assets/logo-mark.svg') center / contain no-repeat;
+}

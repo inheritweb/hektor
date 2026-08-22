@@ -22,6 +22,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
+    "@hektor/brand": "workspace:*",
     "@hektor/tailwind-config": "workspace:*"
   },
   "devDependencies": {
