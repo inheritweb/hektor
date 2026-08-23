@@ -1,4 +1,5 @@
 import { createTableColumn } from '../../atoms/Table';
+import { buttonVariants } from '../../atoms/Button';
 import { NavigationLink } from '../../context';
 import { Grid } from '../../organisms/Grid';
 
@@ -11,6 +12,7 @@ export interface AdminOrganisationGroupListItemViewModel {
 }
 
 export interface AdminOrganisationGroupsPageProps {
+  createHref?: string;
   error?: string;
   groups: readonly AdminOrganisationGroupListItemViewModel[];
   getGroupHref?: (group: AdminOrganisationGroupListItemViewModel) => string;
@@ -51,6 +53,7 @@ const columns = [
 ];
 
 export function AdminOrganisationGroupsPage({
+  createHref,
   error,
   groups,
   getGroupHref,
@@ -80,17 +83,26 @@ export function AdminOrganisationGroupsPage({
       ]
     : columns;
   return (
-    <Grid
-      caption={`Groups for ${organisationName}`}
-      columns={linkedColumns}
-      empty="This organisation has no groups."
-      error={error}
-      getRowId={(group) => group.id}
-      highlight
-      loading={loading}
-      pagination={{ page, pageSize, totalRecords, onPageChange }}
-      rows={groups}
-      title="Groups"
-    />
+    <div>
+      {createHref ? (
+        <div className="mb-4 flex justify-end">
+          <NavigationLink className={buttonVariants()} href={createHref}>
+            Add group
+          </NavigationLink>
+        </div>
+      ) : null}
+      <Grid
+        caption={`Groups for ${organisationName}`}
+        columns={linkedColumns}
+        empty="This organisation has no groups."
+        error={error}
+        getRowId={(group) => group.id}
+        highlight
+        loading={loading}
+        pagination={{ page, pageSize, totalRecords, onPageChange }}
+        rows={groups}
+        title="Groups"
+      />
+    </div>
   );
 }

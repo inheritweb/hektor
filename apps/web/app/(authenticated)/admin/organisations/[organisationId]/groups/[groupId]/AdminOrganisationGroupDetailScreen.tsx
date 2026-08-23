@@ -31,6 +31,7 @@ export function AdminOrganisationGroupDetailScreen({
     );
   return (
     <AdminOrganisationGroupDetailPage
+      editHref={`/admin/organisations/${organisationId}/groups/${groupId}/edit`}
       group={group.data.data}
       getProvisionHref={(provision) =>
         `/admin/organisations/${organisationId}/provisioned-users/${provision.id}`

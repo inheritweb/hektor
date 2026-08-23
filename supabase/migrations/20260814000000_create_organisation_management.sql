@@ -669,6 +669,98 @@ begin
 end;
 $$;
 
+create function public.create_organisation_group(
+  target_organisation_id uuid,
+  target_name text,
+  target_cohort_id uuid default null
+)
+returns public.organisation_groups
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  organisation_group public.organisation_groups;
+begin
+  perform 1 from public.organisations
+  where id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'organisation_not_found';
+  end if;
+  if target_cohort_id is not null and not exists (
+    select 1 from public.organisation_cohorts
+    where id = target_cohort_id and organisation_id = target_organisation_id
+  ) then
+    raise exception using errcode = 'P0002', message = 'cohort_not_found';
+  end if;
+
+  insert into public.organisation_groups (
+    organisation_id, organisation_cohort_id, name
+  ) values (
+    target_organisation_id, target_cohort_id, target_name
+  ) returning * into organisation_group;
+
+  return organisation_group;
+end;
+$$;
+
+create function public.update_organisation_group(
+  target_organisation_id uuid,
+  target_group_id uuid,
+  expected_updated_at timestamptz,
+  target_name text,
+  target_cohort_id uuid default null,
+  target_status public.group_status default 'active'
+)
+returns public.organisation_groups
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  organisation_group public.organisation_groups;
+begin
+  perform 1 from public.organisations
+  where id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'organisation_not_found';
+  end if;
+
+  select * into organisation_group
+  from public.organisation_groups
+  where id = target_group_id
+    and organisation_id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'group_not_found';
+  end if;
+  if date_trunc('milliseconds', organisation_group.updated_at) <>
+      date_trunc('milliseconds', expected_updated_at) then
+    raise exception using errcode = 'P0001', message = 'group_conflict';
+  end if;
+  if target_cohort_id is not null and not exists (
+    select 1 from public.organisation_cohorts
+    where id = target_cohort_id and organisation_id = target_organisation_id
+  ) then
+    raise exception using errcode = 'P0002', message = 'cohort_not_found';
+  end if;
+
+  update public.organisation_groups
+  set name = target_name,
+      organisation_cohort_id = target_cohort_id,
+      status = target_status
+  where id = organisation_group.id
+  returning * into organisation_group;
+
+  return organisation_group;
+end;
+$$;
+
 create function public.consume_organisation_provision_invitation(
   target_provision_id uuid,
   expected_token_hash text

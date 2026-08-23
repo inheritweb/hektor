@@ -25,6 +25,7 @@ const {
   autoLinkOrganisationUserProvision,
   createOrganisationContractPeriod,
   createOrganisationCohort,
+  createOrganisationGroup,
   createOrganisation,
   getOrganisation,
   getOrganisationContractPeriod,
@@ -42,6 +43,7 @@ const {
   updateOrganisation,
   updateOrganisationContractPeriod,
   updateOrganisationCohort,
+  updateOrganisationGroup,
 } = createOrganisationsService(client);
 
 const organisationId = randomUUID();
@@ -627,6 +629,92 @@ describe('organisation services', () => {
         .from('organisation_cohorts')
         .delete()
         .in('id', [created.data.id, overlapping.data.id]);
+    }
+  });
+
+  it('creates, archives and reactivates groups with optimistic control', async () => {
+    const created = await createOrganisationGroup(
+      { organisationId },
+      { cohortId, name: `Managed Group ${randomUUID()}` },
+    );
+
+    try {
+      expect(created.data).toMatchObject({
+        cohort: { id: cohortId },
+        provisioningMethod: undefined,
+        status: GroupStatus.Active,
+      });
+
+      const archived = await updateOrganisationGroup(
+        { organisationId, groupId: created.data.id },
+        {
+          cohortId,
+          expectedUpdatedAt: created.data.updatedAt,
+          name: created.data.name,
+          status: GroupStatus.Archived,
+        },
+      );
+      expect(archived.data.status).toBe(GroupStatus.Archived);
+
+      await expect(
+        updateOrganisationGroup(
+          { organisationId, groupId: created.data.id },
+          {
+            cohortId,
+            expectedUpdatedAt: created.data.updatedAt,
+            name: created.data.name,
+            status: GroupStatus.Active,
+          },
+        ),
+      ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+
+      const reactivated = await updateOrganisationGroup(
+        { organisationId, groupId: created.data.id },
+        {
+          cohortId,
+          expectedUpdatedAt: archived.data.updatedAt,
+          name: archived.data.name,
+          status: GroupStatus.Active,
+        },
+      );
+      expect(reactivated.data.status).toBe(GroupStatus.Active);
+    } finally {
+      await client
+        .from('organisation_groups')
+        .delete()
+        .eq('id', created.data.id);
+    }
+  });
+
+  it('rejects cohorts belonging to another organisation when managing groups', async () => {
+    const otherOrganisationId = randomUUID();
+    const otherCohortId = randomUUID();
+    await client.from('organisations').insert({
+      id: otherOrganisationId,
+      name: `Other ${otherOrganisationId}`,
+      slug: `other-${otherOrganisationId}`,
+    });
+    await client.from('organisation_cohorts').insert({
+      id: otherCohortId,
+      organisation_id: otherOrganisationId,
+      name: 'Other cohort',
+      starts_on: '2026-01-01',
+      ends_on: '2027-01-01',
+    });
+
+    try {
+      await expect(
+        createOrganisationGroup(
+          { organisationId },
+          { cohortId: otherCohortId, name: `Invalid ${randomUUID()}` },
+        ),
+      ).rejects.toMatchObject({ code: HektorErrorCode.NotFound });
+    } finally {
+      await client
+        .from('organisation_cohorts')
+        .delete()
+        .eq('id', otherCohortId);
+      await client.from('organisations').delete().eq('id', otherOrganisationId);
     }
   });
 

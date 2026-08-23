@@ -324,6 +324,38 @@ export type OrganisationGroupsQueryResult = QueryData<
   ReturnType<typeof buildOrganisationGroupsQuery>
 >;
 
+export function createOrganisationGroupQuery(
+  client: DatabaseClient,
+  values: { cohortId?: string; name: string; organisationId: string },
+) {
+  return client.rpc('create_organisation_group', {
+    target_cohort_id: values.cohortId,
+    target_name: values.name,
+    target_organisation_id: values.organisationId,
+  });
+}
+
+export function updateOrganisationGroupQuery(
+  client: DatabaseClient,
+  values: {
+    cohortId?: string;
+    expectedUpdatedAt: string;
+    groupId: string;
+    name: string;
+    organisationId: string;
+    status: GroupStatus;
+  },
+) {
+  return client.rpc('update_organisation_group', {
+    expected_updated_at: values.expectedUpdatedAt,
+    target_cohort_id: values.cohortId,
+    target_group_id: values.groupId,
+    target_name: values.name,
+    target_organisation_id: values.organisationId,
+    target_status: values.status,
+  });
+}
+
 export function buildOrganisationGroupDetailQuery(
   client: DatabaseClient,
   organisationId: string,

@@ -13,6 +13,7 @@ import {
   autoLinkOrganisationUserProvision,
   createOrganisationContractPeriod,
   createOrganisationCohort,
+  createOrganisationGroup,
   getOrganisation,
   getOrganisationContractPeriod,
   getOrganisationCohort,
@@ -26,6 +27,7 @@ import {
   transitionOrganisationUserProvision,
   updateOrganisationContractPeriod,
   updateOrganisationCohort,
+  updateOrganisationGroup,
 } from './organisations';
 
 describe('admin organisation API methods', () => {
@@ -330,6 +332,58 @@ describe('admin organisation API methods', () => {
     expect(fetcher).toHaveBeenNthCalledWith(
       2,
       `${path}/${cohortId}`,
+      expect.objectContaining({ method: 'PATCH' }),
+    );
+  });
+
+  it('creates and updates an organisation group', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const groupId = '03d946de-8938-46d8-93a4-e3917df0928e';
+    const data = {
+      id: groupId,
+      name: 'Biology tutors',
+      status: GroupStatus.Active,
+      organisation: {
+        id: organisationId,
+        name: 'Northbridge University',
+        slug: 'northbridge-university',
+        status: OrganisationStatus.Active,
+      },
+      users: [],
+      provisionedUsers: [],
+      createdAt: '2026-08-23T10:00:00.000Z',
+      updatedAt: '2026-08-23T10:00:00.000Z',
+    };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementation(async () => Response.json({ data }));
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+    const path = `https://hektor.test/api/admin/organisations/${organisationId}/groups`;
+
+    await createOrganisationGroup(client, {
+      params: { organisationId },
+      body: { name: data.name },
+    });
+    await updateOrganisationGroup(client, {
+      params: { organisationId, groupId },
+      body: {
+        name: data.name,
+        status: GroupStatus.Archived,
+        expectedUpdatedAt: data.updatedAt,
+      },
+    });
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      path,
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${path}/${groupId}`,
       expect.objectContaining({ method: 'PATCH' }),
     );
   });

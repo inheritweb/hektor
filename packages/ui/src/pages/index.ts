@@ -18,6 +18,8 @@ export * from './AdminOrganisationGroupsPage';
 
 export * from './AdminOrganisationGroupDetailPage';
 
+export * from './AdminOrganisationGroupFormPage';
+
 export * from './AdminOrganisationUsersPage';
 
 export * from './AdminOrganisationUserProvisionsPage';

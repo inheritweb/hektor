@@ -173,6 +173,16 @@ export interface OrganisationGroup {
   updatedAt: string;
 }
 
+export interface CreateOrganisationGroupInput {
+  cohortId?: string;
+  name: string;
+}
+
+export interface UpdateOrganisationGroupInput extends CreateOrganisationGroupInput {
+  expectedUpdatedAt: string;
+  status: GroupStatus;
+}
+
 export interface OrganisationGroupProvisionedUserSummary {
   id: string;
   provisioningMethod: ProvisioningMethod;

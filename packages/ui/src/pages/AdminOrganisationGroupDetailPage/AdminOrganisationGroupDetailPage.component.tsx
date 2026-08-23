@@ -1,4 +1,5 @@
 import { createTableColumn, Table } from '../../atoms/Table';
+import { buttonVariants } from '../../atoms/Button';
 import { NavigationLink } from '../../context';
 
 interface GroupUser {
@@ -28,6 +29,7 @@ export interface AdminOrganisationGroupDetailViewModel {
 }
 
 export interface AdminOrganisationGroupDetailPageProps {
+  editHref?: string;
   getProvisionHref?: (provision: ProvisionedUser) => string;
   getUserHref?: (membership: GroupUser) => string;
   group: AdminOrganisationGroupDetailViewModel;
@@ -88,6 +90,7 @@ const provisionColumns = [
 ];
 
 export function AdminOrganisationGroupDetailPage({
+  editHref,
   getProvisionHref,
   getUserHref,
   group,
@@ -141,6 +144,16 @@ export function AdminOrganisationGroupDetailPage({
           {group.cohort ? ` · ${group.cohort.name}` : ''}
           {group.sourceExternalId ? ` · ${group.sourceExternalId}` : ''}
         </p>
+        {editHref ? (
+          <div className="mt-5">
+            <NavigationLink
+              className={buttonVariants({ variant: 'outline' })}
+              href={editHref}
+            >
+              Edit group
+            </NavigationLink>
+          </div>
+        ) : null}
       </header>
       <section>
         <h2 className="text-xl font-bold">

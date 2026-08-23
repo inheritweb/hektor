@@ -49,6 +49,7 @@ export function AdminOrganisationGroupsScreen({
 
   return (
     <AdminOrganisationGroupsPage
+      createHref={`/admin/organisations/${organisationId}/groups/new`}
       error={groups.error?.message ?? organisation.error?.message}
       groups={groups.data?.data ?? []}
       getGroupHref={(group) =>

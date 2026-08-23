@@ -10,6 +10,7 @@ import {
   type CreateOrganisationContractPeriodInput,
   type OrganisationGroupSummary,
   type OrganisationGroup,
+  type CreateOrganisationGroupInput,
   type OrganisationGroupProvisionedUserSummary,
   type OrganisationMembershipUserSummary,
   type OrganisationProvisionInvitationResult,
@@ -21,6 +22,7 @@ import {
   type UpdateOrganisationInput,
   type UpdateOrganisationContractPeriodInput,
   type UpdateOrganisationCohortInput,
+  type UpdateOrganisationGroupInput,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -371,6 +373,37 @@ export const getOrganisationGroupContract = defineContract({
   output: hektorResponseSchema(organisationGroupSchema),
 });
 
+export const createOrganisationGroupInputSchema = z.object({
+  cohortId: z.uuid().optional(),
+  name: z.string().trim().min(1).max(255),
+}) satisfies z.ZodType<CreateOrganisationGroupInput>;
+
+export const createOrganisationGroupContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/groups',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: createOrganisationGroupInputSchema,
+  output: hektorResponseSchema(organisationGroupSchema),
+});
+
+export const updateOrganisationGroupInputSchema =
+  createOrganisationGroupInputSchema.and(
+    z.object({
+      expectedUpdatedAt: z.iso.datetime(),
+      status: z.enum(GroupStatus),
+    }),
+  ) satisfies z.ZodType<UpdateOrganisationGroupInput>;
+
+export const updateOrganisationGroupContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/organisations/:organisationId/groups/:groupId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), groupId: z.uuid() }),
+  body: updateOrganisationGroupInputSchema,
+  output: hektorResponseSchema(organisationGroupSchema),
+});
+
 export const listOrganisationUsersContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/users',
@@ -613,6 +646,30 @@ export type GetOrganisationGroupParams = ContractParams<
 
 export type GetOrganisationGroupResponse = ContractOutput<
   typeof getOrganisationGroupContract
+>;
+
+export type CreateOrganisationGroupParams = ContractParams<
+  typeof createOrganisationGroupContract
+>;
+
+export type CreateOrganisationGroupBody = ContractBody<
+  typeof createOrganisationGroupContract
+>;
+
+export type CreateOrganisationGroupResponse = ContractOutput<
+  typeof createOrganisationGroupContract
+>;
+
+export type UpdateOrganisationGroupParams = ContractParams<
+  typeof updateOrganisationGroupContract
+>;
+
+export type UpdateOrganisationGroupBody = ContractBody<
+  typeof updateOrganisationGroupContract
+>;
+
+export type UpdateOrganisationGroupResponse = ContractOutput<
+  typeof updateOrganisationGroupContract
 >;
 
 export type ListOrganisationUsersParams = ContractParams<

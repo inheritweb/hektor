@@ -603,6 +603,33 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_organisation_group: {
+        Args: {
+          target_cohort_id?: string;
+          target_name: string;
+          target_organisation_id: string;
+        };
+        Returns: {
+          created_at: string;
+          id: string;
+          last_synchronized_at: string | null;
+          name: string;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          provisioning_method:
+            Database['public']['Enums']['provisioning_method'] | null;
+          source_deleted_at: string | null;
+          source_external_id: string | null;
+          status: Database['public']['Enums']['group_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_groups';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       has_organisation_role: {
         Args: {
           allowed_roles: Database['public']['Enums']['organisation_role'][];
@@ -759,6 +786,36 @@ export type Database = {
         SetofOptions: {
           from: '*';
           to: 'organisation_contract_periods';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      update_organisation_group: {
+        Args: {
+          expected_updated_at: string;
+          target_cohort_id?: string;
+          target_group_id: string;
+          target_name: string;
+          target_organisation_id: string;
+          target_status?: Database['public']['Enums']['group_status'];
+        };
+        Returns: {
+          created_at: string;
+          id: string;
+          last_synchronized_at: string | null;
+          name: string;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          provisioning_method:
+            Database['public']['Enums']['provisioning_method'] | null;
+          source_deleted_at: string | null;
+          source_external_id: string | null;
+          status: Database['public']['Enums']['group_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_groups';
           isOneToOne: true;
           isSetofReturn: false;
         };
