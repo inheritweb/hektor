@@ -306,6 +306,10 @@ export function buildOrganisationUserProvisionsQuery(
       last_synchronized_at,
       linked_at,
       revoked_at,
+      invitation_sent_at,
+      invitation_expires_at,
+      invitation_consumed_at,
+      invitation_send_count,
       created_at,
       updated_at,
       organisation:organisations (id, name, slug, status),
@@ -351,6 +355,10 @@ export function buildOrganisationUserProvisionDetailQuery(
       last_synchronized_at,
       linked_at,
       revoked_at,
+      invitation_sent_at,
+      invitation_expires_at,
+      invitation_consumed_at,
+      invitation_send_count,
       created_at,
       updated_at,
       organisation:organisations (id, name, slug, status),
@@ -416,6 +424,8 @@ export function buildProvisionAcceptanceQuery(
       provisioned_user_name, provisioned_display_name, provisioned_given_name,
       provisioned_family_name, provisioned_role, status, last_synchronized_at,
       linked_at, revoked_at, created_at, updated_at,
+      invitation_sent_at, invitation_expires_at, invitation_consumed_at,
+      invitation_send_count, invitation_token_hash,
       organisation:organisations (id, name, slug, status),
       cohort:organisation_cohorts (id, name, starts_on, ends_on, status),
       membership:organisation_users (id, user_id, role, status),
@@ -439,5 +449,46 @@ export function acceptOrganisationUserProvisionQuery(
     target_provision_id: provisionId,
     expected_status: ProvisioningStatus.Pending,
     target_user_id: userId,
+  });
+}
+
+export function issueOrganisationProvisionInvitationQuery(
+  client: DatabaseClient,
+  options: {
+    cooldownSeconds: number;
+    expiresAt: string;
+    organisationId: string;
+    provisionId: string;
+    tokenHash: string;
+  },
+) {
+  return client.rpc('issue_organisation_provision_invitation', {
+    resend_cooldown_seconds: options.cooldownSeconds,
+    target_expires_at: options.expiresAt,
+    target_organisation_id: options.organisationId,
+    target_provision_id: options.provisionId,
+    target_token_hash: options.tokenHash,
+  });
+}
+
+export function consumeOrganisationProvisionInvitationQuery(
+  client: DatabaseClient,
+  provisionId: string,
+  tokenHash: string,
+) {
+  return client.rpc('consume_organisation_provision_invitation', {
+    expected_token_hash: tokenHash,
+    target_provision_id: provisionId,
+  });
+}
+
+export function clearOrganisationProvisionInvitationQuery(
+  client: DatabaseClient,
+  provisionId: string,
+  tokenHash: string,
+) {
+  return client.rpc('clear_organisation_provision_invitation', {
+    expected_token_hash: tokenHash,
+    target_provision_id: provisionId,
   });
 }

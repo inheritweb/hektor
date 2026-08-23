@@ -3,6 +3,7 @@
 import {
   useAdminAutoLinkOrganisationUserProvision,
   useAdminGetOrganisationUserProvision,
+  useAdminSendOrganisationProvisionInvitation,
   useAdminTransitionOrganisationUserProvision,
 } from '@hektor/query/organisations';
 import { AdminOrganisationUserProvisionDetailPage } from '@hektor/ui/pages';
@@ -24,6 +25,7 @@ export function AdminOrganisationUserProvisionDetailScreen({
   });
   const transition = useAdminTransitionOrganisationUserProvision();
   const autoLink = useAdminAutoLinkOrganisationUserProvision();
+  const invitation = useAdminSendOrganisationProvisionInvitation();
 
   if (provision.isPending)
     return (
@@ -47,7 +49,8 @@ export function AdminOrganisationUserProvisionDetailScreen({
       params: { organisationId, provisionId },
       body: { action, expectedStatus: provision.data.data.status },
     });
-  const pending = transition.isPending || autoLink.isPending;
+  const pending =
+    transition.isPending || autoLink.isPending || invitation.isPending;
   const actionMessage =
     autoLink.data?.data.outcome ===
     ProvisioningAutoLinkOutcome.PendingIdentityVerification
@@ -59,6 +62,17 @@ export function AdminOrganisationUserProvisionDetailScreen({
   const actions =
     provision.data.data.status === ProvisioningStatus.Pending
       ? [
+          {
+            label: provision.data.data.invitationSendCount
+              ? 'Resend invitation'
+              : 'Send invitation',
+            disabled: pending,
+            onSelect: () =>
+              invitation.mutate({
+                params: { organisationId, provisionId },
+                body: {},
+              }),
+          },
           {
             label: 'Match existing account',
             disabled: pending,
@@ -134,8 +148,12 @@ export function AdminOrganisationUserProvisionDetailScreen({
   return (
     <AdminOrganisationUserProvisionDetailPage
       actions={actions}
-      actionError={transition.error?.message ?? autoLink.error?.message}
-      actionMessage={actionMessage}
+      actionError={
+        transition.error?.message ??
+        autoLink.error?.message ??
+        invitation.error?.message
+      }
+      actionMessage={invitation.isSuccess ? 'Invitation sent.' : actionMessage}
       getGroupHref={(group) =>
         `/admin/organisations/${organisationId}/groups/${group.id}`
       }

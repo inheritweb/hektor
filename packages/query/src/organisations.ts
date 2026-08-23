@@ -12,6 +12,7 @@ import {
   listOrganisationUserProvisions,
   listOrganisationUsers,
   listOrganisations,
+  sendOrganisationProvisionInvitation,
   transitionOrganisationUserProvision,
 } from '@hektor/api-client/organisations';
 
@@ -80,6 +81,11 @@ export const useAdminTransitionOrganisationUserProvision = makeMutation(
 
 export const useAdminAutoLinkOrganisationUserProvision = makeMutation(
   autoLinkOrganisationUserProvision,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminSendOrganisationProvisionInvitation = makeMutation(
+  sendOrganisationProvisionInvitation,
   ADMIN_ORGANISATIONS_QUERY_KEY,
 );
 

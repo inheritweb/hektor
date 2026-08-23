@@ -12,6 +12,7 @@ const meta = {
       cohort: { id: 'cohort', name: 'September 2026' },
       createdAt: '2026-08-15T10:00:00.000Z',
       groups: [{ id: 'group', name: 'Clinical Practice A' }],
+      invitationSendCount: 0,
       lastSynchronizedAt: '2026-08-16T10:00:00.000Z',
       linkedAt: '2026-08-16T11:00:00.000Z',
       linkedUser: {
@@ -55,6 +56,9 @@ export const Pending: Story = {
       linkedUser: undefined,
       organisationUserId: undefined,
       status: 'pending',
+      invitationSendCount: 1,
+      invitationSentAt: '2026-08-16T12:00:00.000Z',
+      invitationExpiresAt: '2026-08-17T12:00:00.000Z',
     },
   },
 };

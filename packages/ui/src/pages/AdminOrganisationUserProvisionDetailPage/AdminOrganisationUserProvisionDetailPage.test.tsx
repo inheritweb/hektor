@@ -10,6 +10,7 @@ const provision = {
   cohort: { id: 'cohort', name: 'September 2026' },
   createdAt: '2026-08-15T10:00:00.000Z',
   groups: [{ id: 'group', name: 'Clinical Practice A' }],
+  invitationSendCount: 0,
   lastSynchronizedAt: '2026-08-16T10:00:00.000Z',
   linkedAt: '2026-08-16T11:00:00.000Z',
   linkedUser: {

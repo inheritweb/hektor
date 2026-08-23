@@ -27,26 +27,23 @@ describe('simulator service', () => {
     expect(verifyOtp).not.toHaveBeenCalled();
   });
 
-  it('returns a simulator callback for a tokenised invitation', async () => {
-    const generateLink = vi.fn().mockResolvedValue({
-      data: {
-        properties: {
-          hashed_token: 'hashed-invitation-token',
-          verification_type: 'magiclink',
-        },
-      },
-      error: null,
-    });
+  it('launches the real invitation journey for an invitation scenario', async () => {
+    const generateLink = vi.fn();
     const verifyOtp = vi.fn();
+    const invitationLauncher = vi
+      .fn()
+      .mockResolvedValue('/auth/invitation?provisionId=provision&token=opaque');
     const service = createSimulatorService({
       adminClient: clientWithProvision(
         {
           id: '81a74c23-9202-44f1-86ec-fb92da500735',
+          organisation_id: 'b3539fdd-e1aa-45a0-86ac-093b15212273',
           provisioned_user_name: 'harvey.reid@northbridge.example',
           status: 'pending',
         },
         { generateLink },
       ),
+      invitationLauncher,
       sessionClient: { auth: { verifyOtp } } as unknown as DatabaseClient,
     });
 
@@ -56,9 +53,13 @@ describe('simulator service', () => {
       mode: 'invitation',
     });
 
-    expect(result.destination).toBe('simulator');
-    expect(result.path).toContain('/api/session?');
-    expect(result.path).toContain('token_hash=hashed-invitation-token');
+    expect(result.destination).toBe('web');
+    expect(result.path).toContain('/auth/invitation?');
+    expect(invitationLauncher).toHaveBeenCalledWith({
+      organisationId: 'b3539fdd-e1aa-45a0-86ac-093b15212273',
+      provisionId: '81a74c23-9202-44f1-86ec-fb92da500735',
+    });
+    expect(generateLink).not.toHaveBeenCalled();
     expect(verifyOtp).not.toHaveBeenCalled();
   });
 });

@@ -76,6 +76,11 @@ create table public.organisation_user_provisions (
   last_synchronized_at timestamptz,
   linked_at timestamptz,
   revoked_at timestamptz,
+  invitation_token_hash text check (invitation_token_hash is null or char_length(invitation_token_hash) = 64),
+  invitation_sent_at timestamptz,
+  invitation_expires_at timestamptz,
+  invitation_consumed_at timestamptz,
+  invitation_send_count integer not null default 0 check (invitation_send_count >= 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   foreign key (organisation_user_id, organisation_id)
@@ -366,6 +371,116 @@ begin
 end;
 $$;
 
+create function public.issue_organisation_provision_invitation(
+  target_organisation_id uuid,
+  target_provision_id uuid,
+  target_token_hash text,
+  target_expires_at timestamptz,
+  resend_cooldown_seconds integer
+)
+returns public.organisation_user_provisions
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  provision public.organisation_user_provisions;
+begin
+  select * into provision
+  from public.organisation_user_provisions
+  where id = target_provision_id and organisation_id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'provision_not_found';
+  end if;
+  if provision.status <> 'pending' then
+    raise exception using errcode = 'P0001', message = 'provision_not_pending';
+  end if;
+  if not exists (
+    select 1 from public.organisations
+    where id = provision.organisation_id and status = 'active'
+  ) then
+    raise exception using errcode = 'P0001', message = 'organisation_not_active';
+  end if;
+  if provision.invitation_sent_at is not null
+    and provision.invitation_sent_at > now() - make_interval(secs => resend_cooldown_seconds)
+  then
+    raise exception using errcode = 'P0001', message = 'invitation_cooldown';
+  end if;
+
+  update public.organisation_user_provisions
+  set invitation_token_hash = target_token_hash,
+      invitation_sent_at = now(),
+      invitation_expires_at = target_expires_at,
+      invitation_consumed_at = null,
+      invitation_send_count = invitation_send_count + 1
+  where id = provision.id
+  returning * into provision;
+
+  return provision;
+end;
+$$;
+
+create function public.consume_organisation_provision_invitation(
+  target_provision_id uuid,
+  expected_token_hash text
+)
+returns public.organisation_user_provisions
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  provision public.organisation_user_provisions;
+begin
+  select * into provision
+  from public.organisation_user_provisions
+  where id = target_provision_id
+  for update;
+
+  if not found
+    or provision.status <> 'pending'
+    or provision.invitation_token_hash is distinct from expected_token_hash
+    or provision.invitation_expires_at is null
+    or provision.invitation_expires_at <= now()
+    or provision.invitation_consumed_at is not null
+    or not exists (
+      select 1 from public.organisations
+      where id = provision.organisation_id and status = 'active'
+    )
+  then
+    raise exception using errcode = 'P0002', message = 'invitation_not_found';
+  end if;
+
+  update public.organisation_user_provisions
+  set invitation_token_hash = null,
+      invitation_consumed_at = now()
+  where id = provision.id
+  returning * into provision;
+
+  return provision;
+end;
+$$;
+
+create function public.clear_organisation_provision_invitation(
+  target_provision_id uuid,
+  expected_token_hash text
+)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.organisation_user_provisions
+  set invitation_token_hash = null,
+      invitation_sent_at = null,
+      invitation_expires_at = null,
+      invitation_consumed_at = null,
+      invitation_send_count = greatest(invitation_send_count - 1, 0)
+  where id = target_provision_id and invitation_token_hash = expected_token_hash;
+$$;
+
 create function public.accept_organisation_user_provision(
   target_provision_id uuid,
   expected_status public.provisioning_status,
@@ -451,6 +566,16 @@ grant execute on function public.accept_organisation_user_provision(
   public.provisioning_status,
   uuid
 ) to service_role;
+revoke all on function public.issue_organisation_provision_invitation(
+  uuid, uuid, text, timestamptz, integer
+) from public;
+grant execute on function public.issue_organisation_provision_invitation(
+  uuid, uuid, text, timestamptz, integer
+) to service_role;
+revoke all on function public.consume_organisation_provision_invitation(uuid, text) from public;
+grant execute on function public.consume_organisation_provision_invitation(uuid, text) to service_role;
+revoke all on function public.clear_organisation_provision_invitation(uuid, text) from public;
+grant execute on function public.clear_organisation_provision_invitation(uuid, text) to service_role;
 
 create function public.is_platform_admin()
 returns boolean

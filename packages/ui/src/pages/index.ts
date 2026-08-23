@@ -27,3 +27,5 @@ export * from './ProfilePage';
 export * from './ProvisionAcceptancePage';
 
 export * from './InstitutionalAccessUnavailablePage';
+
+export * from './InvitationUnavailablePage';

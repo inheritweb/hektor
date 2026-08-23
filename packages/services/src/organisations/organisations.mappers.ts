@@ -217,6 +217,16 @@ export function mapOrganisationUserProvision(
       : undefined,
     linkedAt: record.linked_at ? mapDateTime(record.linked_at) : undefined,
     revokedAt: record.revoked_at ? mapDateTime(record.revoked_at) : undefined,
+    invitationSentAt: record.invitation_sent_at
+      ? mapDateTime(record.invitation_sent_at)
+      : undefined,
+    invitationExpiresAt: record.invitation_expires_at
+      ? mapDateTime(record.invitation_expires_at)
+      : undefined,
+    invitationConsumedAt: record.invitation_consumed_at
+      ? mapDateTime(record.invitation_consumed_at)
+      : undefined,
+    invitationSendCount: record.invitation_send_count,
     createdAt: mapDateTime(record.created_at),
     updatedAt: mapDateTime(record.updated_at),
   };

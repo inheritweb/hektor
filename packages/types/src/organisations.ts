@@ -56,6 +56,12 @@ export interface ProvisioningAutoLinkResult {
   organisationUserId?: string;
 }
 
+export interface OrganisationProvisionInvitationResult {
+  expiresAt: string;
+  sendCount: number;
+  sentAt: string;
+}
+
 export enum GroupStatus {
   Active = 'active',
   Archived = 'archived',
@@ -186,6 +192,10 @@ export interface OrganisationUserProvision {
   lastSynchronizedAt?: string;
   linkedAt?: string;
   revokedAt?: string;
+  invitationSentAt?: string;
+  invitationExpiresAt?: string;
+  invitationConsumedAt?: string;
+  invitationSendCount: number;
   createdAt: string;
   updatedAt: string;
 }

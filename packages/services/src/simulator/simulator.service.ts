@@ -84,9 +84,14 @@ export interface SimulatorRedirect {
 
 export function createSimulatorService({
   adminClient,
+  invitationLauncher,
   sessionClient,
 }: {
   adminClient: DatabaseClient;
+  invitationLauncher?: (input: {
+    organisationId: string;
+    provisionId: string;
+  }) => Promise<string>;
   sessionClient: DatabaseClient;
 }) {
   async function listScenarios(): Promise<SimulatorScenarioState[]> {
@@ -149,7 +154,7 @@ export function createSimulatorService({
   }): Promise<SimulatorRedirect> {
     const provisionQuery = adminClient
       .from('organisation_user_provisions')
-      .select('id, provisioned_user_name, status')
+      .select('id, organisation_id, provisioned_user_name, status')
       .eq('provisioned_user_name', input.identityEmail);
     const { data: provision, error } = input.provisionId
       ? await provisionQuery.eq('id', input.provisionId).maybeSingle()
@@ -166,19 +171,22 @@ export function createSimulatorService({
       throw new Error('invitation_not_pending');
     }
 
+    if (input.mode === 'invitation') {
+      if (!invitationLauncher) throw new Error('invitation_launcher_missing');
+
+      return {
+        destination: 'web',
+        path: await invitationLauncher({
+          organisationId: provision.organisation_id,
+          provisionId: provision.id,
+        }),
+      };
+    }
+
     const properties = await generateSessionToken(
       adminClient,
       provision.provisioned_user_name,
     );
-
-    if (input.mode === 'invitation') {
-      const query = new URLSearchParams({
-        provisionId: provision.id,
-        token_hash: properties.hashed_token,
-        type: properties.verification_type,
-      });
-      return { destination: 'simulator', path: `/api/session?${query}` };
-    }
 
     await verifySessionToken(
       sessionClient,
@@ -195,20 +203,7 @@ export function createSimulatorService({
     };
   }
 
-  async function acceptInvitationToken(input: {
-    provisionId: string;
-    tokenHash: string;
-    type: EmailOtpType;
-  }): Promise<SimulatorRedirect> {
-    await verifySessionToken(sessionClient, input.tokenHash, input.type);
-
-    return {
-      destination: 'web',
-      path: `/provisioning/accept/${encodeURIComponent(input.provisionId)}`,
-    };
-  }
-
-  return { acceptInvitationToken, listScenarios, startScenario };
+  return { listScenarios, startScenario };
 }
 
 async function generateSessionToken(client: DatabaseClient, email: string) {

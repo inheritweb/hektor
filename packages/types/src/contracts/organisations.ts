@@ -9,6 +9,7 @@ import {
   type OrganisationGroup,
   type OrganisationGroupProvisionedUserSummary,
   type OrganisationMembershipUserSummary,
+  type OrganisationProvisionInvitationResult,
   type OrganisationSummary,
   type OrganisationUserProvision,
   type OrganisationUserProvisionDetail,
@@ -139,6 +140,10 @@ export const organisationUserProvisionSchema = z.object({
   lastSynchronizedAt: z.iso.datetime().optional(),
   linkedAt: z.iso.datetime().optional(),
   revokedAt: z.iso.datetime().optional(),
+  invitationSentAt: z.iso.datetime().optional(),
+  invitationExpiresAt: z.iso.datetime().optional(),
+  invitationConsumedAt: z.iso.datetime().optional(),
+  invitationSendCount: z.number().int().nonnegative(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 }) satisfies z.ZodType<OrganisationUserProvision>;
@@ -317,6 +322,21 @@ export const autoLinkOrganisationUserProvisionContract = defineContract({
   output: hektorResponseSchema(provisioningAutoLinkResultSchema),
 });
 
+export const organisationProvisionInvitationResultSchema = z.object({
+  expiresAt: z.iso.datetime(),
+  sendCount: z.number().int().positive(),
+  sentAt: z.iso.datetime(),
+}) satisfies z.ZodType<OrganisationProvisionInvitationResult>;
+
+export const sendOrganisationProvisionInvitationContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/user-provisions/:provisionId/invitation',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), provisionId: z.uuid() }),
+  body: emptyObjectSchema,
+  output: hektorResponseSchema(organisationProvisionInvitationResultSchema),
+});
+
 export const getProvisionAcceptanceContract = defineContract({
   method: 'GET',
   path: '/api/provisioning/:provisionId',
@@ -444,6 +464,10 @@ export type TransitionOrganisationUserProvisionResponse = ContractOutput<
 
 export type AutoLinkOrganisationUserProvisionResponse = ContractOutput<
   typeof autoLinkOrganisationUserProvisionContract
+>;
+
+export type SendOrganisationProvisionInvitationResponse = ContractOutput<
+  typeof sendOrganisationProvisionInvitationContract
 >;
 
 export type GetProvisionAcceptanceResponse = ContractOutput<

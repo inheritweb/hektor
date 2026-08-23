@@ -336,6 +336,7 @@ describe('admin organisation API methods', () => {
           status: 'active',
         },
         groups: [],
+        invitationSendCount: 0,
         provisioningMethod: 'scim',
         provisionedUserName: 'maya@northbridge.example',
         provisionedRole: 'learner',

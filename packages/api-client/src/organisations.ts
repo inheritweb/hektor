@@ -12,6 +12,7 @@ import {
   listOrganisationUserProvisionsContract,
   listOrganisationUsersContract,
   listOrganisationsContract,
+  sendOrganisationProvisionInvitationContract,
   transitionOrganisationUserProvisionContract,
 } from '@hektor/types/contracts/organisations';
 
@@ -59,6 +60,10 @@ export const transitionOrganisationUserProvision = registerApiMethod(
 
 export const autoLinkOrganisationUserProvision = registerApiMethod(
   autoLinkOrganisationUserProvisionContract,
+);
+
+export const sendOrganisationProvisionInvitation = registerApiMethod(
+  sendOrganisationProvisionInvitationContract,
 );
 
 export const getProvisionAcceptance = registerApiMethod(

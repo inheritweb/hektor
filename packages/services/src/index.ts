@@ -7,4 +7,6 @@ export {
 
 export * from './organisations/index';
 
+export type { DatabaseClient } from './database';
+
 export { getHealthCheck } from './system/index';

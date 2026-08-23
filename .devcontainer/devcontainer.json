@@ -11,7 +11,7 @@
       "dockerDashComposeVersion": "v2"
     }
   },
-  "forwardPorts": [3000, 3001, 54321, 54322, 54323, 54324],
+  "forwardPorts": [3000, 3001, 54321, 54322, 54323, 54324, 54325],
   "portsAttributes": {
     "3000": {
       "label": "Hektor web app",

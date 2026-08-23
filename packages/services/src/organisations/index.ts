@@ -26,6 +26,8 @@ export {
 
 export { createOrganisationsService } from './organisations.service';
 
+export { createOrganisationInvitationsService } from './organisation-invitations.service';
+
 export {
   canTransitionProvisioningStatus,
   getProvisioningTransition,

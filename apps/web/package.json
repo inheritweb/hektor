@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@hektor/config": "workspace:*",
+    "@hektor/messaging": "workspace:*",
     "@hektor/query": "workspace:*",
     "@hektor/services": "workspace:*",
     "@hektor/tailwind-config": "workspace:*",

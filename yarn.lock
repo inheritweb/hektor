@@ -1835,6 +1835,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@hektor/messaging@workspace:*, @hektor/messaging@workspace:packages/messaging":
+  version: 0.0.0-use.local
+  resolution: "@hektor/messaging@workspace:packages/messaging"
+  dependencies:
+    "@hektor/eslint-config": "workspace:*"
+    "@hektor/typescript-config": "workspace:*"
+    "@types/node": "npm:^24.0.0"
+    "@types/nodemailer": "npm:7.0.11"
+    eslint: "npm:^9.39.0"
+    nodemailer: "npm:7.0.10"
+    typescript: "npm:6.0.3"
+    vitest: "npm:4.1.10"
+  languageName: unknown
+  linkType: soft
+
 "@hektor/query@workspace:*, @hektor/query@workspace:packages/query":
   version: 0.0.0-use.local
   resolution: "@hektor/query@workspace:packages/query"
@@ -1858,6 +1873,7 @@ __metadata:
   resolution: "@hektor/services@workspace:packages/services"
   dependencies:
     "@hektor/eslint-config": "workspace:*"
+    "@hektor/messaging": "workspace:*"
     "@hektor/types": "workspace:*"
     "@hektor/typescript-config": "workspace:*"
     "@supabase/supabase-js": "npm:2.111.0"
@@ -1981,6 +1997,7 @@ __metadata:
   dependencies:
     "@hektor/config": "workspace:*"
     "@hektor/eslint-config": "workspace:*"
+    "@hektor/messaging": "workspace:*"
     "@hektor/query": "workspace:*"
     "@hektor/services": "workspace:*"
     "@hektor/tailwind-config": "workspace:*"
@@ -4663,6 +4680,15 @@ __metadata:
   dependencies:
     undici-types: "npm:~7.18.0"
   checksum: 10c0/a5bc08f49b9581dcdca90e02cd77197a3c799840807664942e5cd5161a553d4d2ae8064f7e3294410d748d7d098b5c1848be7fa50c06f29c4193ab16be4e59eb
+  languageName: node
+  linkType: hard
+
+"@types/nodemailer@npm:7.0.11":
+  version: 7.0.11
+  resolution: "@types/nodemailer@npm:7.0.11"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/dc6472c26600e763c38721b0691fc3014eb868d20b97eb48cfbc4fe9a7a09f66c0ccd8d647033a4be91051cc3c7bdca73c006db2f7a9e8bdd1ce65bb5ec2599c
   languageName: node
   linkType: hard
 
@@ -11587,6 +11613,13 @@ __metadata:
   version: 2.0.53
   resolution: "node-releases@npm:2.0.53"
   checksum: 10c0/db9fb29b21ec12e223ead8bd9406100ff14fce01678a9a4865e288098456b84869431421a739f216aa520b6f57d9425f6537662501ae8a2d9e1771bfa87751bc
+  languageName: node
+  linkType: hard
+
+"nodemailer@npm:7.0.10":
+  version: 7.0.10
+  resolution: "nodemailer@npm:7.0.10"
+  checksum: 10c0/9bb39bde904397879a6394e5202146167cabc3bd4089c1b0255ce16875e721d1cf132afde25a570fc4cf38f159ba6b6b5411d3b9371775543d38343fbd505101
   languageName: node
   linkType: hard
 

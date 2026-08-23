@@ -71,6 +71,7 @@ function acceptanceDetail(provisionId: string) {
       status: 'active',
     },
     groups: [],
+    invitationSendCount: 0,
     provisioningMethod: 'scim',
     provisionedUserName: 'learner@example.com',
     provisionedRole: 'learner',

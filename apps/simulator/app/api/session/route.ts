@@ -1,10 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import type { EmailOtpType } from '@supabase/supabase-js';
-
 import {
   createSimulatorService,
   simulatorScenarios,
 } from '@hektor/services/simulator';
+import { createOrganisationInvitationsService } from '@hektor/services/organisations';
 
 import { env } from '@/env';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
@@ -18,8 +17,28 @@ function redirectUrl(destination: 'simulator' | 'web', path: string) {
 }
 
 async function service() {
+  const adminClient = createAdminSupabaseClient();
+
   return createSimulatorService({
-    adminClient: createAdminSupabaseClient(),
+    adminClient,
+    invitationLauncher: async ({ organisationId, provisionId }) => {
+      let invitationUrl: URL | undefined;
+
+      await createOrganisationInvitationsService({
+        client: adminClient,
+        messageSender: {
+          send: async (message) => {
+            const match = message.text.match(/https?:\/\/\S+/);
+            if (match) invitationUrl = new URL(match[0]);
+          },
+        },
+        resendCooldownSeconds: 0,
+        webBaseUrl: env.PUBLIC_BASE_URL,
+      }).sendInvitation({ organisationId, provisionId });
+
+      if (!invitationUrl) throw new Error('invitation_url_missing');
+      return `${invitationUrl.pathname}${invitationUrl.search}`;
+    },
     sessionClient: await createServerSupabaseClient(),
   });
 }
@@ -57,33 +76,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(
       redirectUrl('simulator', '/?error=session-setup-failed'),
       303,
-    );
-  }
-}
-
-export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
-    return new NextResponse('Not found', { status: 404 });
-  }
-
-  const provisionId = request.nextUrl.searchParams.get('provisionId');
-  const tokenHash = request.nextUrl.searchParams.get('token_hash');
-  const type = request.nextUrl.searchParams.get('type') as EmailOtpType | null;
-
-  if (!provisionId || !tokenHash || !type) {
-    return NextResponse.redirect(
-      redirectUrl('simulator', '/?error=invalid-invitation'),
-    );
-  }
-
-  try {
-    const result = await (
-      await service()
-    ).acceptInvitationToken({ provisionId, tokenHash, type });
-    return NextResponse.redirect(redirectUrl(result.destination, result.path));
-  } catch {
-    return NextResponse.redirect(
-      redirectUrl('simulator', '/?error=invalid-invitation'),
     );
   }
 }

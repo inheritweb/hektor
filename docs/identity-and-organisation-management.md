@@ -52,18 +52,16 @@ associates an organisation with a user; it does not define or own the user.
 selected, not a separate user kind.
 
 Locally, Supabase renders Hektor's versioned passwordless email template and
-delivers it to Mailpit. Hosted delivery will use custom SMTP, initially
-considering Resend. A future provider-neutral messaging package should follow
-the established adapter pattern—validated messages with fake, SMTP, and hosted
-provider adapters—but Supabase Auth remains responsible for generating and
-verifying authentication codes unless a Send Email Hook deliberately replaces
-that boundary.
+delivers it to Mailpit. Hektor's provider-neutral `@hektor/messaging` package
+sends organisation invitations through the same local SMTP server. Hosted
+delivery will use custom SMTP, initially considering Resend. Supabase Auth
+remains responsible for generating and verifying authentication codes unless a
+Send Email Hook deliberately replaces that boundary.
 
-SCIM can provision access before first login. The pending `organisation_users`
-record therefore stores the provider tenant and external subject and has a
-nullable user ID. On the first successful institutional login, Hektor links the
-provisioned membership to the authenticated user. External
-identifiers remain available for subsequent SCIM updates and audit.
+SCIM can provision access before first login. Unresolved asserted identities
+live in `organisation_user_provisions`; `organisation_users` is created only
+when the provision links to a canonical Hektor user. External identifiers
+remain on the provision for subsequent SCIM updates and audit.
 
 Supabase owns PostgreSQL, SQL migrations, generated database types, Auth,
 Storage, and Row Level Security. Vercel runs and deploys the Next.js application.
@@ -381,10 +379,13 @@ The separate development application at `http://localhost:3001` exercises a
 small catalogue of named identity scenarios. It mocks the trusted result of
 institutional SSO rather than the external SAML or OIDC exchange itself. A
 simulated SSO identity must still have an existing membership or matching
-provision before Hektor creates an account or session. Tokenised invitation
-scenarios use the normal verified identity and provision-acceptance boundaries.
-Simulator-only privileged behavior is exposed solely through the explicit
-`@hektor/services/simulator` entrypoint and is not imported by the web app.
+provision before Hektor creates an account or session.
+Tokenised invitation scenarios issue a real Hektor invitation and use the same
+token validation, session establishment, and provision-acceptance boundaries as
+production. Only delivery is captured in memory so the simulator can open the
+resulting journey directly. Simulator-only privileged behavior is exposed
+solely through the explicit `@hektor/services/simulator` entrypoint and is not
+imported by the web app.
 
 The simulator only initiates these journeys. Post-authentication outcomes use
 the same standalone identity experience intended for production: neither the

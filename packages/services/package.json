@@ -34,6 +34,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hektor/messaging": "workspace:*",
     "@hektor/types": "workspace:*",
     "@supabase/supabase-js": "2.111.0"
   },

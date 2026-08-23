@@ -16,6 +16,10 @@ export interface AdminOrganisationUserProvisionDetailViewModel {
   cohort?: Summary;
   createdAt: string;
   groups: readonly Summary[];
+  invitationConsumedAt?: string;
+  invitationExpiresAt?: string;
+  invitationSendCount: number;
+  invitationSentAt?: string;
   lastSynchronizedAt?: string;
   linkedAt?: string;
   linkedUser?: LinkedUser;
@@ -202,6 +206,40 @@ export function AdminOrganisationUserProvisionDetailPage({
             This provision has not been linked to a Hektor user.
           </p>
         )}
+      </section>
+
+      <section>
+        <h2 className="text-xl font-bold">Invitation</h2>
+        <dl className="mt-4 grid gap-x-8 gap-y-5 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-muted-foreground">Last sent</dt>
+            <Value>
+              {provision.invitationSentAt
+                ? formatDateTime(provision.invitationSentAt)
+                : undefined}
+            </Value>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Expires</dt>
+            <Value>
+              {provision.invitationExpiresAt
+                ? formatDateTime(provision.invitationExpiresAt)
+                : undefined}
+            </Value>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Used</dt>
+            <Value>
+              {provision.invitationConsumedAt
+                ? formatDateTime(provision.invitationConsumedAt)
+                : undefined}
+            </Value>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Times sent</dt>
+            <Value>{provision.invitationSendCount.toString()}</Value>
+          </div>
+        </dl>
       </section>
 
       <section>

@@ -46,6 +46,7 @@ describe('GET organisation provision detail', () => {
           status: 'active',
         },
         groups: [],
+        invitationSendCount: 0,
         provisioningMethod: 'manual',
         provisionedUserName: 'pending@example.com',
         provisionedRole: 'learner',

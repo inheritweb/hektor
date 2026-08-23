@@ -309,6 +309,11 @@ export type Database = {
         Row: {
           created_at: string;
           id: string;
+          invitation_consumed_at: string | null;
+          invitation_expires_at: string | null;
+          invitation_send_count: number;
+          invitation_sent_at: string | null;
+          invitation_token_hash: string | null;
           last_synchronized_at: string | null;
           linked_at: string | null;
           organisation_cohort_id: string | null;
@@ -328,6 +333,11 @@ export type Database = {
         Insert: {
           created_at?: string;
           id?: string;
+          invitation_consumed_at?: string | null;
+          invitation_expires_at?: string | null;
+          invitation_send_count?: number;
+          invitation_sent_at?: string | null;
+          invitation_token_hash?: string | null;
           last_synchronized_at?: string | null;
           linked_at?: string | null;
           organisation_cohort_id?: string | null;
@@ -347,6 +357,11 @@ export type Database = {
         Update: {
           created_at?: string;
           id?: string;
+          invitation_consumed_at?: string | null;
+          invitation_expires_at?: string | null;
+          invitation_send_count?: number;
+          invitation_sent_at?: string | null;
+          invitation_token_hash?: string | null;
           last_synchronized_at?: string | null;
           linked_at?: string | null;
           organisation_cohort_id?: string | null;
@@ -476,6 +491,48 @@ export type Database = {
         Returns: {
           created_at: string;
           id: string;
+          invitation_consumed_at: string | null;
+          invitation_expires_at: string | null;
+          invitation_send_count: number;
+          invitation_sent_at: string | null;
+          invitation_token_hash: string | null;
+          last_synchronized_at: string | null;
+          linked_at: string | null;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          organisation_user_id: string | null;
+          provisioned_display_name: string | null;
+          provisioned_family_name: string | null;
+          provisioned_given_name: string | null;
+          provisioned_role: Database['public']['Enums']['organisation_role'];
+          provisioned_user_name: string;
+          provisioning_method: Database['public']['Enums']['provisioning_method'];
+          revoked_at: string | null;
+          source_external_id: string | null;
+          status: Database['public']['Enums']['provisioning_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_user_provisions';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      clear_organisation_provision_invitation: {
+        Args: { expected_token_hash: string; target_provision_id: string };
+        Returns: undefined;
+      };
+      consume_organisation_provision_invitation: {
+        Args: { expected_token_hash: string; target_provision_id: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          invitation_consumed_at: string | null;
+          invitation_expires_at: string | null;
+          invitation_send_count: number;
+          invitation_sent_at: string | null;
+          invitation_token_hash: string | null;
           last_synchronized_at: string | null;
           linked_at: string | null;
           organisation_cohort_id: string | null;
@@ -507,6 +564,45 @@ export type Database = {
         Returns: boolean;
       };
       is_platform_admin: { Args: never; Returns: boolean };
+      issue_organisation_provision_invitation: {
+        Args: {
+          resend_cooldown_seconds: number;
+          target_expires_at: string;
+          target_organisation_id: string;
+          target_provision_id: string;
+          target_token_hash: string;
+        };
+        Returns: {
+          created_at: string;
+          id: string;
+          invitation_consumed_at: string | null;
+          invitation_expires_at: string | null;
+          invitation_send_count: number;
+          invitation_sent_at: string | null;
+          invitation_token_hash: string | null;
+          last_synchronized_at: string | null;
+          linked_at: string | null;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          organisation_user_id: string | null;
+          provisioned_display_name: string | null;
+          provisioned_family_name: string | null;
+          provisioned_given_name: string | null;
+          provisioned_role: Database['public']['Enums']['organisation_role'];
+          provisioned_user_name: string;
+          provisioning_method: Database['public']['Enums']['provisioning_method'];
+          revoked_at: string | null;
+          source_external_id: string | null;
+          status: Database['public']['Enums']['provisioning_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_user_provisions';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       transition_organisation_user_provision: {
         Args: {
           expected_status: Database['public']['Enums']['provisioning_status'];
@@ -517,6 +613,11 @@ export type Database = {
         Returns: {
           created_at: string;
           id: string;
+          invitation_consumed_at: string | null;
+          invitation_expires_at: string | null;
+          invitation_send_count: number;
+          invitation_sent_at: string | null;
+          invitation_token_hash: string | null;
           last_synchronized_at: string | null;
           linked_at: string | null;
           organisation_cohort_id: string | null;

@@ -257,7 +257,8 @@ yarn supabase:stop
 
 Supabase Studio provides a local graphical interface at
 http://localhost:54323. Mailpit captures local authentication email at
-http://localhost:54324.
+http://localhost:54324; application email is delivered to its SMTP listener on
+`localhost:54325`.
 
 ### Database workflow
 
