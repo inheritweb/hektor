@@ -641,6 +641,29 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      update_organisation: {
+        Args: {
+          expected_status: Database['public']['Enums']['organisation_status'];
+          target_name: string;
+          target_organisation_id: string;
+          target_slug: string;
+          target_status: Database['public']['Enums']['organisation_status'];
+        };
+        Returns: {
+          created_at: string;
+          id: string;
+          name: string;
+          slug: string;
+          status: Database['public']['Enums']['organisation_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisations';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       group_status: 'active' | 'archived';

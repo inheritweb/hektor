@@ -3,6 +3,7 @@ import type { QueryData } from '@supabase/supabase-js';
 import {
   type GroupStatus,
   type OrganisationRole,
+  OrganisationStatus,
   type OrganisationUserStatus,
   type ProvisioningMethod,
   ProvisioningStatus,
@@ -13,6 +14,7 @@ import type { DatabaseClient } from '../database';
 export function buildOrganisationSummariesQuery(
   client: DatabaseClient,
   options: {
+    archived: boolean;
     page: number;
     pageSize: number;
     order: 'name' | 'createdAt';
@@ -22,11 +24,16 @@ export function buildOrganisationSummariesQuery(
   const first = (options.page - 1) * options.pageSize;
   const order = options.order === 'createdAt' ? 'created_at' : 'name';
 
-  return client
+  let query = client
     .from('organisations')
     .select('id, name, slug, status', { count: 'exact' })
-    .order(order, { ascending: options.dir === 'asc' })
-    .range(first, first + options.pageSize - 1);
+    .order(order, { ascending: options.dir === 'asc' });
+
+  query = options.archived
+    ? query.eq('status', OrganisationStatus.Archived)
+    : query.neq('status', OrganisationStatus.Archived);
+
+  return query.range(first, first + options.pageSize - 1);
 }
 
 export type OrganisationSummariesQueryResult = QueryData<
@@ -35,6 +42,36 @@ export type OrganisationSummariesQueryResult = QueryData<
 
 export type OrganisationSummaryQueryResult =
   OrganisationSummariesQueryResult[number];
+
+export function createOrganisationQuery(
+  client: DatabaseClient,
+  values: { name: string; slug: string },
+) {
+  return client
+    .from('organisations')
+    .insert(values)
+    .select('id, name, slug, status')
+    .single();
+}
+
+export function updateOrganisationQuery(
+  client: DatabaseClient,
+  values: {
+    expectedStatus: OrganisationStatus;
+    name: string;
+    organisationId: string;
+    slug: string;
+    status: OrganisationStatus;
+  },
+) {
+  return client.rpc('update_organisation', {
+    expected_status: values.expectedStatus,
+    target_name: values.name,
+    target_organisation_id: values.organisationId,
+    target_slug: values.slug,
+    target_status: values.status,
+  });
+}
 
 export function buildOrganisationDetailQuery(
   client: DatabaseClient,

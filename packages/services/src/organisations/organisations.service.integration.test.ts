@@ -22,6 +22,7 @@ const client = createIntegrationDatabaseClient();
 const {
   acceptOrganisationUserProvision,
   autoLinkOrganisationUserProvision,
+  createOrganisation,
   getOrganisation,
   getOrganisationCohort,
   getOrganisationGroup,
@@ -34,6 +35,7 @@ const {
   listOrganisationUserProvisions,
   listOrganisationUsers,
   transitionOrganisationUserProvision,
+  updateOrganisation,
 } = createOrganisationsService(client);
 
 const organisationId = randomUUID();
@@ -59,6 +61,94 @@ let tutorUserId: string;
 const slug = `integration-${organisationId}`;
 
 describe('organisation services', () => {
+  it('creates and edits an organisation with optimistic lifecycle control', async () => {
+    const managedId = randomUUID();
+    const managedSlug = `managed-${managedId}`;
+    const created = await createOrganisation({
+      name: 'Managed University',
+      slug: managedSlug,
+    });
+
+    try {
+      expect(created.data).toMatchObject({
+        name: 'Managed University',
+        slug: managedSlug,
+        status: OrganisationStatus.Active,
+      });
+
+      const suspended = await updateOrganisation(created.data.id, {
+        expectedStatus: OrganisationStatus.Active,
+        name: 'Managed University Updated',
+        slug: managedSlug,
+        status: OrganisationStatus.Suspended,
+      });
+      expect(suspended.data).toMatchObject({
+        name: 'Managed University Updated',
+        status: OrganisationStatus.Suspended,
+      });
+
+      const currentDirectory = await listOrganisations({
+        archived: false,
+        page: 1,
+        pageSize: 100,
+        order: 'name',
+        dir: SortDirection.Ascending,
+      });
+      expect(currentDirectory.data).toContainEqual(suspended.data);
+
+      await expect(
+        updateOrganisation(created.data.id, {
+          expectedStatus: OrganisationStatus.Active,
+          name: 'Stale Update',
+          slug: managedSlug,
+          status: OrganisationStatus.Active,
+        }),
+      ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+
+      const archived = await updateOrganisation(created.data.id, {
+        expectedStatus: OrganisationStatus.Suspended,
+        name: 'Managed University Updated',
+        slug: managedSlug,
+        status: OrganisationStatus.Archived,
+      });
+
+      const [currentAfterArchive, archiveDirectory] = await Promise.all([
+        listOrganisations({
+          archived: false,
+          page: 1,
+          pageSize: 100,
+          order: 'name',
+          dir: SortDirection.Ascending,
+        }),
+        listOrganisations({
+          archived: true,
+          page: 1,
+          pageSize: 100,
+          order: 'name',
+          dir: SortDirection.Ascending,
+        }),
+      ]);
+      expect(currentAfterArchive.data).not.toContainEqual(archived.data);
+      expect(archiveDirectory.data).toContainEqual(archived.data);
+
+      const reactivated = await updateOrganisation(created.data.id, {
+        expectedStatus: OrganisationStatus.Archived,
+        name: 'Managed University Updated',
+        slug: managedSlug,
+        status: OrganisationStatus.Active,
+      });
+      expect(reactivated.data.status).toBe(OrganisationStatus.Active);
+    } finally {
+      await client.from('organisations').delete().eq('id', created.data.id);
+    }
+  });
+
+  it('rejects a duplicate organisation slug', async () => {
+    await expect(
+      createOrganisation({ name: 'Duplicate', slug }),
+    ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+  });
+
   beforeAll(async () => {
     const learner = await client.auth.admin.createUser({
       email: `learner-${organisationId}@integration.example`,
@@ -223,6 +313,7 @@ describe('organisation services', () => {
 
   it('lists organisations through the real Supabase query', async () => {
     const response = await listOrganisations({
+      archived: false,
       page: 1,
       pageSize: 100,
       order: 'name',

@@ -96,6 +96,18 @@ export interface Organisation {
   updatedAt: string;
 }
 
+export interface CreateOrganisationInput {
+  name: string;
+  slug: string;
+}
+
+export interface UpdateOrganisationInput {
+  expectedStatus: OrganisationStatus;
+  name: string;
+  slug: string;
+  status: OrganisationStatus;
+}
+
 export interface OrganisationUsersSummary {
   total: number;
   learners: number;

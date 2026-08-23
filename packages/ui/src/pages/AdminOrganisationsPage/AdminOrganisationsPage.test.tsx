@@ -1,16 +1,20 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AdminOrganisationsPage } from './AdminOrganisationsPage.component';
+
+afterEach(cleanup);
 
 describe('AdminOrganisationsPage', () => {
   it('renders organisation directory fields', () => {
     render(
       <AdminOrganisationsPage
+        archived={false}
         getOrganisationHref={(organisation) =>
           `/admin/organisations/${organisation.id}`
         }
         onPageChange={() => undefined}
+        onArchivedChange={() => undefined}
         organisations={[
           {
             id: '1',
@@ -32,5 +36,25 @@ describe('AdminOrganisationsPage', () => {
     expect(
       screen.getByRole('link', { name: 'View' }).getAttribute('href'),
     ).toBe('/admin/organisations/1');
+  });
+
+  it('switches to the archived-only directory', () => {
+    const onArchivedChange = vi.fn();
+
+    render(
+      <AdminOrganisationsPage
+        archived={false}
+        onArchivedChange={onArchivedChange}
+        onPageChange={() => undefined}
+        organisations={[]}
+        page={1}
+        pageSize={20}
+        totalRecords={0}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show archived' }));
+
+    expect(onArchivedChange).toHaveBeenCalledWith(true);
   });
 });

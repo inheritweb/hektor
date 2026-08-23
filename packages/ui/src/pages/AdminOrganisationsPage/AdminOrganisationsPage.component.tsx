@@ -1,4 +1,5 @@
 import { createTableColumn } from '../../atoms/Table';
+import { Button, buttonVariants } from '../../atoms/Button';
 import { NavigationLink } from '../../context';
 import { Grid } from '../../organisms/Grid';
 
@@ -10,11 +11,14 @@ export interface AdminOrganisationListItemViewModel {
 }
 
 export interface AdminOrganisationsPageProps {
+  createHref?: string;
   error?: string;
   getOrganisationHref?: (
     organisation: AdminOrganisationListItemViewModel,
   ) => string;
   loading?: boolean;
+  archived: boolean;
+  onArchivedChange: (archived: boolean) => void;
   onPageChange: (page: number) => void;
   organisations: readonly AdminOrganisationListItemViewModel[];
   page: number;
@@ -49,9 +53,12 @@ const columns = [
 ];
 
 export function AdminOrganisationsPage({
+  createHref,
   error,
   getOrganisationHref,
   loading,
+  archived,
+  onArchivedChange,
   onPageChange,
   organisations,
   page,
@@ -78,17 +85,37 @@ export function AdminOrganisationsPage({
     : columns;
 
   return (
-    <Grid
-      caption="Platform organisations"
-      columns={linkedColumns}
-      empty="No organisations have been created yet."
-      error={error}
-      getRowId={(organisation) => organisation.id}
-      highlight
-      loading={loading}
-      pagination={{ page, pageSize, totalRecords, onPageChange }}
-      rows={organisations}
-      title="Organisations"
-    />
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <Button
+          aria-pressed={archived}
+          onClick={() => onArchivedChange(!archived)}
+          variant={archived ? 'secondary' : 'outline'}
+        >
+          Show archived
+        </Button>
+        {createHref ? (
+          <NavigationLink className={buttonVariants()} href={createHref}>
+            Add organisation
+          </NavigationLink>
+        ) : null}
+      </div>
+      <Grid
+        caption="Platform organisations"
+        columns={linkedColumns}
+        empty={
+          archived
+            ? 'No organisations have been archived.'
+            : 'No current organisations have been created yet.'
+        }
+        error={error}
+        getRowId={(organisation) => organisation.id}
+        highlight
+        loading={loading}
+        pagination={{ page, pageSize, totalRecords, onPageChange }}
+        rows={organisations}
+        title="Organisations"
+      />
+    </div>
   );
 }

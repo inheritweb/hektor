@@ -1,6 +1,7 @@
 import {
   autoLinkOrganisationUserProvision,
   acceptOrganisationUserProvision,
+  createOrganisation,
   getOrganisation,
   getOrganisationCohort,
   getOrganisationGroup,
@@ -14,6 +15,7 @@ import {
   listOrganisations,
   sendOrganisationProvisionInvitation,
   transitionOrganisationUserProvision,
+  updateOrganisation,
 } from '@hektor/api-client/organisations';
 
 import { makeQuery } from './make-query';
@@ -26,6 +28,16 @@ export const ADMIN_ORGANISATIONS_QUERY_KEY = [
 
 export const useAdminGetOrganisations = makeQuery(
   listOrganisations,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminCreateOrganisation = makeMutation(
+  createOrganisation,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminUpdateOrganisation = makeMutation(
+  updateOrganisation,
   ADMIN_ORGANISATIONS_QUERY_KEY,
 );
 

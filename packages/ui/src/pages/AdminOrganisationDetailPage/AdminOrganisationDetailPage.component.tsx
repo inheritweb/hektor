@@ -63,6 +63,7 @@ export interface AdminOrganisationDetailViewModel {
 export interface AdminOrganisationDetailPageProps {
   cohortsHref: string;
   contractPeriodsHref: string;
+  editHref?: string;
   groupsHref: string;
   organisation: AdminOrganisationDetailViewModel;
   provisionsHref: string;
@@ -111,6 +112,7 @@ function CollectionSection({
 export function AdminOrganisationDetailPage({
   cohortsHref,
   contractPeriodsHref,
+  editHref,
   groupsHref,
   organisation,
   provisionsHref,
@@ -121,6 +123,16 @@ export function AdminOrganisationDetailPage({
 
   return (
     <div className="space-y-10">
+      {editHref ? (
+        <div className="flex justify-end">
+          <NavigationLink
+            className={buttonVariants({ variant: 'outline' })}
+            href={editHref}
+          >
+            Edit organisation
+          </NavigationLink>
+        </div>
+      ) : null}
       <CollectionSection
         description="Users and roles within this organisation."
         icon={LuUsers}

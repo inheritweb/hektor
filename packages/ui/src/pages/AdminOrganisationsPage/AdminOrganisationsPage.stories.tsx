@@ -6,6 +6,8 @@ const meta = {
   title: 'Pages/AdminOrganisationsPage',
   component: AdminOrganisationsPage,
   args: {
+    archived: false,
+    onArchivedChange: () => undefined,
     onPageChange: () => undefined,
     organisations: [
       {

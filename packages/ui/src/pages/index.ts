@@ -1,5 +1,7 @@
 export * from './AdminOrganisationsPage';
 
+export * from './AdminOrganisationFormPage';
+
 export * from './AdminOrganisationDetailPage';
 
 export * from './AdminOrganisationContractPeriodsPage';

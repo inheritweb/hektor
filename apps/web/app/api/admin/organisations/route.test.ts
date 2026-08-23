@@ -8,11 +8,13 @@ import { callApiEndpoint } from '@/tests/api/api-test-client';
 const {
   createAdminSupabaseClientMock,
   createOrganisationsServiceMock,
+  createOrganisationMock,
   getUserMock,
   listOrganisationsMock,
 } = vi.hoisted(() => ({
   createAdminSupabaseClientMock: vi.fn(),
   createOrganisationsServiceMock: vi.fn(),
+  createOrganisationMock: vi.fn(),
   getUserMock: vi.fn(),
   listOrganisationsMock: vi.fn(),
 }));
@@ -31,16 +33,42 @@ vi.mock('@hektor/services/organisations', () => ({
   createOrganisationsService: createOrganisationsServiceMock,
 }));
 
-import { GET } from './route';
+import { GET, POST } from './route';
 
 describe('GET /api/admin/organisations', () => {
   beforeEach(() => {
     createAdminSupabaseClientMock.mockReset();
     createOrganisationsServiceMock.mockReturnValue({
+      createOrganisation: createOrganisationMock,
       listOrganisations: listOrganisationsMock,
     });
     getUserMock.mockReset();
     listOrganisationsMock.mockReset();
+  });
+
+  it('creates a validated organisation for a platform admin', async () => {
+    const body = { name: 'New University', slug: 'new-university' };
+    const data = {
+      id: '03d946de-8938-46d8-93a4-e3917df0928e',
+      ...body,
+      status: OrganisationStatus.Active,
+    };
+    getUserMock.mockResolvedValue({
+      data: {
+        user: { id: 'admin-id', app_metadata: { role: PlatformRole.Admin } },
+      },
+      error: null,
+    });
+    createOrganisationMock.mockResolvedValue({ data });
+
+    const response = await callApiEndpoint(POST, {
+      body,
+      method: 'POST',
+      path: '/api/admin/organisations',
+    });
+
+    expect(response.status).toBe(200);
+    expect(createOrganisationMock).toHaveBeenCalledWith(body);
   });
 
   it('lists organisations through the privileged service client', async () => {
@@ -78,6 +106,7 @@ describe('GET /api/admin/organisations', () => {
     await expect(response.json()).resolves.toEqual(responseData);
     expect(createOrganisationsServiceMock).toHaveBeenCalledWith(adminClient);
     expect(listOrganisationsMock).toHaveBeenCalledWith({
+      archived: false,
       page: 1,
       pageSize: 20,
       order: 'name',

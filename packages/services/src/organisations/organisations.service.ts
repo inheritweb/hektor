@@ -1,6 +1,8 @@
 import type {
   GetOrganisationParams,
   GetOrganisationResponse,
+  CreateOrganisationBody,
+  CreateOrganisationResponse,
   GetOrganisationCohortParams,
   GetOrganisationCohortResponse,
   GetOrganisationGroupParams,
@@ -24,6 +26,8 @@ import type {
   ListOrganisationUsersResponse,
   ListOrganisationsQuery,
   ListOrganisationsResponse,
+  UpdateOrganisationBody,
+  UpdateOrganisationResponse,
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import {
@@ -61,6 +65,7 @@ import {
   buildOrganisationMembershipsCountQuery,
   buildOrganisationMembershipsQuery,
   buildOrganisationSummariesQuery,
+  createOrganisationQuery,
   buildOrganisationUserProvisionsCountQuery,
   buildOrganisationUserProvisionsQuery,
   buildOrganisationUserProvisionDetailQuery,
@@ -68,6 +73,7 @@ import {
   acceptOrganisationUserProvisionQuery,
   buildOrganisationMembershipForUserQuery,
   transitionOrganisationUserProvisionQuery,
+  updateOrganisationQuery,
 } from './organisations.queries';
 import {
   canTransitionProvisioningStatus,
@@ -88,6 +94,65 @@ function includesQuery(values: Array<string | undefined>, query?: string) {
 }
 
 export function createOrganisationsService(client: DatabaseClient) {
+  async function createOrganisation(
+    body: CreateOrganisationBody,
+  ): Promise<CreateOrganisationResponse> {
+    const { data, error } = await createOrganisationQuery(client, body);
+
+    if (error) {
+      throw createServiceError(
+        error.code === '23505'
+          ? HektorErrorCode.Conflict
+          : HektorErrorCode.InternalServerError,
+        {
+          message:
+            error.code === '23505'
+              ? 'An organisation with this slug already exists'
+              : 'Unable to create organisation',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return { data: mapOrganisationSummary(data) };
+  }
+
+  async function updateOrganisation(
+    organisationId: string,
+    body: UpdateOrganisationBody,
+  ): Promise<UpdateOrganisationResponse> {
+    const { data, error } = await updateOrganisationQuery(client, {
+      ...body,
+      organisationId,
+    });
+
+    if (error) {
+      const conflict =
+        error.code === '23505' ||
+        error.message.includes('organisation_status_conflict');
+      throw createServiceError(
+        error.message.includes('organisation_not_found')
+          ? HektorErrorCode.NotFound
+          : conflict
+            ? HektorErrorCode.Conflict
+            : HektorErrorCode.InternalServerError,
+        {
+          message:
+            error.code === '23505'
+              ? 'An organisation with this slug already exists'
+              : conflict
+                ? 'The organisation changed while you were editing it'
+                : 'Unable to update organisation',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return { data: mapOrganisationSummary(data) };
+  }
+
   async function getProvisionAcceptance(options: {
     provisionId: string;
     userId: string;
@@ -766,6 +831,7 @@ export function createOrganisationsService(client: DatabaseClient) {
   return {
     acceptOrganisationUserProvision,
     autoLinkOrganisationUserProvision,
+    createOrganisation,
     getOrganisationCohort,
     getOrganisationGroup,
     getOrganisation,
@@ -778,5 +844,6 @@ export function createOrganisationsService(client: DatabaseClient) {
     listOrganisationUserProvisions,
     listOrganisationUsers,
     transitionOrganisationUserProvision,
+    updateOrganisation,
   };
 }

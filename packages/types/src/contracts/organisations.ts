@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   type Organisation,
+  type CreateOrganisationInput,
   type OrganisationCohortSummary,
   type OrganisationCohort,
   type OrganisationContractPeriod,
@@ -15,6 +16,7 @@ import {
   type OrganisationUserProvisionDetail,
   type OrganisationUserProvisionsSummary,
   type OrganisationUsersSummary,
+  type UpdateOrganisationInput,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -181,6 +183,9 @@ export const listOrganisationsContract = defineContract({
   path: '/api/admin/organisations',
   access: { type: 'platform', roles: [PlatformRole.Admin] },
   query: paginationQuerySchema.extend({
+    archived: z
+      .preprocess((value) => value === true || value === 'true', z.boolean())
+      .default(false),
     order: z.enum(['name', 'createdAt']).default('name'),
   }),
   output: hektorCollectionResponseSchema(z.array(organisationSummarySchema)),
@@ -192,6 +197,39 @@ export const getOrganisationContract = defineContract({
   access: { type: 'platform', roles: [PlatformRole.Admin] },
   params: z.object({ organisationId: z.uuid() }),
   output: hektorResponseSchema(organisationSchema),
+});
+
+export const createOrganisationInputSchema = z.object({
+  name: z.string().trim().min(1).max(255),
+  slug: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+}) satisfies z.ZodType<CreateOrganisationInput>;
+
+export const createOrganisationContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  body: createOrganisationInputSchema,
+  output: hektorResponseSchema(organisationSummarySchema),
+});
+
+export const updateOrganisationInputSchema =
+  createOrganisationInputSchema.extend({
+    expectedStatus: z.enum(OrganisationStatus),
+    status: z.enum(OrganisationStatus),
+  }) satisfies z.ZodType<UpdateOrganisationInput>;
+
+export const updateOrganisationContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/organisations/:organisationId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: updateOrganisationInputSchema,
+  output: hektorResponseSchema(organisationSummarySchema),
 });
 
 export const listOrganisationContractPeriodsContract = defineContract({
@@ -368,6 +406,22 @@ export type GetOrganisationParams = ContractParams<
 
 export type GetOrganisationResponse = ContractOutput<
   typeof getOrganisationContract
+>;
+
+export type CreateOrganisationBody = ContractBody<
+  typeof createOrganisationContract
+>;
+
+export type CreateOrganisationResponse = ContractOutput<
+  typeof createOrganisationContract
+>;
+
+export type UpdateOrganisationBody = ContractBody<
+  typeof updateOrganisationContract
+>;
+
+export type UpdateOrganisationResponse = ContractOutput<
+  typeof updateOrganisationContract
 >;
 
 export type ListOrganisationContractPeriodsParams = ContractParams<

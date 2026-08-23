@@ -422,6 +422,43 @@ begin
 end;
 $$;
 
+create function public.update_organisation(
+  target_organisation_id uuid,
+  expected_status public.organisation_status,
+  target_name text,
+  target_slug text,
+  target_status public.organisation_status
+)
+returns public.organisations
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  organisation public.organisations;
+begin
+  select * into organisation
+  from public.organisations
+  where id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'organisation_not_found';
+  end if;
+  if organisation.status <> expected_status then
+    raise exception using errcode = 'P0001', message = 'organisation_status_conflict';
+  end if;
+  update public.organisations
+  set name = target_name,
+      slug = target_slug,
+      status = target_status
+  where id = organisation.id
+  returning * into organisation;
+
+  return organisation;
+end;
+$$;
+
 create function public.consume_organisation_provision_invitation(
   target_provision_id uuid,
   expected_token_hash text
@@ -576,6 +613,12 @@ revoke all on function public.consume_organisation_provision_invitation(uuid, te
 grant execute on function public.consume_organisation_provision_invitation(uuid, text) to service_role;
 revoke all on function public.clear_organisation_provision_invitation(uuid, text) from public;
 grant execute on function public.clear_organisation_provision_invitation(uuid, text) to service_role;
+revoke all on function public.update_organisation(
+  uuid, public.organisation_status, text, text, public.organisation_status
+) from public;
+grant execute on function public.update_organisation(
+  uuid, public.organisation_status, text, text, public.organisation_status
+) to service_role;
 
 create function public.is_platform_admin()
 returns boolean
