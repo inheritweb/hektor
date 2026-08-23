@@ -761,6 +761,112 @@ begin
 end;
 $$;
 
+create function public.update_organisation_group_membership(
+  target_organisation_id uuid,
+  target_group_id uuid,
+  add_user_ids uuid[] default '{}',
+  remove_user_ids uuid[] default '{}',
+  add_provision_ids uuid[] default '{}',
+  remove_provision_ids uuid[] default '{}'
+)
+returns public.organisation_groups
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  organisation_group public.organisation_groups;
+begin
+  select * into organisation_group
+  from public.organisation_groups
+  where id = target_group_id
+    and organisation_id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'group_not_found';
+  end if;
+  if organisation_group.status <> 'active' then
+    raise exception using errcode = 'P0001', message = 'archived_group_is_read_only';
+  end if;
+  if organisation_group.provisioning_method is not null then
+    raise exception using errcode = 'P0001', message = 'externally_managed_group_is_read_only';
+  end if;
+  if add_user_ids && remove_user_ids or add_provision_ids && remove_provision_ids then
+    raise exception using errcode = '22023', message = 'conflicting_group_membership_change';
+  end if;
+
+  if exists (
+    select 1 from unnest(add_user_ids || remove_user_ids) member_id
+    where not exists (
+      select 1 from public.organisation_users
+      where id = member_id and organisation_id = target_organisation_id
+    )
+  ) then
+    raise exception using errcode = 'P0002', message = 'organisation_user_not_found';
+  end if;
+  if exists (
+    select 1 from unnest(add_provision_ids || remove_provision_ids) provision_id
+    where not exists (
+      select 1 from public.organisation_user_provisions
+      where id = provision_id
+        and organisation_id = target_organisation_id
+        and status = 'pending'
+    )
+  ) then
+    raise exception using errcode = 'P0002', message = 'pending_provision_not_found';
+  end if;
+  if exists (
+    select 1 from unnest(add_user_ids) member_id
+    join public.organisation_group_users link
+      on link.organisation_group_id = target_group_id
+      and link.organisation_user_id = member_id
+  ) or exists (
+    select 1 from unnest(add_provision_ids) provision_id
+    join public.organisation_provisioned_group_users link
+      on link.organisation_group_id = target_group_id
+      and link.organisation_user_provision_id = provision_id
+  ) then
+    raise exception using errcode = 'P0001', message = 'group_membership_exists';
+  end if;
+  if exists (
+    select 1 from unnest(remove_user_ids) member_id
+    where not exists (
+      select 1 from public.organisation_group_users
+      where organisation_group_id = target_group_id
+        and organisation_user_id = member_id
+    )
+  ) or exists (
+    select 1 from unnest(remove_provision_ids) provision_id
+    where not exists (
+      select 1 from public.organisation_provisioned_group_users
+      where organisation_group_id = target_group_id
+        and organisation_user_provision_id = provision_id
+    )
+  ) then
+    raise exception using errcode = 'P0002', message = 'group_membership_not_found';
+  end if;
+
+  delete from public.organisation_group_users
+  where organisation_group_id = target_group_id
+    and organisation_user_id = any(remove_user_ids);
+  delete from public.organisation_provisioned_group_users
+  where organisation_group_id = target_group_id
+    and organisation_user_provision_id = any(remove_provision_ids);
+
+  insert into public.organisation_group_users (
+    organisation_id, organisation_group_id, organisation_user_id
+  ) select target_organisation_id, target_group_id, member_id
+  from unnest(add_user_ids) member_id;
+  insert into public.organisation_provisioned_group_users (
+    organisation_id, organisation_group_id, organisation_user_provision_id
+  ) select target_organisation_id, target_group_id, provision_id
+  from unnest(add_provision_ids) provision_id;
+
+  return organisation_group;
+end;
+$$;
+
 create function public.consume_organisation_provision_invitation(
   target_provision_id uuid,
   expected_token_hash text

@@ -44,6 +44,7 @@ const {
   updateOrganisationContractPeriod,
   updateOrganisationCohort,
   updateOrganisationGroup,
+  updateOrganisationGroupMembership,
 } = createOrganisationsService(client);
 
 const organisationId = randomUUID();
@@ -67,6 +68,20 @@ let learnerUserId: string;
 let tutorUserId: string;
 
 const slug = `integration-${organisationId}`;
+
+function membershipChange({
+  addProvisionIds = [],
+  addUserIds = [],
+  removeProvisionIds = [],
+  removeUserIds = [],
+}: Partial<{
+  addProvisionIds: string[];
+  addUserIds: string[];
+  removeProvisionIds: string[];
+  removeUserIds: string[];
+}> = {}) {
+  return { addProvisionIds, addUserIds, removeProvisionIds, removeUserIds };
+}
 
 describe('organisation services', () => {
   it('creates and edits an organisation with optimistic lifecycle control', async () => {
@@ -629,6 +644,148 @@ describe('organisation services', () => {
         .from('organisation_cohorts')
         .delete()
         .in('id', [created.data.id, overlapping.data.id]);
+    }
+  });
+
+  it('adds and removes canonical users from a locally managed group', async () => {
+    const added = await updateOrganisationGroupMembership(
+      { organisationId, groupId },
+      membershipChange({ addUserIds: [tutorMembershipId] }),
+    );
+    expect(added.data.users.map((user) => user.id)).toContain(
+      tutorMembershipId,
+    );
+
+    await expect(
+      updateOrganisationGroupMembership(
+        { organisationId, groupId },
+        membershipChange({ addUserIds: [tutorMembershipId] }),
+      ),
+    ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+
+    const removed = await updateOrganisationGroupMembership(
+      { organisationId, groupId },
+      membershipChange({ removeUserIds: [tutorMembershipId] }),
+    );
+    expect(removed.data.users.map((user) => user.id)).not.toContain(
+      tutorMembershipId,
+    );
+  });
+
+  it('removes and restores a pending provision assignment', async () => {
+    const removed = await updateOrganisationGroupMembership(
+      { organisationId, groupId },
+      membershipChange({ removeProvisionIds: [provisionId] }),
+    );
+    expect(removed.data.provisionedUsers).toHaveLength(0);
+
+    const restored = await updateOrganisationGroupMembership(
+      { organisationId, groupId },
+      membershipChange({ addProvisionIds: [provisionId] }),
+    );
+    expect(restored.data.provisionedUsers.map((item) => item.id)).toContain(
+      provisionId,
+    );
+  });
+
+  it('rejects a membership belonging to another organisation', async () => {
+    const otherOrganisationId = randomUUID();
+    const otherMembershipId = randomUUID();
+    await client.from('organisations').insert({
+      id: otherOrganisationId,
+      name: `Other membership ${otherOrganisationId}`,
+      slug: `other-membership-${otherOrganisationId}`,
+    });
+    await client.from('organisation_users').insert({
+      id: otherMembershipId,
+      organisation_id: otherOrganisationId,
+      role: 'tutor',
+      user_id: tutorUserId,
+    });
+
+    try {
+      await expect(
+        updateOrganisationGroupMembership(
+          { organisationId, groupId },
+          membershipChange({
+            addUserIds: [tutorMembershipId, otherMembershipId],
+          }),
+        ),
+      ).rejects.toMatchObject({ code: HektorErrorCode.NotFound });
+      const { data: partialLink } = await client
+        .from('organisation_group_users')
+        .select('organisation_user_id')
+        .eq('organisation_group_id', groupId)
+        .eq('organisation_user_id', tutorMembershipId)
+        .maybeSingle();
+      expect(partialLink).toBeNull();
+    } finally {
+      await client
+        .from('organisation_users')
+        .delete()
+        .eq('id', otherMembershipId);
+      await client.from('organisations').delete().eq('id', otherOrganisationId);
+    }
+  });
+
+  it('keeps archived and externally managed group membership read-only', async () => {
+    const archivedGroupId = randomUUID();
+    const externalGroupId = randomUUID();
+    const { error: immutableGroupsError } = await client
+      .from('organisation_groups')
+      .insert([
+        {
+          id: archivedGroupId,
+          name: `Archived ${archivedGroupId}`,
+          organisation_id: organisationId,
+          status: GroupStatus.Archived,
+        },
+        {
+          id: externalGroupId,
+          name: `External ${externalGroupId}`,
+          organisation_id: organisationId,
+          provisioning_method: 'scim',
+          source_external_id: externalGroupId,
+          status: GroupStatus.Active,
+        },
+      ]);
+    if (immutableGroupsError) throw immutableGroupsError;
+
+    try {
+      for (const immutableGroupId of [archivedGroupId, externalGroupId]) {
+        await expect(
+          updateOrganisationGroupMembership(
+            { organisationId, groupId: immutableGroupId },
+            membershipChange({ addUserIds: [tutorMembershipId] }),
+          ),
+        ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+      }
+    } finally {
+      await client
+        .from('organisation_groups')
+        .delete()
+        .in('id', [archivedGroupId, externalGroupId]);
+    }
+  });
+
+  it('does not show linked provisions as unresolved group members', async () => {
+    await client.from('organisation_provisioned_group_users').insert({
+      organisation_group_id: groupId,
+      organisation_id: organisationId,
+      organisation_user_provision_id: linkedProvisionId,
+    });
+
+    try {
+      const group = await getOrganisationGroup({ organisationId, groupId });
+      expect(
+        group.data.provisionedUsers.map((provision) => provision.id),
+      ).not.toContain(linkedProvisionId);
+    } finally {
+      await client
+        .from('organisation_provisioned_group_users')
+        .delete()
+        .eq('organisation_group_id', groupId)
+        .eq('organisation_user_provision_id', linkedProvisionId);
     }
   });
 

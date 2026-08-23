@@ -23,6 +23,7 @@ import {
   updateOrganisationContractPeriod,
   updateOrganisationCohort,
   updateOrganisationGroup,
+  updateOrganisationGroupMembership,
 } from '@hektor/api-client/organisations';
 
 import { makeQuery } from './make-query';
@@ -115,6 +116,11 @@ export const useAdminCreateOrganisationGroup = makeMutation(
 
 export const useAdminUpdateOrganisationGroup = makeMutation(
   updateOrganisationGroup,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminUpdateOrganisationGroupMembership = makeMutation(
+  updateOrganisationGroupMembership,
   ADMIN_ORGANISATIONS_QUERY_KEY,
 );
 

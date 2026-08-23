@@ -820,6 +820,36 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      update_organisation_group_membership: {
+        Args: {
+          add_provision_ids?: string[];
+          add_user_ids?: string[];
+          remove_provision_ids?: string[];
+          remove_user_ids?: string[];
+          target_group_id: string;
+          target_organisation_id: string;
+        };
+        Returns: {
+          created_at: string;
+          id: string;
+          last_synchronized_at: string | null;
+          name: string;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          provisioning_method:
+            Database['public']['Enums']['provisioning_method'] | null;
+          source_deleted_at: string | null;
+          source_external_id: string | null;
+          status: Database['public']['Enums']['group_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_groups';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       group_status: 'active' | 'archived';

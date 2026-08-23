@@ -23,6 +23,7 @@ import {
   type UpdateOrganisationContractPeriodInput,
   type UpdateOrganisationCohortInput,
   type UpdateOrganisationGroupInput,
+  type UpdateOrganisationGroupMembershipInput,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -404,6 +405,40 @@ export const updateOrganisationGroupContract = defineContract({
   output: hektorResponseSchema(organisationGroupSchema),
 });
 
+const uniqueUuidArraySchema = z
+  .array(z.uuid())
+  .max(500)
+  .refine((values) => new Set(values).size === values.length, {
+    message: 'Identifiers must be unique',
+  });
+
+export const updateOrganisationGroupMembershipInputSchema = z
+  .object({
+    addProvisionIds: uniqueUuidArraySchema,
+    addUserIds: uniqueUuidArraySchema,
+    removeProvisionIds: uniqueUuidArraySchema,
+    removeUserIds: uniqueUuidArraySchema,
+  })
+  .refine(
+    ({ addProvisionIds, removeProvisionIds }) =>
+      !addProvisionIds.some((id) => removeProvisionIds.includes(id)),
+    { message: 'A provision cannot be added and removed together' },
+  )
+  .refine(
+    ({ addUserIds, removeUserIds }) =>
+      !addUserIds.some((id) => removeUserIds.includes(id)),
+    { message: 'A user cannot be added and removed together' },
+  ) satisfies z.ZodType<UpdateOrganisationGroupMembershipInput>;
+
+export const updateOrganisationGroupMembershipContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/groups/:groupId/memberships',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), groupId: z.uuid() }),
+  body: updateOrganisationGroupMembershipInputSchema,
+  output: hektorResponseSchema(organisationGroupSchema),
+});
+
 export const listOrganisationUsersContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/users',
@@ -670,6 +705,18 @@ export type UpdateOrganisationGroupBody = ContractBody<
 
 export type UpdateOrganisationGroupResponse = ContractOutput<
   typeof updateOrganisationGroupContract
+>;
+
+export type UpdateOrganisationGroupMembershipParams = ContractParams<
+  typeof updateOrganisationGroupMembershipContract
+>;
+
+export type UpdateOrganisationGroupMembershipBody = ContractBody<
+  typeof updateOrganisationGroupMembershipContract
+>;
+
+export type UpdateOrganisationGroupMembershipResponse = ContractOutput<
+  typeof updateOrganisationGroupMembershipContract
 >;
 
 export type ListOrganisationUsersParams = ContractParams<

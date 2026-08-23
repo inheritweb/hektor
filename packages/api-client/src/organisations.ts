@@ -23,6 +23,7 @@ import {
   updateOrganisationContractPeriodContract,
   updateOrganisationCohortContract,
   updateOrganisationGroupContract,
+  updateOrganisationGroupMembershipContract,
 } from '@hektor/types/contracts/organisations';
 
 import { registerApiMethod } from './api-method';
@@ -65,6 +66,10 @@ export const createOrganisationGroup = registerApiMethod(
 
 export const updateOrganisationGroup = registerApiMethod(
   updateOrganisationGroupContract,
+);
+
+export const updateOrganisationGroupMembership = registerApiMethod(
+  updateOrganisationGroupMembershipContract,
 );
 
 export const getOrganisationGroup = registerApiMethod(

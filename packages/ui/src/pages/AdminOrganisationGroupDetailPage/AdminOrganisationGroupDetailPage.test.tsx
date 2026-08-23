@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { AdminOrganisationGroupDetailPage } from './AdminOrganisationGroupDetailPage.component';
 
@@ -46,5 +46,23 @@ describe('AdminOrganisationGroupDetailPage', () => {
     expect(
       screen.getByText('Managed by SCIM · September 2026 · entra-123'),
     ).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Membership is controlled by the external provisioning source.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('opens canonical membership management for a local active group', () => {
+    const onManageUsers = vi.fn();
+    render(
+      <AdminOrganisationGroupDetailPage
+        group={{ ...group, provisioningMethod: undefined }}
+        onManageUsers={onManageUsers}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Manage users' }));
+    expect(onManageUsers).toHaveBeenCalledOnce();
   });
 });

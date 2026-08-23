@@ -16,6 +16,7 @@ export {
   updateOrganisationCohortQuery,
   createOrganisationGroupQuery,
   updateOrganisationGroupQuery,
+  updateOrganisationGroupMembershipQuery,
   buildOrganisationContractPeriodsQuery,
   buildOrganisationContractPeriodQuery,
   buildOrganisationCohortsQuery,

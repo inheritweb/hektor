@@ -67,6 +67,13 @@ export enum GroupStatus {
   Archived = 'archived',
 }
 
+export interface UpdateOrganisationGroupMembershipInput {
+  addProvisionIds: string[];
+  addUserIds: string[];
+  removeProvisionIds: string[];
+  removeUserIds: string[];
+}
+
 export interface SeatUsage {
   allowed: number;
   activated: number;

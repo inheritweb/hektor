@@ -28,6 +28,7 @@ import {
   updateOrganisationContractPeriod,
   updateOrganisationCohort,
   updateOrganisationGroup,
+  updateOrganisationGroupMembership,
 } from './organisations';
 
 describe('admin organisation API methods', () => {
@@ -385,6 +386,49 @@ describe('admin organisation API methods', () => {
       2,
       `${path}/${groupId}`,
       expect.objectContaining({ method: 'PATCH' }),
+    );
+  });
+
+  it('updates an organisation group membership', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const groupId = '03d946de-8938-46d8-93a4-e3917df0928e';
+    const memberId = '67d00b58-7f49-4cea-89a2-979e8fcf3b7e';
+    const data = {
+      id: groupId,
+      name: 'Biology tutors',
+      status: GroupStatus.Active,
+      organisation: {
+        id: organisationId,
+        name: 'Northbridge University',
+        slug: 'northbridge-university',
+        status: OrganisationStatus.Active,
+      },
+      users: [],
+      provisionedUsers: [],
+      createdAt: '2026-08-23T10:00:00.000Z',
+      updatedAt: '2026-08-23T10:00:00.000Z',
+    };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ data }));
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+
+    await updateOrganisationGroupMembership(client, {
+      params: { organisationId, groupId },
+      body: {
+        addProvisionIds: [],
+        addUserIds: [memberId],
+        removeProvisionIds: [],
+        removeUserIds: [],
+      },
+    });
+
+    expect(fetcher).toHaveBeenCalledWith(
+      `https://hektor.test/api/admin/organisations/${organisationId}/groups/${groupId}/memberships`,
+      expect.objectContaining({ method: 'POST' }),
     );
   });
 

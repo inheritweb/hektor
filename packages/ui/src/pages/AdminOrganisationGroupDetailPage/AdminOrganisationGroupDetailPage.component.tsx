@@ -1,15 +1,15 @@
+import { Button, buttonVariants } from '../../atoms/Button';
 import { createTableColumn, Table } from '../../atoms/Table';
-import { buttonVariants } from '../../atoms/Button';
 import { NavigationLink } from '../../context';
 
-interface GroupUser {
+export interface GroupUser {
   id: string;
   role: string;
   status: string;
   user: { id: string; displayName: string; email?: string };
 }
 
-interface ProvisionedUser {
+export interface ProvisionedUser {
   id: string;
   provisioningMethod: string;
   provisionedDisplayName?: string;
@@ -33,6 +33,8 @@ export interface AdminOrganisationGroupDetailPageProps {
   getProvisionHref?: (provision: ProvisionedUser) => string;
   getUserHref?: (membership: GroupUser) => string;
   group: AdminOrganisationGroupDetailViewModel;
+  onManageProvisions?: () => void;
+  onManageUsers?: () => void;
 }
 
 const userColumn = createTableColumn<GroupUser>();
@@ -94,7 +96,11 @@ export function AdminOrganisationGroupDetailPage({
   getProvisionHref,
   getUserHref,
   group,
+  onManageProvisions,
+  onManageUsers,
 }: AdminOrganisationGroupDetailPageProps) {
+  const membershipManaged =
+    group.status === 'active' && !group.provisioningMethod;
   const linkedUserColumns = getUserHref
     ? [
         ...userColumns,
@@ -155,6 +161,32 @@ export function AdminOrganisationGroupDetailPage({
           </div>
         ) : null}
       </header>
+      {membershipManaged ? (
+        <section>
+          <div>
+            <h2 className="text-xl font-bold">Manage membership</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add an organisation user or an unresolved provision to this group.
+            </p>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {onManageUsers ? (
+              <Button onClick={onManageUsers}>Manage users</Button>
+            ) : null}
+            {onManageProvisions ? (
+              <Button onClick={onManageProvisions} variant="outline">
+                Manage provisions
+              </Button>
+            ) : null}
+          </div>
+        </section>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          {group.status === 'archived'
+            ? 'Reactivate this group before changing its membership.'
+            : 'Membership is controlled by the external provisioning source.'}
+        </p>
+      )}
       <section>
         <h2 className="text-xl font-bold">
           Users{' '}

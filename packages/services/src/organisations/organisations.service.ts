@@ -48,6 +48,9 @@ import type {
   UpdateOrganisationGroupBody,
   UpdateOrganisationGroupParams,
   UpdateOrganisationGroupResponse,
+  UpdateOrganisationGroupMembershipBody,
+  UpdateOrganisationGroupMembershipParams,
+  UpdateOrganisationGroupMembershipResponse,
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import {
@@ -101,6 +104,7 @@ import {
   updateOrganisationContractPeriodQuery,
   updateOrganisationCohortQuery,
   updateOrganisationGroupQuery,
+  updateOrganisationGroupMembershipQuery,
 } from './organisations.queries';
 import {
   canTransitionProvisioningStatus,
@@ -1018,6 +1022,56 @@ export function createOrganisationsService(client: DatabaseClient) {
     return getOrganisationGroup(params);
   }
 
+  async function updateOrganisationGroupMembership(
+    params: UpdateOrganisationGroupMembershipParams,
+    body: UpdateOrganisationGroupMembershipBody,
+  ): Promise<UpdateOrganisationGroupMembershipResponse> {
+    const { error } = await updateOrganisationGroupMembershipQuery(client, {
+      ...body,
+      ...params,
+    });
+
+    if (error) {
+      const notFound =
+        error.message.includes('group_not_found') ||
+        error.message.includes('organisation_user_not_found') ||
+        error.message.includes('pending_provision_not_found') ||
+        error.message.includes('group_membership_not_found');
+      const conflict =
+        error.message.includes('group_membership_exists') ||
+        error.message.includes('archived_group_is_read_only') ||
+        error.message.includes('externally_managed_group_is_read_only');
+      throw createServiceError(
+        notFound
+          ? HektorErrorCode.NotFound
+          : conflict
+            ? HektorErrorCode.Conflict
+            : HektorErrorCode.InternalServerError,
+        {
+          message: error.message.includes('archived_group_is_read_only')
+            ? 'Archived groups are read-only'
+            : error.message.includes('externally_managed_group_is_read_only')
+              ? 'Membership of externally managed groups is controlled by the provisioning source'
+              : error.message.includes('group_membership_exists')
+                ? 'This user is already in the group'
+                : error.message.includes('pending_provision_not_found')
+                  ? 'Pending provision not found'
+                  : error.message.includes('organisation_user_not_found')
+                    ? 'Organisation user not found'
+                    : error.message.includes('group_membership_not_found')
+                      ? 'Group membership not found'
+                      : error.message.includes('group_not_found')
+                        ? 'Organisation group not found'
+                        : 'Unable to update group membership',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return getOrganisationGroup(params);
+  }
+
   async function listOrganisationUserProvisions(
     params: ListOrganisationUserProvisionsParams,
     query: ListOrganisationUserProvisionsQuery,
@@ -1134,5 +1188,6 @@ export function createOrganisationsService(client: DatabaseClient) {
     updateOrganisationContractPeriod,
     updateOrganisationCohort,
     updateOrganisationGroup,
+    updateOrganisationGroupMembership,
   };
 }

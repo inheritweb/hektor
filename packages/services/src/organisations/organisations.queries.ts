@@ -389,6 +389,27 @@ export type OrganisationGroupDetailQueryResult = QueryData<
   ReturnType<typeof buildOrganisationGroupDetailQuery>
 >;
 
+export function updateOrganisationGroupMembershipQuery(
+  client: DatabaseClient,
+  values: {
+    addProvisionIds: string[];
+    addUserIds: string[];
+    groupId: string;
+    organisationId: string;
+    removeProvisionIds: string[];
+    removeUserIds: string[];
+  },
+) {
+  return client.rpc('update_organisation_group_membership', {
+    add_provision_ids: values.addProvisionIds,
+    add_user_ids: values.addUserIds,
+    remove_provision_ids: values.removeProvisionIds,
+    remove_user_ids: values.removeUserIds,
+    target_group_id: values.groupId,
+    target_organisation_id: values.organisationId,
+  });
+}
+
 export function buildOrganisationMembershipsCountQuery(
   client: DatabaseClient,
   organisationId: string,

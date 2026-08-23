@@ -122,14 +122,18 @@ export function mapOrganisationGroup(
   users: OrganisationMembershipUserSummary[],
 ): OrganisationGroup {
   const provisionedUsers: OrganisationGroupProvisionedUserSummary[] =
-    record.provisionLinks.map(({ provision }) => ({
-      id: provision.id,
-      provisioningMethod: provision.provisioning_method as ProvisioningMethod,
-      provisionedDisplayName: provision.provisioned_display_name ?? undefined,
-      provisionedRole: provision.provisioned_role as OrganisationRole,
-      provisionedUserName: provision.provisioned_user_name,
-      status: provision.status as ProvisioningStatus,
-    }));
+    record.provisionLinks
+      .filter(
+        ({ provision }) => provision.status === ProvisioningStatus.Pending,
+      )
+      .map(({ provision }) => ({
+        id: provision.id,
+        provisioningMethod: provision.provisioning_method as ProvisioningMethod,
+        provisionedDisplayName: provision.provisioned_display_name ?? undefined,
+        provisionedRole: provision.provisioned_role as OrganisationRole,
+        provisionedUserName: provision.provisioned_user_name,
+        status: provision.status as ProvisioningStatus,
+      }));
 
   return {
     ...mapOrganisationGroupSummary(record),
