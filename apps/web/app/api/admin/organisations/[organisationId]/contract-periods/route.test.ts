@@ -6,11 +6,13 @@ import { callApiEndpoint } from '@/tests/api/api-test-client';
 
 const {
   createAdminSupabaseClientMock,
+  createOrganisationContractPeriodMock,
   createOrganisationsServiceMock,
   getUserMock,
   listOrganisationContractPeriodsMock,
 } = vi.hoisted(() => ({
   createAdminSupabaseClientMock: vi.fn(),
+  createOrganisationContractPeriodMock: vi.fn(),
   createOrganisationsServiceMock: vi.fn(),
   getUserMock: vi.fn(),
   listOrganisationContractPeriodsMock: vi.fn(),
@@ -28,15 +30,17 @@ vi.mock('@hektor/services/organisations', () => ({
   createOrganisationsService: createOrganisationsServiceMock,
 }));
 
-import { GET } from './route';
+import { GET, POST } from './route';
 
 describe('GET /api/admin/organisations/:organisationId/contract-periods', () => {
   beforeEach(() => {
     createOrganisationsServiceMock.mockReturnValue({
+      createOrganisationContractPeriod: createOrganisationContractPeriodMock,
       listOrganisationContractPeriods: listOrganisationContractPeriodsMock,
     });
     getUserMock.mockReset();
     listOrganisationContractPeriodsMock.mockReset();
+    createOrganisationContractPeriodMock.mockReset();
   });
 
   it('lists contract periods through the privileged service client', async () => {
@@ -76,6 +80,43 @@ describe('GET /api/admin/organisations/:organisationId/contract-periods', () => 
         order: 'startsOn',
         dir: SortDirection.Ascending,
       },
+    );
+  });
+
+  it('creates a validated contract period for a platform admin', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const body = {
+      startsOn: '2027-09-01',
+      endsOn: '2028-09-01',
+      learnerSeatAllowance: 300,
+    };
+    const data = {
+      id: 'b7234776-87f7-480f-a710-1ce16b4a151d',
+      startsOn: body.startsOn,
+      endsOn: body.endsOn,
+      seats: { allowed: 300, activated: 0, remaining: 300 },
+      createdAt: '2026-08-23T10:00:00.000Z',
+      updatedAt: '2026-08-23T10:00:00.000Z',
+    };
+    getUserMock.mockResolvedValue({
+      data: {
+        user: { id: 'admin-id', app_metadata: { role: PlatformRole.Admin } },
+      },
+      error: null,
+    });
+    createOrganisationContractPeriodMock.mockResolvedValue({ data });
+
+    const response = await callApiEndpoint(POST, {
+      body,
+      method: 'POST',
+      path: `/api/admin/organisations/${organisationId}/contract-periods`,
+      params: { organisationId },
+    });
+
+    expect(response.status).toBe(200);
+    expect(createOrganisationContractPeriodMock).toHaveBeenCalledWith(
+      { organisationId },
+      body,
     );
   });
 });

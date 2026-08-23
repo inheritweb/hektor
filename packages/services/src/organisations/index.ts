@@ -13,6 +13,7 @@ export {
   buildOrganisationDetailQuery,
   buildOrganisationCohortDetailQuery,
   buildOrganisationContractPeriodsQuery,
+  buildOrganisationContractPeriodQuery,
   buildOrganisationCohortsQuery,
   buildOrganisationGroupsQuery,
   buildOrganisationGroupDetailQuery,

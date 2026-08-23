@@ -50,8 +50,12 @@ export function AdminOrganisationContractPeriodsScreen({
   return (
     <AdminOrganisationContractPeriodsPage
       contractPeriods={contractPeriods.data?.data ?? []}
+      createHref={`/admin/organisations/${organisationId}/contract-periods/new`}
       error={contractPeriods.error?.message ?? organisation.error?.message}
       loading={contractPeriods.isPending || organisation.isPending}
+      getContractPeriodHref={(contractPeriod) =>
+        `/admin/organisations/${organisationId}/contract-periods/${contractPeriod.id}/edit`
+      }
       onPageChange={onPageChange}
       organisationName={organisation.data?.data.name ?? 'Organisation'}
       page={page}

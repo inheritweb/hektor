@@ -82,6 +82,16 @@ export interface OrganisationContractPeriod {
   updatedAt: string;
 }
 
+export interface CreateOrganisationContractPeriodInput {
+  endsOn: string;
+  learnerSeatAllowance: number;
+  startsOn: string;
+}
+
+export interface UpdateOrganisationContractPeriodInput extends CreateOrganisationContractPeriodInput {
+  expectedUpdatedAt: string;
+}
+
 export interface Organisation {
   id: string;
   name: string;

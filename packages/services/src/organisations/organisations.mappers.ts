@@ -26,6 +26,7 @@ import type {
   OrganisationCohortDetailQueryResult,
   OrganisationDetailQueryResult,
   OrganisationContractPeriodsQueryResult,
+  OrganisationContractPeriodQueryResult,
   OrganisationGroupsQueryResult,
   OrganisationGroupDetailQueryResult,
   OrganisationMembershipsQueryResult,
@@ -52,7 +53,8 @@ export function mapOrganisationSummary(
 export function mapOrganisationContractPeriod(
   record:
     | OrganisationDetailQueryResult['contractPeriods'][number]
-    | OrganisationContractPeriodsQueryResult[number],
+    | OrganisationContractPeriodsQueryResult[number]
+    | OrganisationContractPeriodQueryResult,
 ): OrganisationContractPeriod {
   const activated = record.activations.filter(
     (activation) => !activation.released_at,

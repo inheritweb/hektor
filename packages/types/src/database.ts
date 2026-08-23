@@ -556,6 +556,29 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_organisation_contract_period: {
+        Args: {
+          target_ends_on: string;
+          target_learner_seat_allowance: number;
+          target_organisation_id: string;
+          target_starts_on: string;
+        };
+        Returns: {
+          created_at: string;
+          ends_on: string;
+          id: string;
+          learner_seat_allowance: number;
+          organisation_id: string;
+          starts_on: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_contract_periods';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       has_organisation_role: {
         Args: {
           allowed_roles: Database['public']['Enums']['organisation_role'][];
@@ -660,6 +683,31 @@ export type Database = {
         SetofOptions: {
           from: '*';
           to: 'organisations';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      update_organisation_contract_period: {
+        Args: {
+          expected_updated_at: string;
+          target_contract_period_id: string;
+          target_ends_on: string;
+          target_learner_seat_allowance: number;
+          target_organisation_id: string;
+          target_starts_on: string;
+        };
+        Returns: {
+          created_at: string;
+          ends_on: string;
+          id: string;
+          learner_seat_allowance: number;
+          organisation_id: string;
+          starts_on: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_contract_periods';
           isOneToOne: true;
           isSetofReturn: false;
         };

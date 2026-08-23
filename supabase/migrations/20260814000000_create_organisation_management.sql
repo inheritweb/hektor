@@ -11,7 +11,10 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  new.updated_at = now();
+  new.updated_at = greatest(
+    clock_timestamp(),
+    old.updated_at + interval '1 millisecond'
+  );
   return new;
 end;
 $$;
@@ -456,6 +459,124 @@ begin
   returning * into organisation;
 
   return organisation;
+end;
+$$;
+
+create function public.create_organisation_contract_period(
+  target_organisation_id uuid,
+  target_starts_on date,
+  target_ends_on date,
+  target_learner_seat_allowance integer
+)
+returns public.organisation_contract_periods
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  contract_period public.organisation_contract_periods;
+begin
+  perform 1 from public.organisations
+  where id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'organisation_not_found';
+  end if;
+  if target_ends_on <= target_starts_on then
+    raise exception using errcode = '22023', message = 'invalid_contract_period_dates';
+  end if;
+  if target_learner_seat_allowance < 0 then
+    raise exception using errcode = '22023', message = 'invalid_learner_seat_allowance';
+  end if;
+  if exists (
+    select 1 from public.organisation_contract_periods
+    where organisation_id = target_organisation_id
+      and daterange(starts_on, ends_on, '[)') &&
+          daterange(target_starts_on, target_ends_on, '[)')
+  ) then
+    raise exception using errcode = 'P0001', message = 'contract_period_overlap';
+  end if;
+
+  insert into public.organisation_contract_periods (
+    organisation_id, starts_on, ends_on, learner_seat_allowance
+  ) values (
+    target_organisation_id, target_starts_on, target_ends_on,
+    target_learner_seat_allowance
+  ) returning * into contract_period;
+
+  return contract_period;
+end;
+$$;
+
+create function public.update_organisation_contract_period(
+  target_organisation_id uuid,
+  target_contract_period_id uuid,
+  expected_updated_at timestamptz,
+  target_starts_on date,
+  target_ends_on date,
+  target_learner_seat_allowance integer
+)
+returns public.organisation_contract_periods
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  active_seats bigint;
+  contract_period public.organisation_contract_periods;
+begin
+  perform 1 from public.organisations
+  where id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'organisation_not_found';
+  end if;
+
+  select * into contract_period
+  from public.organisation_contract_periods
+  where id = target_contract_period_id
+    and organisation_id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'contract_period_not_found';
+  end if;
+  if date_trunc('milliseconds', contract_period.updated_at) <>
+      date_trunc('milliseconds', expected_updated_at) then
+    raise exception using errcode = 'P0001', message = 'contract_period_conflict';
+  end if;
+  if target_ends_on <= target_starts_on then
+    raise exception using errcode = '22023', message = 'invalid_contract_period_dates';
+  end if;
+  if exists (
+    select 1 from public.organisation_contract_periods
+    where organisation_id = target_organisation_id
+      and id <> target_contract_period_id
+      and daterange(starts_on, ends_on, '[)') &&
+          daterange(target_starts_on, target_ends_on, '[)')
+  ) then
+    raise exception using errcode = 'P0001', message = 'contract_period_overlap';
+  end if;
+
+  select count(*) into active_seats
+  from public.organisation_seat_activations
+  where organisation_contract_period_id = target_contract_period_id
+    and released_at is null;
+
+  if target_learner_seat_allowance < active_seats then
+    raise exception using errcode = 'P0001', message = 'learner_seat_allowance_below_usage';
+  end if;
+
+  update public.organisation_contract_periods
+  set starts_on = target_starts_on,
+      ends_on = target_ends_on,
+      learner_seat_allowance = target_learner_seat_allowance
+  where id = contract_period.id
+  returning * into contract_period;
+
+  return contract_period;
 end;
 $$;
 

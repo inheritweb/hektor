@@ -22,8 +22,10 @@ const client = createIntegrationDatabaseClient();
 const {
   acceptOrganisationUserProvision,
   autoLinkOrganisationUserProvision,
+  createOrganisationContractPeriod,
   createOrganisation,
   getOrganisation,
+  getOrganisationContractPeriod,
   getOrganisationCohort,
   getOrganisationGroup,
   getOrganisationUserProvision,
@@ -36,6 +38,7 @@ const {
   listOrganisationUsers,
   transitionOrganisationUserProvision,
   updateOrganisation,
+  updateOrganisationContractPeriod,
 } = createOrganisationsService(client);
 
 const organisationId = randomUUID();
@@ -424,6 +427,112 @@ describe('organisation services', () => {
         seats: { allowed: 100, activated: 0, remaining: 100 },
       }),
     ]);
+  });
+
+  it('creates and edits non-overlapping contract periods with optimistic control', async () => {
+    const created = await createOrganisationContractPeriod(
+      { organisationId },
+      {
+        startsOn: '2027-09-01',
+        endsOn: '2028-09-01',
+        learnerSeatAllowance: 120,
+      },
+    );
+
+    try {
+      expect(created.data).toMatchObject({
+        startsOn: '2027-09-01',
+        endsOn: '2028-09-01',
+        seats: { allowed: 120, activated: 0, remaining: 120 },
+      });
+
+      await expect(
+        createOrganisationContractPeriod(
+          { organisationId },
+          {
+            startsOn: '2028-01-01',
+            endsOn: '2029-01-01',
+            learnerSeatAllowance: 100,
+          },
+        ),
+      ).rejects.toMatchObject({
+        code: HektorErrorCode.Conflict,
+        message: 'Contract periods cannot overlap',
+      });
+
+      const updated = await updateOrganisationContractPeriod(
+        { organisationId, contractPeriodId: created.data.id },
+        {
+          expectedUpdatedAt: created.data.updatedAt,
+          startsOn: '2027-09-01',
+          endsOn: '2028-09-01',
+          learnerSeatAllowance: 140,
+        },
+      );
+      expect(updated.data.seats.allowed).toBe(140);
+
+      await expect(
+        updateOrganisationContractPeriod(
+          { organisationId, contractPeriodId: created.data.id },
+          {
+            expectedUpdatedAt: created.data.updatedAt,
+            startsOn: '2027-09-01',
+            endsOn: '2028-09-01',
+            learnerSeatAllowance: 150,
+          },
+        ),
+      ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+
+      await expect(
+        getOrganisationContractPeriod({
+          organisationId,
+          contractPeriodId: created.data.id,
+        }),
+      ).resolves.toMatchObject({ data: { seats: { allowed: 140 } } });
+    } finally {
+      await client
+        .from('organisation_contract_periods')
+        .delete()
+        .eq('id', created.data.id);
+    }
+  });
+
+  it('does not reduce learner allowance below current seat usage', async () => {
+    const { error } = await client
+      .from('organisation_seat_activations')
+      .insert({
+        organisation_contract_period_id: contractPeriodId,
+        organisation_id: organisationId,
+        organisation_user_id: learnerMembershipId,
+      });
+    if (error) throw error;
+
+    try {
+      const current = await getOrganisationContractPeriod({
+        organisationId,
+        contractPeriodId,
+      });
+      await expect(
+        updateOrganisationContractPeriod(
+          { organisationId, contractPeriodId },
+          {
+            expectedUpdatedAt: current.data.updatedAt,
+            startsOn: current.data.startsOn,
+            endsOn: current.data.endsOn,
+            learnerSeatAllowance: 0,
+          },
+        ),
+      ).rejects.toMatchObject({
+        code: HektorErrorCode.UnprocessableEntity,
+        message: 'Learner seat allowance cannot be lower than current usage',
+      });
+    } finally {
+      await client
+        .from('organisation_seat_activations')
+        .delete()
+        .eq('organisation_contract_period_id', contractPeriodId)
+        .eq('organisation_user_id', learnerMembershipId);
+    }
   });
 
   it('lists organisation cohorts', async () => {

@@ -131,6 +131,66 @@ export type OrganisationContractPeriodsQueryResult = QueryData<
   ReturnType<typeof buildOrganisationContractPeriodsQuery>
 >;
 
+export function buildOrganisationContractPeriodQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  contractPeriodId: string,
+) {
+  return client
+    .from('organisation_contract_periods')
+    .select(
+      `
+      id, starts_on, ends_on, learner_seat_allowance, created_at, updated_at,
+      activations:organisation_seat_activations (organisation_user_id, released_at)
+    `,
+    )
+    .eq('organisation_id', organisationId)
+    .eq('id', contractPeriodId)
+    .single();
+}
+
+export type OrganisationContractPeriodQueryResult = QueryData<
+  ReturnType<typeof buildOrganisationContractPeriodQuery>
+>;
+
+export function createOrganisationContractPeriodQuery(
+  client: DatabaseClient,
+  values: {
+    endsOn: string;
+    learnerSeatAllowance: number;
+    organisationId: string;
+    startsOn: string;
+  },
+) {
+  return client.rpc('create_organisation_contract_period', {
+    target_ends_on: values.endsOn,
+    target_learner_seat_allowance: values.learnerSeatAllowance,
+    target_organisation_id: values.organisationId,
+    target_starts_on: values.startsOn,
+  });
+}
+
+export function updateOrganisationContractPeriodQuery(
+  client: DatabaseClient,
+  values: {
+    contractPeriodId: string;
+    endsOn: string;
+    expectedUpdatedAt: string;
+    learnerSeatAllowance: number;
+    organisationId: string;
+    startsOn: string;
+  },
+) {
+  return client.rpc('update_organisation_contract_period', {
+    expected_updated_at: values.expectedUpdatedAt,
+    target_contract_period_id: values.contractPeriodId,
+    target_ends_on: values.endsOn,
+    target_learner_seat_allowance: values.learnerSeatAllowance,
+    target_organisation_id: values.organisationId,
+    target_starts_on: values.startsOn,
+  });
+}
+
 export function buildOrganisationCohortsQuery(
   client: DatabaseClient,
   organisationId: string,

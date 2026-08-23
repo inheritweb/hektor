@@ -6,6 +6,7 @@ import {
   type OrganisationCohortSummary,
   type OrganisationCohort,
   type OrganisationContractPeriod,
+  type CreateOrganisationContractPeriodInput,
   type OrganisationGroupSummary,
   type OrganisationGroup,
   type OrganisationGroupProvisionedUserSummary,
@@ -17,6 +18,7 @@ import {
   type OrganisationUserProvisionsSummary,
   type OrganisationUsersSummary,
   type UpdateOrganisationInput,
+  type UpdateOrganisationContractPeriodInput,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -243,6 +245,48 @@ export const listOrganisationContractPeriodsContract = defineContract({
   output: hektorCollectionResponseSchema(z.array(contractPeriodSchema)),
 });
 
+export const createOrganisationContractPeriodInputSchema = z
+  .object({
+    endsOn: z.iso.date(),
+    learnerSeatAllowance: z.number().int().nonnegative(),
+    startsOn: z.iso.date(),
+  })
+  .refine(({ endsOn, startsOn }) => endsOn > startsOn, {
+    message: 'End date must be after start date',
+    path: ['endsOn'],
+  }) satisfies z.ZodType<CreateOrganisationContractPeriodInput>;
+
+export const createOrganisationContractPeriodContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/contract-periods',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: createOrganisationContractPeriodInputSchema,
+  output: hektorResponseSchema(contractPeriodSchema),
+});
+
+export const getOrganisationContractPeriodContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/organisations/:organisationId/contract-periods/:contractPeriodId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), contractPeriodId: z.uuid() }),
+  output: hektorResponseSchema(contractPeriodSchema),
+});
+
+export const updateOrganisationContractPeriodInputSchema =
+  createOrganisationContractPeriodInputSchema.and(
+    z.object({ expectedUpdatedAt: z.iso.datetime() }),
+  ) satisfies z.ZodType<UpdateOrganisationContractPeriodInput>;
+
+export const updateOrganisationContractPeriodContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/organisations/:organisationId/contract-periods/:contractPeriodId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), contractPeriodId: z.uuid() }),
+  body: updateOrganisationContractPeriodInputSchema,
+  output: hektorResponseSchema(contractPeriodSchema),
+});
+
 export const listOrganisationCohortsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/cohorts',
@@ -434,6 +478,38 @@ export type ListOrganisationContractPeriodsQuery = ContractQuery<
 
 export type ListOrganisationContractPeriodsResponse = ContractOutput<
   typeof listOrganisationContractPeriodsContract
+>;
+
+export type CreateOrganisationContractPeriodParams = ContractParams<
+  typeof createOrganisationContractPeriodContract
+>;
+
+export type CreateOrganisationContractPeriodBody = ContractBody<
+  typeof createOrganisationContractPeriodContract
+>;
+
+export type CreateOrganisationContractPeriodResponse = ContractOutput<
+  typeof createOrganisationContractPeriodContract
+>;
+
+export type GetOrganisationContractPeriodParams = ContractParams<
+  typeof getOrganisationContractPeriodContract
+>;
+
+export type GetOrganisationContractPeriodResponse = ContractOutput<
+  typeof getOrganisationContractPeriodContract
+>;
+
+export type UpdateOrganisationContractPeriodParams = ContractParams<
+  typeof updateOrganisationContractPeriodContract
+>;
+
+export type UpdateOrganisationContractPeriodBody = ContractBody<
+  typeof updateOrganisationContractPeriodContract
+>;
+
+export type UpdateOrganisationContractPeriodResponse = ContractOutput<
+  typeof updateOrganisationContractPeriodContract
 >;
 
 export type ListOrganisationCohortsParams = ContractParams<

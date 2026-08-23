@@ -10,7 +10,9 @@ import { SortDirection } from '@hektor/types/contracts';
 import { Client } from './client';
 import {
   autoLinkOrganisationUserProvision,
+  createOrganisationContractPeriod,
   getOrganisation,
+  getOrganisationContractPeriod,
   getOrganisationCohort,
   getOrganisationUserProvision,
   listOrganisationContractPeriods,
@@ -20,6 +22,7 @@ import {
   listOrganisations,
   listOrganisationUsers,
   transitionOrganisationUserProvision,
+  updateOrganisationContractPeriod,
 } from './organisations';
 
 describe('admin organisation API methods', () => {
@@ -171,6 +174,64 @@ describe('admin organisation API methods', () => {
     expect(fetcher).toHaveBeenCalledWith(
       `https://hektor.test/api/admin/organisations/${organisationId}/contract-periods?page=1&pageSize=20&order=startsOn&dir=desc`,
       expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('creates, gets and updates an organisation contract period', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const contractPeriodId = 'b7234776-87f7-480f-a710-1ce16b4a151d';
+    const data = {
+      id: contractPeriodId,
+      startsOn: '2027-09-01',
+      endsOn: '2028-09-01',
+      seats: { allowed: 300, activated: 0, remaining: 300 },
+      createdAt: '2026-08-23T10:00:00.000Z',
+      updatedAt: '2026-08-23T10:00:00.000Z',
+    };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementation(async () => Response.json({ data }));
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+    const path = `https://hektor.test/api/admin/organisations/${organisationId}/contract-periods`;
+
+    await createOrganisationContractPeriod(client, {
+      params: { organisationId },
+      body: {
+        startsOn: data.startsOn,
+        endsOn: data.endsOn,
+        learnerSeatAllowance: 300,
+      },
+    });
+    await getOrganisationContractPeriod(client, {
+      params: { organisationId, contractPeriodId },
+    });
+    await updateOrganisationContractPeriod(client, {
+      params: { organisationId, contractPeriodId },
+      body: {
+        startsOn: data.startsOn,
+        endsOn: data.endsOn,
+        learnerSeatAllowance: 350,
+        expectedUpdatedAt: data.updatedAt,
+      },
+    });
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      path,
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${path}/${contractPeriodId}`,
+      expect.objectContaining({ method: 'GET' }),
+    );
+    expect(fetcher).toHaveBeenNthCalledWith(
+      3,
+      `${path}/${contractPeriodId}`,
+      expect.objectContaining({ method: 'PATCH' }),
     );
   });
 

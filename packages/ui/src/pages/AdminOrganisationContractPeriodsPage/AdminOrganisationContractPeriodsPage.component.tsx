@@ -1,4 +1,6 @@
 import { createTableColumn } from '../../atoms/Table';
+import { buttonVariants } from '../../atoms/Button';
+import { NavigationLink } from '../../context';
 import { Grid } from '../../organisms/Grid';
 
 export interface AdminOrganisationContractPeriodListItemViewModel {
@@ -14,8 +16,12 @@ export interface AdminOrganisationContractPeriodListItemViewModel {
 
 export interface AdminOrganisationContractPeriodsPageProps {
   contractPeriods: readonly AdminOrganisationContractPeriodListItemViewModel[];
+  createHref?: string;
   error?: string;
   loading?: boolean;
+  getContractPeriodHref?: (
+    contractPeriod: AdminOrganisationContractPeriodListItemViewModel,
+  ) => string;
   onPageChange: (page: number) => void;
   organisationName: string;
   page: number;
@@ -56,25 +62,55 @@ const columns = [
 
 export function AdminOrganisationContractPeriodsPage({
   contractPeriods,
+  createHref,
   error,
   loading,
+  getContractPeriodHref,
   onPageChange,
   organisationName,
   page,
   pageSize,
   totalRecords,
 }: AdminOrganisationContractPeriodsPageProps) {
+  const linkedColumns = getContractPeriodHref
+    ? [
+        ...columns,
+        column.display('actions', {
+          align: 'right',
+          className: 'last:pr-3',
+          header: <span className="sr-only">Actions</span>,
+          cell: ({ row }) => (
+            <NavigationLink
+              className="inline-flex rounded px-2 py-1 font-semibold text-primary hover:bg-accent/20 hover:underline"
+              href={getContractPeriodHref(row)}
+            >
+              Edit
+            </NavigationLink>
+          ),
+        }),
+      ]
+    : columns;
+
   return (
-    <Grid
-      caption={`Contract periods for ${organisationName}`}
-      columns={columns}
-      empty="This organisation has no contract periods."
-      error={error}
-      getRowId={(contractPeriod) => contractPeriod.id}
-      loading={loading}
-      pagination={{ page, pageSize, totalRecords, onPageChange }}
-      rows={contractPeriods}
-      title="Contract periods"
-    />
+    <div>
+      {createHref ? (
+        <div className="mb-4 flex justify-end">
+          <NavigationLink className={buttonVariants()} href={createHref}>
+            Add contract period
+          </NavigationLink>
+        </div>
+      ) : null}
+      <Grid
+        caption={`Contract periods for ${organisationName}`}
+        columns={linkedColumns}
+        empty="This organisation has no contract periods."
+        error={error}
+        getRowId={(contractPeriod) => contractPeriod.id}
+        loading={loading}
+        pagination={{ page, pageSize, totalRecords, onPageChange }}
+        rows={contractPeriods}
+        title="Contract periods"
+      />
+    </div>
   );
 }

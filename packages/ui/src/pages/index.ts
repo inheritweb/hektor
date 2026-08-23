@@ -6,6 +6,8 @@ export * from './AdminOrganisationDetailPage';
 
 export * from './AdminOrganisationContractPeriodsPage';
 
+export * from './AdminOrganisationContractPeriodFormPage';
+
 export * from './AdminOrganisationCohortsPage';
 
 export * from './AdminOrganisationCohortDetailPage';

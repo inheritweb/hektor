@@ -1,6 +1,11 @@
 import type {
   GetOrganisationParams,
   GetOrganisationResponse,
+  CreateOrganisationContractPeriodBody,
+  CreateOrganisationContractPeriodParams,
+  CreateOrganisationContractPeriodResponse,
+  GetOrganisationContractPeriodParams,
+  GetOrganisationContractPeriodResponse,
   CreateOrganisationBody,
   CreateOrganisationResponse,
   GetOrganisationCohortParams,
@@ -28,6 +33,9 @@ import type {
   ListOrganisationsResponse,
   UpdateOrganisationBody,
   UpdateOrganisationResponse,
+  UpdateOrganisationContractPeriodBody,
+  UpdateOrganisationContractPeriodParams,
+  UpdateOrganisationContractPeriodResponse,
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import {
@@ -59,6 +67,7 @@ import {
   buildOrganisationDetailQuery,
   buildOrganisationCohortDetailQuery,
   buildOrganisationContractPeriodsQuery,
+  buildOrganisationContractPeriodQuery,
   buildOrganisationCohortsQuery,
   buildOrganisationGroupsQuery,
   buildOrganisationGroupDetailQuery,
@@ -66,6 +75,7 @@ import {
   buildOrganisationMembershipsQuery,
   buildOrganisationSummariesQuery,
   createOrganisationQuery,
+  createOrganisationContractPeriodQuery,
   buildOrganisationUserProvisionsCountQuery,
   buildOrganisationUserProvisionsQuery,
   buildOrganisationUserProvisionDetailQuery,
@@ -74,6 +84,7 @@ import {
   buildOrganisationMembershipForUserQuery,
   transitionOrganisationUserProvisionQuery,
   updateOrganisationQuery,
+  updateOrganisationContractPeriodQuery,
 } from './organisations.queries';
 import {
   canTransitionProvisioningStatus,
@@ -584,6 +595,111 @@ export function createOrganisationsService(client: DatabaseClient) {
     };
   }
 
+  async function getOrganisationContractPeriod(
+    params: GetOrganisationContractPeriodParams,
+  ): Promise<GetOrganisationContractPeriodResponse> {
+    const { data, error } = await buildOrganisationContractPeriodQuery(
+      client,
+      params.organisationId,
+      params.contractPeriodId,
+    );
+
+    if (error) {
+      throw createServiceError(
+        error.code === 'PGRST116'
+          ? HektorErrorCode.NotFound
+          : HektorErrorCode.InternalServerError,
+        {
+          message:
+            error.code === 'PGRST116'
+              ? 'Contract period not found'
+              : 'Unable to get contract period',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return { data: mapOrganisationContractPeriod(data) };
+  }
+
+  async function createOrganisationContractPeriod(
+    params: CreateOrganisationContractPeriodParams,
+    body: CreateOrganisationContractPeriodBody,
+  ): Promise<CreateOrganisationContractPeriodResponse> {
+    const { data, error } = await createOrganisationContractPeriodQuery(
+      client,
+      { ...body, organisationId: params.organisationId },
+    );
+
+    if (error) {
+      throw createServiceError(
+        error.message.includes('organisation_not_found')
+          ? HektorErrorCode.NotFound
+          : error.message.includes('contract_period_overlap')
+            ? HektorErrorCode.Conflict
+            : HektorErrorCode.InternalServerError,
+        {
+          message: error.message.includes('organisation_not_found')
+            ? 'Organisation not found'
+            : error.message.includes('contract_period_overlap')
+              ? 'Contract periods cannot overlap'
+              : 'Unable to create contract period',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return getOrganisationContractPeriod({
+      organisationId: params.organisationId,
+      contractPeriodId: data.id,
+    });
+  }
+
+  async function updateOrganisationContractPeriod(
+    params: UpdateOrganisationContractPeriodParams,
+    body: UpdateOrganisationContractPeriodBody,
+  ): Promise<UpdateOrganisationContractPeriodResponse> {
+    const { error } = await updateOrganisationContractPeriodQuery(client, {
+      ...body,
+      ...params,
+    });
+
+    if (error) {
+      const conflict =
+        error.message.includes('contract_period_conflict') ||
+        error.message.includes('contract_period_overlap');
+      throw createServiceError(
+        error.message.includes('contract_period_not_found') ||
+          error.message.includes('organisation_not_found')
+          ? HektorErrorCode.NotFound
+          : conflict
+            ? HektorErrorCode.Conflict
+            : error.message.includes('learner_seat_allowance_below_usage')
+              ? HektorErrorCode.UnprocessableEntity
+              : HektorErrorCode.InternalServerError,
+        {
+          message: error.message.includes('contract_period_not_found')
+            ? 'Contract period not found'
+            : error.message.includes('organisation_not_found')
+              ? 'Organisation not found'
+              : error.message.includes('contract_period_overlap')
+                ? 'Contract periods cannot overlap'
+                : error.message.includes('contract_period_conflict')
+                  ? 'The contract period changed while you were editing it'
+                  : error.message.includes('learner_seat_allowance_below_usage')
+                    ? 'Learner seat allowance cannot be lower than current usage'
+                    : 'Unable to update contract period',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return getOrganisationContractPeriod(params);
+  }
+
   async function listOrganisationCohorts(
     params: ListOrganisationCohortsParams,
     query: ListOrganisationCohortsQuery,
@@ -832,6 +948,8 @@ export function createOrganisationsService(client: DatabaseClient) {
     acceptOrganisationUserProvision,
     autoLinkOrganisationUserProvision,
     createOrganisation,
+    createOrganisationContractPeriod,
+    getOrganisationContractPeriod,
     getOrganisationCohort,
     getOrganisationGroup,
     getOrganisation,
@@ -845,5 +963,6 @@ export function createOrganisationsService(client: DatabaseClient) {
     listOrganisationUsers,
     transitionOrganisationUserProvision,
     updateOrganisation,
+    updateOrganisationContractPeriod,
   };
 }
