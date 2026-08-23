@@ -580,6 +580,95 @@ begin
 end;
 $$;
 
+create function public.create_organisation_cohort(
+  target_organisation_id uuid,
+  target_name text,
+  target_starts_on date,
+  target_ends_on date
+)
+returns public.organisation_cohorts
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  cohort public.organisation_cohorts;
+begin
+  perform 1 from public.organisations
+  where id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'organisation_not_found';
+  end if;
+  if target_ends_on <= target_starts_on then
+    raise exception using errcode = '22023', message = 'invalid_cohort_dates';
+  end if;
+
+  insert into public.organisation_cohorts (
+    organisation_id, name, starts_on, ends_on
+  ) values (
+    target_organisation_id, target_name, target_starts_on, target_ends_on
+  ) returning * into cohort;
+
+  return cohort;
+end;
+$$;
+
+create function public.update_organisation_cohort(
+  target_organisation_id uuid,
+  target_cohort_id uuid,
+  expected_updated_at timestamptz,
+  target_name text,
+  target_starts_on date,
+  target_ends_on date,
+  target_status public.group_status
+)
+returns public.organisation_cohorts
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  cohort public.organisation_cohorts;
+begin
+  perform 1 from public.organisations
+  where id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'organisation_not_found';
+  end if;
+
+  select * into cohort
+  from public.organisation_cohorts
+  where id = target_cohort_id
+    and organisation_id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'cohort_not_found';
+  end if;
+  if date_trunc('milliseconds', cohort.updated_at) <>
+      date_trunc('milliseconds', expected_updated_at) then
+    raise exception using errcode = 'P0001', message = 'cohort_conflict';
+  end if;
+  if target_ends_on <= target_starts_on then
+    raise exception using errcode = '22023', message = 'invalid_cohort_dates';
+  end if;
+
+  update public.organisation_cohorts
+  set name = target_name,
+      starts_on = target_starts_on,
+      ends_on = target_ends_on,
+      status = target_status
+  where id = cohort.id
+  returning * into cohort;
+
+  return cohort;
+end;
+$$;
+
 create function public.consume_organisation_provision_invitation(
   target_provision_id uuid,
   expected_token_hash text

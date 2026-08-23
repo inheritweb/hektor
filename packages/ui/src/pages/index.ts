@@ -10,6 +10,8 @@ export * from './AdminOrganisationContractPeriodFormPage';
 
 export * from './AdminOrganisationCohortsPage';
 
+export * from './AdminOrganisationCohortFormPage';
+
 export * from './AdminOrganisationCohortDetailPage';
 
 export * from './AdminOrganisationGroupsPage';

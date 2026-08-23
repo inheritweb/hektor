@@ -146,6 +146,17 @@ export interface OrganisationCohort {
   updatedAt: string;
 }
 
+export interface CreateOrganisationCohortInput {
+  endsOn: string;
+  name: string;
+  startsOn: string;
+}
+
+export interface UpdateOrganisationCohortInput extends CreateOrganisationCohortInput {
+  expectedUpdatedAt: string;
+  status: GroupStatus;
+}
+
 export interface OrganisationGroup {
   id: string;
   name: string;

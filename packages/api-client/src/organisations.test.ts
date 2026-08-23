@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  GroupStatus,
   OrganisationStatus,
   ProvisioningLifecycleAction,
   ProvisioningStatus,
@@ -11,6 +12,7 @@ import { Client } from './client';
 import {
   autoLinkOrganisationUserProvision,
   createOrganisationContractPeriod,
+  createOrganisationCohort,
   getOrganisation,
   getOrganisationContractPeriod,
   getOrganisationCohort,
@@ -23,6 +25,7 @@ import {
   listOrganisationUsers,
   transitionOrganisationUserProvision,
   updateOrganisationContractPeriod,
+  updateOrganisationCohort,
 } from './organisations';
 
 describe('admin organisation API methods', () => {
@@ -268,6 +271,66 @@ describe('admin organisation API methods', () => {
     expect(fetcher).toHaveBeenCalledWith(
       `https://hektor.test/api/admin/organisations/${organisationId}/cohorts?page=1&pageSize=20&order=startsOn&dir=desc`,
       expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('creates and updates an organisation cohort', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const cohortId = 'b7234776-87f7-480f-a710-1ce16b4a151d';
+    const data = {
+      id: cohortId,
+      name: 'September 2027',
+      startsOn: '2027-09-01',
+      endsOn: '2028-08-31',
+      status: GroupStatus.Active,
+      organisation: {
+        id: organisationId,
+        name: 'Northbridge University',
+        slug: 'northbridge-university',
+        status: OrganisationStatus.Active,
+      },
+      groups: [],
+      learners: [],
+      createdAt: '2026-08-23T10:00:00.000Z',
+      updatedAt: '2026-08-23T10:00:00.000Z',
+    };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementation(async () => Response.json({ data }));
+    const client = new Client({
+      baseUrl: 'https://hektor.test',
+      fetch: fetcher,
+    });
+    const path = `https://hektor.test/api/admin/organisations/${organisationId}/cohorts`;
+
+    await createOrganisationCohort(client, {
+      params: { organisationId },
+      body: {
+        name: data.name,
+        startsOn: data.startsOn,
+        endsOn: data.endsOn,
+      },
+    });
+    await updateOrganisationCohort(client, {
+      params: { organisationId, cohortId },
+      body: {
+        name: data.name,
+        startsOn: data.startsOn,
+        endsOn: data.endsOn,
+        status: GroupStatus.Archived,
+        expectedUpdatedAt: data.updatedAt,
+      },
+    });
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      path,
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${path}/${cohortId}`,
+      expect.objectContaining({ method: 'PATCH' }),
     );
   });
 

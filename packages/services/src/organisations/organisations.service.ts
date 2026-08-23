@@ -8,6 +8,9 @@ import type {
   GetOrganisationContractPeriodResponse,
   CreateOrganisationBody,
   CreateOrganisationResponse,
+  CreateOrganisationCohortBody,
+  CreateOrganisationCohortParams,
+  CreateOrganisationCohortResponse,
   GetOrganisationCohortParams,
   GetOrganisationCohortResponse,
   GetOrganisationGroupParams,
@@ -36,6 +39,9 @@ import type {
   UpdateOrganisationContractPeriodBody,
   UpdateOrganisationContractPeriodParams,
   UpdateOrganisationContractPeriodResponse,
+  UpdateOrganisationCohortBody,
+  UpdateOrganisationCohortParams,
+  UpdateOrganisationCohortResponse,
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import {
@@ -76,6 +82,7 @@ import {
   buildOrganisationSummariesQuery,
   createOrganisationQuery,
   createOrganisationContractPeriodQuery,
+  createOrganisationCohortQuery,
   buildOrganisationUserProvisionsCountQuery,
   buildOrganisationUserProvisionsQuery,
   buildOrganisationUserProvisionDetailQuery,
@@ -85,6 +92,7 @@ import {
   transitionOrganisationUserProvisionQuery,
   updateOrganisationQuery,
   updateOrganisationContractPeriodQuery,
+  updateOrganisationCohortQuery,
 } from './organisations.queries';
 import {
   canTransitionProvisioningStatus,
@@ -777,6 +785,76 @@ export function createOrganisationsService(client: DatabaseClient) {
     return { data: mapOrganisationCohort(data, learners) };
   }
 
+  async function createOrganisationCohort(
+    params: CreateOrganisationCohortParams,
+    body: CreateOrganisationCohortBody,
+  ): Promise<CreateOrganisationCohortResponse> {
+    const { data, error } = await createOrganisationCohortQuery(client, {
+      ...body,
+      organisationId: params.organisationId,
+    });
+
+    if (error) {
+      throw createServiceError(
+        error.message.includes('organisation_not_found')
+          ? HektorErrorCode.NotFound
+          : error.code === '23505'
+            ? HektorErrorCode.Conflict
+            : HektorErrorCode.InternalServerError,
+        {
+          message: error.message.includes('organisation_not_found')
+            ? 'Organisation not found'
+            : error.code === '23505'
+              ? 'A cohort with this name and start date already exists'
+              : 'Unable to create cohort',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return getOrganisationCohort({
+      organisationId: params.organisationId,
+      cohortId: data.id,
+    });
+  }
+
+  async function updateOrganisationCohort(
+    params: UpdateOrganisationCohortParams,
+    body: UpdateOrganisationCohortBody,
+  ): Promise<UpdateOrganisationCohortResponse> {
+    const { error } = await updateOrganisationCohortQuery(client, {
+      ...body,
+      ...params,
+    });
+
+    if (error) {
+      throw createServiceError(
+        error.message.includes('cohort_not_found') ||
+          error.message.includes('organisation_not_found')
+          ? HektorErrorCode.NotFound
+          : error.message.includes('cohort_conflict') || error.code === '23505'
+            ? HektorErrorCode.Conflict
+            : HektorErrorCode.InternalServerError,
+        {
+          message: error.message.includes('cohort_not_found')
+            ? 'Organisation cohort not found'
+            : error.message.includes('organisation_not_found')
+              ? 'Organisation not found'
+              : error.code === '23505'
+                ? 'A cohort with this name and start date already exists'
+                : error.message.includes('cohort_conflict')
+                  ? 'The cohort changed while you were editing it'
+                  : 'Unable to update cohort',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return getOrganisationCohort(params);
+  }
+
   async function listOrganisationGroups(
     params: ListOrganisationGroupsParams,
     query: ListOrganisationGroupsQuery,
@@ -949,6 +1027,7 @@ export function createOrganisationsService(client: DatabaseClient) {
     autoLinkOrganisationUserProvision,
     createOrganisation,
     createOrganisationContractPeriod,
+    createOrganisationCohort,
     getOrganisationContractPeriod,
     getOrganisationCohort,
     getOrganisationGroup,
@@ -964,5 +1043,6 @@ export function createOrganisationsService(client: DatabaseClient) {
     transitionOrganisationUserProvision,
     updateOrganisation,
     updateOrganisationContractPeriod,
+    updateOrganisationCohort,
   };
 }

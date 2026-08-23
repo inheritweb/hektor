@@ -5,6 +5,7 @@ import {
   type CreateOrganisationInput,
   type OrganisationCohortSummary,
   type OrganisationCohort,
+  type CreateOrganisationCohortInput,
   type OrganisationContractPeriod,
   type CreateOrganisationContractPeriodInput,
   type OrganisationGroupSummary,
@@ -19,6 +20,7 @@ import {
   type OrganisationUsersSummary,
   type UpdateOrganisationInput,
   type UpdateOrganisationContractPeriodInput,
+  type UpdateOrganisationCohortInput,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -309,6 +311,43 @@ export const getOrganisationCohortContract = defineContract({
   output: hektorResponseSchema(organisationCohortSchema),
 });
 
+export const createOrganisationCohortInputSchema = z
+  .object({
+    endsOn: z.iso.date(),
+    name: z.string().trim().min(1).max(255),
+    startsOn: z.iso.date(),
+  })
+  .refine(({ endsOn, startsOn }) => endsOn > startsOn, {
+    message: 'End date must be after start date',
+    path: ['endsOn'],
+  }) satisfies z.ZodType<CreateOrganisationCohortInput>;
+
+export const createOrganisationCohortContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/cohorts',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: createOrganisationCohortInputSchema,
+  output: hektorResponseSchema(organisationCohortSchema),
+});
+
+export const updateOrganisationCohortInputSchema =
+  createOrganisationCohortInputSchema.and(
+    z.object({
+      expectedUpdatedAt: z.iso.datetime(),
+      status: z.enum(GroupStatus),
+    }),
+  ) satisfies z.ZodType<UpdateOrganisationCohortInput>;
+
+export const updateOrganisationCohortContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/organisations/:organisationId/cohorts/:cohortId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), cohortId: z.uuid() }),
+  body: updateOrganisationCohortInputSchema,
+  output: hektorResponseSchema(organisationCohortSchema),
+});
+
 export const listOrganisationGroupsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/groups',
@@ -530,6 +569,30 @@ export type GetOrganisationCohortParams = ContractParams<
 
 export type GetOrganisationCohortResponse = ContractOutput<
   typeof getOrganisationCohortContract
+>;
+
+export type CreateOrganisationCohortParams = ContractParams<
+  typeof createOrganisationCohortContract
+>;
+
+export type CreateOrganisationCohortBody = ContractBody<
+  typeof createOrganisationCohortContract
+>;
+
+export type CreateOrganisationCohortResponse = ContractOutput<
+  typeof createOrganisationCohortContract
+>;
+
+export type UpdateOrganisationCohortParams = ContractParams<
+  typeof updateOrganisationCohortContract
+>;
+
+export type UpdateOrganisationCohortBody = ContractBody<
+  typeof updateOrganisationCohortContract
+>;
+
+export type UpdateOrganisationCohortResponse = ContractOutput<
+  typeof updateOrganisationCohortContract
 >;
 
 export type ListOrganisationGroupsParams = ContractParams<

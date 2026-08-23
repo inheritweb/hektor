@@ -556,6 +556,30 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_organisation_cohort: {
+        Args: {
+          target_ends_on: string;
+          target_name: string;
+          target_organisation_id: string;
+          target_starts_on: string;
+        };
+        Returns: {
+          created_at: string;
+          ends_on: string;
+          id: string;
+          name: string;
+          organisation_id: string;
+          starts_on: string;
+          status: Database['public']['Enums']['group_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_cohorts';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       create_organisation_contract_period: {
         Args: {
           target_ends_on: string;
@@ -683,6 +707,33 @@ export type Database = {
         SetofOptions: {
           from: '*';
           to: 'organisations';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      update_organisation_cohort: {
+        Args: {
+          expected_updated_at: string;
+          target_cohort_id: string;
+          target_ends_on: string;
+          target_name: string;
+          target_organisation_id: string;
+          target_starts_on: string;
+          target_status: Database['public']['Enums']['group_status'];
+        };
+        Returns: {
+          created_at: string;
+          ends_on: string;
+          id: string;
+          name: string;
+          organisation_id: string;
+          starts_on: string;
+          status: Database['public']['Enums']['group_status'];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_cohorts';
           isOneToOne: true;
           isSetofReturn: false;
         };

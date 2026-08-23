@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
+  GroupStatus,
   OrganisationStatus,
   ProvisioningAutoLinkOutcome,
   ProvisioningLifecycleAction,
@@ -23,6 +24,7 @@ const {
   acceptOrganisationUserProvision,
   autoLinkOrganisationUserProvision,
   createOrganisationContractPeriod,
+  createOrganisationCohort,
   createOrganisation,
   getOrganisation,
   getOrganisationContractPeriod,
@@ -39,6 +41,7 @@ const {
   transitionOrganisationUserProvision,
   updateOrganisation,
   updateOrganisationContractPeriod,
+  updateOrganisationCohort,
 } = createOrganisationsService(client);
 
 const organisationId = randomUUID();
@@ -556,6 +559,75 @@ describe('organisation services', () => {
         status: 'active',
       },
     ]);
+  });
+
+  it('creates, archives and reactivates overlapping cohorts with optimistic control', async () => {
+    const created = await createOrganisationCohort(
+      { organisationId },
+      {
+        name: 'Managed Cohort',
+        startsOn: '2027-01-01',
+        endsOn: '2027-12-31',
+      },
+    );
+    const overlapping = await createOrganisationCohort(
+      { organisationId },
+      {
+        name: 'Overlapping Cohort',
+        startsOn: '2027-06-01',
+        endsOn: '2028-05-31',
+      },
+    );
+
+    try {
+      expect(created.data).toMatchObject({
+        name: 'Managed Cohort',
+        status: GroupStatus.Active,
+      });
+      expect(overlapping.data.name).toBe('Overlapping Cohort');
+
+      const archived = await updateOrganisationCohort(
+        { organisationId, cohortId: created.data.id },
+        {
+          expectedUpdatedAt: created.data.updatedAt,
+          name: created.data.name,
+          startsOn: created.data.startsOn,
+          endsOn: created.data.endsOn,
+          status: GroupStatus.Archived,
+        },
+      );
+      expect(archived.data.status).toBe(GroupStatus.Archived);
+
+      await expect(
+        updateOrganisationCohort(
+          { organisationId, cohortId: created.data.id },
+          {
+            expectedUpdatedAt: created.data.updatedAt,
+            name: created.data.name,
+            startsOn: created.data.startsOn,
+            endsOn: created.data.endsOn,
+            status: GroupStatus.Active,
+          },
+        ),
+      ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+
+      const reactivated = await updateOrganisationCohort(
+        { organisationId, cohortId: created.data.id },
+        {
+          expectedUpdatedAt: archived.data.updatedAt,
+          name: archived.data.name,
+          startsOn: archived.data.startsOn,
+          endsOn: archived.data.endsOn,
+          status: GroupStatus.Active,
+        },
+      );
+      expect(reactivated.data.status).toBe(GroupStatus.Active);
+    } finally {
+      await client
+        .from('organisation_cohorts')
+        .delete()
+        .in('id', [created.data.id, overlapping.data.id]);
+    }
   });
 
   it('loads a cohort with canonical learners and groups', async () => {

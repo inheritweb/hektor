@@ -1,4 +1,5 @@
 import { createTableColumn } from '../../atoms/Table';
+import { buttonVariants } from '../../atoms/Button';
 import { NavigationLink } from '../../context';
 import { Grid } from '../../organisms/Grid';
 
@@ -12,6 +13,7 @@ export interface AdminOrganisationCohortListItemViewModel {
 
 export interface AdminOrganisationCohortsPageProps {
   cohorts: readonly AdminOrganisationCohortListItemViewModel[];
+  createHref?: string;
   error?: string;
   getCohortHref?: (cohort: AdminOrganisationCohortListItemViewModel) => string;
   loading?: boolean;
@@ -52,6 +54,7 @@ const columns = [
 
 export function AdminOrganisationCohortsPage({
   cohorts,
+  createHref,
   error,
   getCohortHref,
   loading,
@@ -81,17 +84,26 @@ export function AdminOrganisationCohortsPage({
     : columns;
 
   return (
-    <Grid
-      caption={`Cohorts for ${organisationName}`}
-      columns={linkedColumns}
-      empty="This organisation has no cohorts."
-      error={error}
-      getRowId={(cohort) => cohort.id}
-      highlight
-      loading={loading}
-      pagination={{ page, pageSize, totalRecords, onPageChange }}
-      rows={cohorts}
-      title="Cohorts"
-    />
+    <div>
+      {createHref ? (
+        <div className="mb-4 flex justify-end">
+          <NavigationLink className={buttonVariants()} href={createHref}>
+            Add cohort
+          </NavigationLink>
+        </div>
+      ) : null}
+      <Grid
+        caption={`Cohorts for ${organisationName}`}
+        columns={linkedColumns}
+        empty="This organisation has no cohorts."
+        error={error}
+        getRowId={(cohort) => cohort.id}
+        highlight
+        loading={loading}
+        pagination={{ page, pageSize, totalRecords, onPageChange }}
+        rows={cohorts}
+        title="Cohorts"
+      />
+    </div>
   );
 }

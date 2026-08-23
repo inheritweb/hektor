@@ -1,6 +1,7 @@
 import { LuCalendarRange, LuLayers3, LuUsers } from 'react-icons/lu';
 
 import { createTableColumn, Table } from '../../atoms/Table';
+import { buttonVariants } from '../../atoms/Button';
 import { NavigationLink } from '../../context';
 
 export interface AdminOrganisationCohortDetailViewModel {
@@ -28,6 +29,7 @@ export interface AdminOrganisationCohortDetailViewModel {
 
 export interface AdminOrganisationCohortDetailPageProps {
   cohort: AdminOrganisationCohortDetailViewModel;
+  editHref?: string;
   getUserHref?: (
     learner: AdminOrganisationCohortDetailViewModel['learners'][number],
   ) => string;
@@ -64,6 +66,7 @@ const learnerColumns = [
 
 export function AdminOrganisationCohortDetailPage({
   cohort,
+  editHref,
   getUserHref,
 }: AdminOrganisationCohortDetailPageProps) {
   const columns = getUserHref
@@ -86,18 +89,28 @@ export function AdminOrganisationCohortDetailPage({
 
   return (
     <div className="space-y-10">
-      <header>
-        <p className="text-sm font-semibold text-primary">Cohort</p>
-        <div className="mt-1 flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight">{cohort.name}</h1>
-          <span className="bg-primary/10 px-2 py-1 text-xs font-semibold capitalize text-primary">
-            {cohort.status}
-          </span>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-primary">Cohort</p>
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">{cohort.name}</h1>
+            <span className="bg-primary/10 px-2 py-1 text-xs font-semibold capitalize text-primary">
+              {cohort.status}
+            </span>
+          </div>
+          <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <LuCalendarRange aria-hidden="true" />
+            {formatDate(cohort.startsOn)}–{formatDate(cohort.endsOn)}
+          </p>
         </div>
-        <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-          <LuCalendarRange aria-hidden="true" />
-          {formatDate(cohort.startsOn)}–{formatDate(cohort.endsOn)}
-        </p>
+        {editHref ? (
+          <NavigationLink
+            className={buttonVariants({ variant: 'outline' })}
+            href={editHref}
+          >
+            Edit cohort
+          </NavigationLink>
+        ) : null}
       </header>
 
       <section aria-labelledby="cohort-groups-heading">

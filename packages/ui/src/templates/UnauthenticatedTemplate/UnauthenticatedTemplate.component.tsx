@@ -14,12 +14,7 @@ export function UnauthenticatedTemplate({
 }: UnauthenticatedTemplateProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-page px-6 py-16 text-foreground">
-      <div
-        className={cn(
-          'w-full',
-          width === 'lg' ? 'max-w-xl' : 'max-w-md',
-        )}
-      >
+      <div className={cn('w-full', width === 'lg' ? 'max-w-xl' : 'max-w-md')}>
         <div className="mb-8 flex justify-center">
           <Logo size="lg" />
         </div>

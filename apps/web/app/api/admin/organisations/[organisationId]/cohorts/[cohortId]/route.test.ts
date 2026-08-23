@@ -9,11 +9,13 @@ const {
   createOrganisationsServiceMock,
   getOrganisationCohortMock,
   getUserMock,
+  updateOrganisationCohortMock,
 } = vi.hoisted(() => ({
   createAdminSupabaseClientMock: vi.fn(),
   createOrganisationsServiceMock: vi.fn(),
   getOrganisationCohortMock: vi.fn(),
   getUserMock: vi.fn(),
+  updateOrganisationCohortMock: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -28,15 +30,17 @@ vi.mock('@hektor/services/organisations', () => ({
   createOrganisationsService: createOrganisationsServiceMock,
 }));
 
-import { GET } from './route';
+import { GET, PATCH } from './route';
 
 describe('GET /api/admin/organisations/:organisationId/cohorts/:cohortId', () => {
   beforeEach(() => {
     createOrganisationsServiceMock.mockReturnValue({
       getOrganisationCohort: getOrganisationCohortMock,
+      updateOrganisationCohort: updateOrganisationCohortMock,
     });
     getOrganisationCohortMock.mockReset();
     getUserMock.mockReset();
+    updateOrganisationCohortMock.mockReset();
   });
 
   it('gets a cohort through the privileged service client', async () => {
@@ -82,5 +86,52 @@ describe('GET /api/admin/organisations/:organisationId/cohorts/:cohortId', () =>
       cohortId,
       organisationId,
     });
+  });
+
+  it('updates a cohort for a platform admin', async () => {
+    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
+    const cohortId = '03d946de-8938-46d8-93a4-e3917df0928e';
+    const body = {
+      name: 'September 2027',
+      startsOn: '2027-09-01',
+      endsOn: '2028-08-31',
+      status: 'archived',
+      expectedUpdatedAt: '2026-08-23T10:00:00.000Z',
+    };
+    getUserMock.mockResolvedValue({
+      data: {
+        user: { id: 'admin-id', app_metadata: { role: PlatformRole.Admin } },
+      },
+      error: null,
+    });
+    updateOrganisationCohortMock.mockResolvedValue({
+      data: {
+        id: cohortId,
+        ...body,
+        organisation: {
+          id: organisationId,
+          name: 'Northbridge University',
+          slug: 'northbridge-university',
+          status: 'active',
+        },
+        groups: [],
+        learners: [],
+        createdAt: body.expectedUpdatedAt,
+        updatedAt: '2026-08-23T11:00:00.000Z',
+      },
+    });
+
+    const response = await callApiEndpoint(PATCH, {
+      body,
+      method: 'PATCH',
+      path: `/api/admin/organisations/${organisationId}/cohorts/${cohortId}`,
+      params: { cohortId, organisationId },
+    });
+
+    expect(response.status).toBe(200);
+    expect(updateOrganisationCohortMock).toHaveBeenCalledWith(
+      { cohortId, organisationId },
+      body,
+    );
   });
 });

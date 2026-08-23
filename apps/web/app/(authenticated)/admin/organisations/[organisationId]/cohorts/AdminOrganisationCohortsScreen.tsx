@@ -50,6 +50,7 @@ export function AdminOrganisationCohortsScreen({
   return (
     <AdminOrganisationCohortsPage
       cohorts={cohorts.data?.data ?? []}
+      createHref={`/admin/organisations/${organisationId}/cohorts/new`}
       error={cohorts.error?.message ?? organisation.error?.message}
       getCohortHref={(cohort) =>
         `/admin/organisations/${organisationId}/cohorts/${cohort.id}`

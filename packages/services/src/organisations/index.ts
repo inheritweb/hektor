@@ -12,6 +12,8 @@ export {
 export {
   buildOrganisationDetailQuery,
   buildOrganisationCohortDetailQuery,
+  createOrganisationCohortQuery,
+  updateOrganisationCohortQuery,
   buildOrganisationContractPeriodsQuery,
   buildOrganisationContractPeriodQuery,
   buildOrganisationCohortsQuery,

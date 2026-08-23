@@ -3,6 +3,7 @@ import {
   acceptOrganisationUserProvisionContract,
   createOrganisationContract,
   createOrganisationContractPeriodContract,
+  createOrganisationCohortContract,
   getOrganisationContract,
   getOrganisationContractPeriodContract,
   getOrganisationCohortContract,
@@ -19,6 +20,7 @@ import {
   transitionOrganisationUserProvisionContract,
   updateOrganisationContract,
   updateOrganisationContractPeriodContract,
+  updateOrganisationCohortContract,
 } from '@hektor/types/contracts/organisations';
 
 import { registerApiMethod } from './api-method';
@@ -45,6 +47,14 @@ export const updateOrganisationContractPeriod = registerApiMethod(
 
 export const getOrganisationCohort = registerApiMethod(
   getOrganisationCohortContract,
+);
+
+export const createOrganisationCohort = registerApiMethod(
+  createOrganisationCohortContract,
+);
+
+export const updateOrganisationCohort = registerApiMethod(
+  updateOrganisationCohortContract,
 );
 
 export const getOrganisationGroup = registerApiMethod(
