@@ -5,6 +5,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   GroupStatus,
   OrganisationStatus,
+  OrganisationRole,
+  OrganisationUserStatus,
   ProvisioningAutoLinkOutcome,
   ProvisioningLifecycleAction,
   ProvisioningStatus,
@@ -31,6 +33,7 @@ const {
   getOrganisationContractPeriod,
   getOrganisationCohort,
   getOrganisationGroup,
+  getOrganisationMembership,
   getOrganisationUserProvision,
   getProvisionAcceptance,
   listOrganisationContractPeriods,
@@ -45,6 +48,7 @@ const {
   updateOrganisationCohort,
   updateOrganisationGroup,
   updateOrganisationGroupMembership,
+  updateOrganisationMembership,
 } = createOrganisationsService(client);
 
 const organisationId = randomUUID();
@@ -670,6 +674,76 @@ describe('organisation services', () => {
     expect(removed.data.users.map((user) => user.id)).not.toContain(
       tutorMembershipId,
     );
+  });
+
+  it('loads canonical membership context and atomically manages a manual learner seat', async () => {
+    const initial = await getOrganisationMembership({
+      membershipId: tutorMembershipId,
+      organisationId,
+    });
+    expect(initial.data).toMatchObject({
+      id: tutorMembershipId,
+      provisioning: undefined,
+      user: { id: tutorUserId },
+    });
+
+    const activated = await updateOrganisationMembership(
+      { membershipId: tutorMembershipId, organisationId },
+      {
+        expectedUpdatedAt: initial.data.updatedAt,
+        role: OrganisationRole.Learner,
+        status: OrganisationUserStatus.Active,
+      },
+    );
+    expect(activated.data).toMatchObject({
+      role: OrganisationRole.Learner,
+      status: OrganisationUserStatus.Active,
+      seatActivation: { contractPeriodId },
+    });
+
+    const suspended = await updateOrganisationMembership(
+      { membershipId: tutorMembershipId, organisationId },
+      {
+        expectedUpdatedAt: activated.data.updatedAt,
+        role: OrganisationRole.Tutor,
+        status: OrganisationUserStatus.Suspended,
+      },
+    );
+    expect(suspended.data.seatActivation).toBeUndefined();
+
+    await expect(
+      updateOrganisationMembership(
+        { membershipId: tutorMembershipId, organisationId },
+        {
+          expectedUpdatedAt: initial.data.updatedAt,
+          role: OrganisationRole.Tutor,
+          status: OrganisationUserStatus.Active,
+        },
+      ),
+    ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+  });
+
+  it('does not let direct membership edits override provision-controlled fields', async () => {
+    const linked = await getOrganisationMembership({
+      membershipId: learnerMembershipId,
+      organisationId,
+    });
+    expect(linked.data.provisioning).toMatchObject({
+      id: linkedProvisionId,
+      status: ProvisioningStatus.Linked,
+    });
+
+    await expect(
+      updateOrganisationMembership(
+        { membershipId: learnerMembershipId, organisationId },
+        {
+          cohortId: linked.data.cohort?.id,
+          expectedUpdatedAt: linked.data.updatedAt,
+          role: OrganisationRole.Tutor,
+          status: linked.data.status,
+        },
+      ),
+    ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
   });
 
   it('removes and restores a pending provision assignment', async () => {

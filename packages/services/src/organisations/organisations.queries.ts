@@ -471,6 +471,61 @@ export type OrganisationMembershipsQueryResult = QueryData<
   ReturnType<typeof buildOrganisationMembershipsQuery>
 >;
 
+export function buildOrganisationMembershipDetailQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  membershipId: string,
+) {
+  return client
+    .from('organisation_users')
+    .select(
+      `
+      id, user_id, role, status, created_at, updated_at,
+      organisation:organisations (id, name, slug, status),
+      cohort:organisation_cohorts (id, name, starts_on, ends_on, status),
+      groupLinks:organisation_group_users (
+        group:organisation_groups (
+          id, name, status, provisioning_method, source_external_id
+        )
+      ),
+      provisions:organisation_user_provisions (
+        id, provisioning_method, status, created_at
+      ),
+      seatActivations:organisation_seat_activations (
+        organisation_contract_period_id, activated_at, released_at
+      )
+    `,
+    )
+    .eq('organisation_id', organisationId)
+    .eq('id', membershipId)
+    .single();
+}
+
+export type OrganisationMembershipDetailQueryResult = QueryData<
+  ReturnType<typeof buildOrganisationMembershipDetailQuery>
+>;
+
+export function updateOrganisationMembershipQuery(
+  client: DatabaseClient,
+  values: {
+    cohortId?: string;
+    expectedUpdatedAt: string;
+    membershipId: string;
+    organisationId: string;
+    role: OrganisationRole;
+    status: OrganisationUserStatus;
+  },
+) {
+  return client.rpc('update_organisation_membership', {
+    expected_updated_at: values.expectedUpdatedAt,
+    target_cohort_id: values.cohortId,
+    target_membership_id: values.membershipId,
+    target_organisation_id: values.organisationId,
+    target_role: values.role,
+    target_status: values.status,
+  });
+}
+
 export function buildOrganisationUserProvisionsQuery(
   client: DatabaseClient,
   organisationId: string,

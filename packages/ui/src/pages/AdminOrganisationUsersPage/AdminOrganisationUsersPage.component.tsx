@@ -1,5 +1,6 @@
 import { createTableColumn } from '../../atoms/Table';
 import { Grid } from '../../organisms/Grid';
+import { NavigationLink } from '../../context';
 
 export interface AdminOrganisationUserListItemViewModel {
   id: string;
@@ -13,6 +14,7 @@ export interface AdminOrganisationUserListItemViewModel {
 
 export interface AdminOrganisationUsersPageProps {
   error?: string;
+  getUserHref?: (user: AdminOrganisationUserListItemViewModel) => string;
   loading?: boolean;
   onPageChange: (page: number) => void;
   organisationName: string;
@@ -53,6 +55,7 @@ const columns = [
 
 export function AdminOrganisationUsersPage({
   error,
+  getUserHref,
   loading,
   onPageChange,
   organisationName,
@@ -61,10 +64,27 @@ export function AdminOrganisationUsersPage({
   totalRecords,
   users,
 }: AdminOrganisationUsersPageProps) {
+  const linkedColumns = getUserHref
+    ? [
+        ...columns,
+        column.display('actions', {
+          align: 'right',
+          header: <span className="sr-only">Actions</span>,
+          cell: ({ row }) => (
+            <NavigationLink
+              className="inline-flex rounded px-2 py-1 font-semibold text-primary hover:bg-accent/20 hover:underline"
+              href={getUserHref(row)}
+            >
+              View
+            </NavigationLink>
+          ),
+        }),
+      ]
+    : columns;
   return (
     <Grid
       caption={`Users in ${organisationName}`}
-      columns={columns}
+      columns={linkedColumns}
       empty="This organisation has no users."
       error={error}
       getRowId={(user) => user.id}

@@ -60,6 +60,7 @@ with seed_users (
   ('a058bcd6-bab1-4558-a115-4b347a305154', 'Maya Patel', 'maya.patel@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'org_admin', 'scim', false),
   ('b8f5c104-1d91-4a9a-bd6d-1401c0745b41', 'Daniel Okafor', 'daniel.okafor@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'org_admin', 'scim', false),
   ('8dec1a0f-80fc-42ab-92c4-4fda976ae494', 'Alice Morgan', 'alice.morgan@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'tutor', 'scim', false),
+  ('f5e319f4-0e77-47c3-a4bb-d3a9b7f52ea9', 'Nina Foster', 'nina.foster@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'tutor', null, false),
   ('f1f827e6-bf7e-474e-b813-8dde039987ad', 'Owen Davies', 'owen.davies@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'tutor', 'scim', false),
   ('e5dd9b1c-6508-4a5b-bfea-929bdf74af11', 'Fatima Hassan', 'fatima.hassan@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'tutor', 'scim', false),
   ('eb36d08e-d541-4fe1-adff-394dba9e2e69', 'George Bennett', 'george.bennett@northbridge.example', 'b3539fdd-e1aa-45a0-86ac-093b15212273', null, 'tutor', 'scim', false),
@@ -242,7 +243,8 @@ from seed_users
 join inserted_memberships
   on inserted_memberships.organisation_id = seed_users.organisation_id
   and inserted_memberships.user_id = seed_users.id
-where seed_users.organisation_id is not null;
+where seed_users.organisation_id is not null
+  and seed_users.provisioning_method is not null;
 
 with seed_pending_provisions (
   display_name,

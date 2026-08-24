@@ -425,6 +425,132 @@ begin
 end;
 $$;
 
+create function public.update_organisation_membership(
+  target_organisation_id uuid,
+  target_membership_id uuid,
+  expected_updated_at timestamptz,
+  target_role public.organisation_role,
+  target_status public.organisation_user_status,
+  target_cohort_id uuid default null
+)
+returns public.organisation_users
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  membership public.organisation_users;
+  provision public.organisation_user_provisions;
+  contract_period public.organisation_contract_periods;
+  active_seats bigint;
+begin
+  if exists (
+    select 1 from public.organisations
+    where id = target_organisation_id and status = 'archived'
+  ) then
+    raise exception using errcode = 'P0001', message = 'archived_organisation_is_read_only';
+  end if;
+
+  select * into membership
+  from public.organisation_users
+  where id = target_membership_id
+    and organisation_id = target_organisation_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'membership_not_found';
+  end if;
+  if date_trunc('milliseconds', membership.updated_at) <>
+      date_trunc('milliseconds', expected_updated_at) then
+    raise exception using errcode = 'P0001', message = 'membership_conflict';
+  end if;
+  if target_cohort_id is not null and not exists (
+    select 1 from public.organisation_cohorts
+    where id = target_cohort_id and organisation_id = target_organisation_id
+  ) then
+    raise exception using errcode = 'P0002', message = 'cohort_not_found';
+  end if;
+
+  select * into provision
+  from public.organisation_user_provisions
+  where organisation_user_id = membership.id
+    and status in ('linked', 'inactive')
+  order by created_at desc
+  limit 1
+  for update;
+
+  if found then
+    if target_role <> provision.provisioned_role or
+       (provision.organisation_cohort_id is not null and
+        target_cohort_id is distinct from provision.organisation_cohort_id) then
+      raise exception using errcode = 'P0001', message = 'provision_controls_membership_fields';
+    end if;
+
+    if target_status <> membership.status then
+      if target_status = 'suspended' and provision.status = 'linked' then
+        perform public.transition_organisation_user_provision(
+          provision.id, provision.status, 'deactivate', null
+        );
+      elsif target_status = 'active' and provision.status = 'inactive' then
+        perform public.transition_organisation_user_provision(
+          provision.id, provision.status, 'reactivate', null
+        );
+      else
+        raise exception using errcode = 'P0001', message = 'provision_status_conflict';
+      end if;
+    end if;
+
+    select * into membership from public.organisation_users
+    where id = target_membership_id;
+    return membership;
+  end if;
+
+  if target_role = 'learner' and target_status = 'active' then
+    select * into contract_period
+    from public.organisation_contract_periods
+    where organisation_id = target_organisation_id
+      and current_date >= starts_on
+      and current_date < ends_on
+    order by starts_on desc
+    limit 1
+    for update;
+
+    if found then
+      select count(*) into active_seats
+      from public.organisation_seat_activations
+      where organisation_contract_period_id = contract_period.id
+        and released_at is null
+        and organisation_user_id <> membership.id;
+
+      if active_seats >= contract_period.learner_seat_allowance then
+        raise exception using errcode = 'P0001', message = 'learner_seat_capacity_exhausted';
+      end if;
+
+      insert into public.organisation_seat_activations (
+        organisation_id, organisation_contract_period_id,
+        organisation_user_id, released_at
+      ) values (
+        target_organisation_id, contract_period.id, membership.id, null
+      ) on conflict (organisation_contract_period_id, organisation_user_id)
+      do update set released_at = null, activated_at = now();
+    end if;
+  else
+    update public.organisation_seat_activations
+    set released_at = now()
+    where organisation_user_id = membership.id and released_at is null;
+  end if;
+
+  update public.organisation_users
+  set role = target_role,
+      status = target_status,
+      organisation_cohort_id = target_cohort_id
+  where id = membership.id
+  returning * into membership;
+
+  return membership;
+end;
+$$;
+
 create function public.update_organisation(
   target_organisation_id uuid,
   expected_status public.organisation_status,

@@ -207,8 +207,24 @@ export interface OrganisationMembership {
   organisation: OrganisationSummary;
   cohort?: OrganisationCohortSummary;
   groups: OrganisationGroupSummary[];
+  provisioning?: {
+    id: string;
+    method: ProvisioningMethod;
+    status: ProvisioningStatus;
+  };
+  seatActivation?: {
+    activatedAt: string;
+    contractPeriodId: string;
+  };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UpdateOrganisationMembershipInput {
+  cohortId?: string;
+  expectedUpdatedAt: string;
+  role: OrganisationRole;
+  status: OrganisationUserStatus;
 }
 
 export interface OrganisationMembershipSummary {

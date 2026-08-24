@@ -7,6 +7,7 @@ import {
   type OrganisationGroupProvisionedUserSummary,
   type OrganisationGroupSummary,
   type OrganisationMembershipUserSummary,
+  type OrganisationMembership,
   type OrganisationSummary,
   type OrganisationUserProvision,
   type OrganisationUserProvisionDetail,
@@ -30,6 +31,7 @@ import type {
   OrganisationGroupsQueryResult,
   OrganisationGroupDetailQueryResult,
   OrganisationMembershipsQueryResult,
+  OrganisationMembershipDetailQueryResult,
   OrganisationSummaryQueryResult,
   OrganisationUserProvisionsQueryResult,
   OrganisationUserProvisionDetailQueryResult,
@@ -183,6 +185,51 @@ export function mapOrganisationMembershipUserSummary(
     user,
     role: record.role as OrganisationRole,
     status: record.status as OrganisationUserStatus,
+  };
+}
+
+export function mapOrganisationMembership(
+  record: OrganisationMembershipDetailQueryResult,
+  user: UserSummary,
+): OrganisationMembership {
+  const provision = record.provisions
+    .filter(({ status }) =>
+      [ProvisioningStatus.Linked, ProvisioningStatus.Inactive].includes(
+        status as ProvisioningStatus,
+      ),
+    )
+    .sort((left, right) => right.created_at.localeCompare(left.created_at))[0];
+  const seatActivation = record.seatActivations.find(
+    ({ released_at }) => !released_at,
+  );
+
+  return {
+    id: record.id,
+    user,
+    role: record.role as OrganisationRole,
+    status: record.status as OrganisationUserStatus,
+    organisation: mapOrganisationSummary(record.organisation),
+    cohort: record.cohort
+      ? mapOrganisationCohortSummary(record.cohort)
+      : undefined,
+    groups: record.groupLinks.map(({ group }) =>
+      mapOrganisationGroupSummary(group),
+    ),
+    provisioning: provision
+      ? {
+          id: provision.id,
+          method: provision.provisioning_method as ProvisioningMethod,
+          status: provision.status as ProvisioningStatus,
+        }
+      : undefined,
+    seatActivation: seatActivation
+      ? {
+          activatedAt: mapDateTime(seatActivation.activated_at),
+          contractPeriodId: seatActivation.organisation_contract_period_id,
+        }
+      : undefined,
+    createdAt: mapDateTime(record.created_at),
+    updatedAt: mapDateTime(record.updated_at),
   };
 }
 

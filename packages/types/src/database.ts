@@ -850,6 +850,32 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      update_organisation_membership: {
+        Args: {
+          expected_updated_at: string;
+          target_cohort_id?: string;
+          target_membership_id: string;
+          target_organisation_id: string;
+          target_role: Database['public']['Enums']['organisation_role'];
+          target_status: Database['public']['Enums']['organisation_user_status'];
+        };
+        Returns: {
+          created_at: string;
+          id: string;
+          organisation_cohort_id: string | null;
+          organisation_id: string;
+          role: Database['public']['Enums']['organisation_role'];
+          status: Database['public']['Enums']['organisation_user_status'];
+          updated_at: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_users';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       group_status: 'active' | 'archived';

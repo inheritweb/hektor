@@ -1,6 +1,8 @@
 import type {
   GetOrganisationParams,
   GetOrganisationResponse,
+  GetOrganisationMembershipParams,
+  GetOrganisationMembershipResponse,
   CreateOrganisationContractPeriodBody,
   CreateOrganisationContractPeriodParams,
   CreateOrganisationContractPeriodResponse,
@@ -51,6 +53,9 @@ import type {
   UpdateOrganisationGroupMembershipBody,
   UpdateOrganisationGroupMembershipParams,
   UpdateOrganisationGroupMembershipResponse,
+  UpdateOrganisationMembershipBody,
+  UpdateOrganisationMembershipParams,
+  UpdateOrganisationMembershipResponse,
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import {
@@ -74,6 +79,7 @@ import {
   mapOrganisationGroupSummary,
   mapOrganisationGroup,
   mapOrganisationMembershipUserSummary,
+  mapOrganisationMembership,
   mapOrganisationSummary,
   mapOrganisationUserProvision,
   mapOrganisationUserProvisionDetail,
@@ -88,6 +94,7 @@ import {
   buildOrganisationGroupDetailQuery,
   buildOrganisationMembershipsCountQuery,
   buildOrganisationMembershipsQuery,
+  buildOrganisationMembershipDetailQuery,
   buildOrganisationSummariesQuery,
   createOrganisationQuery,
   createOrganisationContractPeriodQuery,
@@ -105,6 +112,7 @@ import {
   updateOrganisationCohortQuery,
   updateOrganisationGroupQuery,
   updateOrganisationGroupMembershipQuery,
+  updateOrganisationMembershipQuery,
 } from './organisations.queries';
 import {
   canTransitionProvisioningStatus,
@@ -584,6 +592,100 @@ export function createOrganisationsService(client: DatabaseClient) {
       },
       data: paginate(filtered, query.page, query.pageSize),
     };
+  }
+
+  async function getOrganisationMembership(
+    params: GetOrganisationMembershipParams,
+  ): Promise<GetOrganisationMembershipResponse> {
+    const { data, error } = await buildOrganisationMembershipDetailQuery(
+      client,
+      params.organisationId,
+      params.membershipId,
+    );
+
+    if (error) {
+      throw createServiceError(
+        error.code === 'PGRST116'
+          ? HektorErrorCode.NotFound
+          : HektorErrorCode.InternalServerError,
+        {
+          message:
+            error.code === 'PGRST116'
+              ? 'Organisation membership not found'
+              : 'Unable to get organisation membership',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    const { data: authData, error: authError } =
+      await client.auth.admin.getUserById(data.user_id);
+    if (authError) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to get organisation membership',
+        internalMessage: authError.message,
+        cause: authError,
+      });
+    }
+
+    return {
+      data: mapOrganisationMembership(data, mapUserSummary(authData.user)),
+    };
+  }
+
+  async function updateOrganisationMembership(
+    params: UpdateOrganisationMembershipParams,
+    body: UpdateOrganisationMembershipBody,
+  ): Promise<UpdateOrganisationMembershipResponse> {
+    const { error } = await updateOrganisationMembershipQuery(client, {
+      ...body,
+      ...params,
+    });
+
+    if (error) {
+      const notFound =
+        error.message.includes('membership_not_found') ||
+        error.message.includes('cohort_not_found');
+      const conflict =
+        error.message.includes('membership_conflict') ||
+        error.message.includes('learner_seat_capacity_exhausted') ||
+        error.message.includes('provision_controls_membership_fields') ||
+        error.message.includes('provision_status_conflict') ||
+        error.message.includes('archived_organisation_is_read_only');
+      throw createServiceError(
+        notFound
+          ? HektorErrorCode.NotFound
+          : conflict
+            ? HektorErrorCode.Conflict
+            : HektorErrorCode.InternalServerError,
+        {
+          message: error.message.includes('cohort_not_found')
+            ? 'Organisation cohort not found'
+            : error.message.includes('membership_not_found')
+              ? 'Organisation membership not found'
+              : error.message.includes('membership_conflict')
+                ? 'The membership changed while you were editing it'
+                : error.message.includes('learner_seat_capacity_exhausted')
+                  ? 'No learner seats are available in the current contract period'
+                  : error.message.includes(
+                        'provision_controls_membership_fields',
+                      )
+                    ? 'Role and cohort are controlled by the provisioning source'
+                    : error.message.includes(
+                          'archived_organisation_is_read_only',
+                        )
+                      ? 'Archived organisations are read-only'
+                      : error.message.includes('provision_status_conflict')
+                        ? 'The linked provision changed while you were editing it'
+                        : 'Unable to update organisation membership',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return getOrganisationMembership(params);
   }
 
   async function listOrganisationContractPeriods(
@@ -1174,6 +1276,7 @@ export function createOrganisationsService(client: DatabaseClient) {
     getOrganisationContractPeriod,
     getOrganisationCohort,
     getOrganisationGroup,
+    getOrganisationMembership,
     getOrganisation,
     getOrganisationUserProvision,
     getProvisionAcceptance,
@@ -1189,5 +1292,6 @@ export function createOrganisationsService(client: DatabaseClient) {
     updateOrganisationCohort,
     updateOrganisationGroup,
     updateOrganisationGroupMembership,
+    updateOrganisationMembership,
   };
 }

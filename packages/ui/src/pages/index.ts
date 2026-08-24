@@ -20,6 +20,10 @@ export * from './AdminOrganisationGroupDetailPage';
 
 export * from './AdminOrganisationGroupFormPage';
 
+export * from './AdminOrganisationMembershipDetailPage';
+
+export * from './AdminOrganisationMembershipFormPage';
+
 export * from './AdminOrganisationUsersPage';
 
 export * from './AdminOrganisationUserProvisionsPage';

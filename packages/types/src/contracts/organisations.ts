@@ -13,6 +13,7 @@ import {
   type CreateOrganisationGroupInput,
   type OrganisationGroupProvisionedUserSummary,
   type OrganisationMembershipUserSummary,
+  type OrganisationMembership,
   type OrganisationProvisionInvitationResult,
   type OrganisationSummary,
   type OrganisationUserProvision,
@@ -24,6 +25,7 @@ import {
   type UpdateOrganisationCohortInput,
   type UpdateOrganisationGroupInput,
   type UpdateOrganisationGroupMembershipInput,
+  type UpdateOrganisationMembershipInput,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -102,6 +104,31 @@ export const organisationMembershipUserSummarySchema = z.object({
   role: z.enum(OrganisationRole),
   status: z.enum(OrganisationUserStatus),
 }) satisfies z.ZodType<OrganisationMembershipUserSummary>;
+
+export const organisationMembershipSchema = z.object({
+  id: z.uuid(),
+  user: userSummarySchema,
+  role: z.enum(OrganisationRole),
+  status: z.enum(OrganisationUserStatus),
+  organisation: organisationSummarySchema,
+  cohort: organisationCohortSummarySchema.optional(),
+  groups: z.array(organisationGroupSummarySchema),
+  provisioning: z
+    .object({
+      id: z.uuid(),
+      method: z.enum(ProvisioningMethod),
+      status: z.enum(ProvisioningStatus),
+    })
+    .optional(),
+  seatActivation: z
+    .object({
+      activatedAt: z.iso.datetime(),
+      contractPeriodId: z.uuid(),
+    })
+    .optional(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+}) satisfies z.ZodType<OrganisationMembership>;
 
 export const organisationCohortSchema = z.object({
   id: z.uuid(),
@@ -455,6 +482,30 @@ export const listOrganisationUsersContract = defineContract({
   ),
 });
 
+export const getOrganisationMembershipContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/organisations/:organisationId/users/:membershipId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), membershipId: z.uuid() }),
+  output: hektorResponseSchema(organisationMembershipSchema),
+});
+
+export const updateOrganisationMembershipInputSchema = z.object({
+  cohortId: z.uuid().optional(),
+  expectedUpdatedAt: z.iso.datetime(),
+  role: z.enum(OrganisationRole),
+  status: z.enum(OrganisationUserStatus),
+}) satisfies z.ZodType<UpdateOrganisationMembershipInput>;
+
+export const updateOrganisationMembershipContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/organisations/:organisationId/users/:membershipId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid(), membershipId: z.uuid() }),
+  body: updateOrganisationMembershipInputSchema,
+  output: hektorResponseSchema(organisationMembershipSchema),
+});
+
 export const listOrganisationUserProvisionsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/user-provisions',
@@ -729,6 +780,26 @@ export type ListOrganisationUsersQuery = ContractQuery<
 
 export type ListOrganisationUsersResponse = ContractOutput<
   typeof listOrganisationUsersContract
+>;
+
+export type GetOrganisationMembershipParams = ContractParams<
+  typeof getOrganisationMembershipContract
+>;
+
+export type GetOrganisationMembershipResponse = ContractOutput<
+  typeof getOrganisationMembershipContract
+>;
+
+export type UpdateOrganisationMembershipParams = ContractParams<
+  typeof updateOrganisationMembershipContract
+>;
+
+export type UpdateOrganisationMembershipBody = ContractBody<
+  typeof updateOrganisationMembershipContract
+>;
+
+export type UpdateOrganisationMembershipResponse = ContractOutput<
+  typeof updateOrganisationMembershipContract
 >;
 
 export type ListOrganisationUserProvisionsParams = ContractParams<

@@ -17,6 +17,7 @@ import {
   useAdminGetOrganisation,
   useAdminGetOrganisationCohort,
   useAdminGetOrganisationGroup,
+  useAdminGetOrganisationMembership,
   useAdminGetOrganisationUserProvision,
 } from '@hektor/query/organisations';
 import { useGetCurrentUser } from '@hektor/query/users';
@@ -27,6 +28,7 @@ export function breadcrumbsForPath(
   cohortName = 'Cohort',
   groupName = 'Group',
   provisionName = 'Provisioned user',
+  membershipName = 'Organisation user',
 ): GlobalToolbarBreadcrumb[] {
   if (pathname === '/') return [{ label: 'Home' }];
 
@@ -64,122 +66,120 @@ export function breadcrumbsForPath(
       home,
       { label: 'Admin' },
       { label: 'Organisations', href: '/admin/organisations' },
-      ...(pathname.match(/\/provisioned-users\/[^/]+$/)
+      ...(pathname.match(/\/users\/[^/]+\/edit$/)
         ? [
             {
               label: organisationName,
-              href: pathname.slice(
-                0,
-                pathname.lastIndexOf('/provisioned-users/'),
-              ),
+              href: pathname.slice(0, pathname.lastIndexOf('/users/')),
             },
             {
-              label: 'Provisioned users',
-              href: pathname.slice(0, pathname.lastIndexOf('/')),
+              label: 'Users',
+              href: pathname.slice(0, pathname.lastIndexOf('/users/') + 6),
             },
-            { label: provisionName },
+            { label: membershipName, href: pathname.slice(0, -5) },
+            { label: 'Edit' },
           ]
-        : pathname.endsWith('/contract-periods/new')
+        : pathname.match(/\/users\/[^/]+$/)
           ? [
               {
                 label: organisationName,
-                href: pathname.slice(0, -21),
+                href: pathname.slice(0, pathname.lastIndexOf('/users/')),
               },
               {
-                label: 'Contract periods',
-                href: pathname.slice(0, -4),
+                label: 'Users',
+                href: pathname.slice(0, pathname.lastIndexOf('/')),
               },
-              { label: 'New contract period' },
+              { label: membershipName },
             ]
-          : pathname.match(/\/contract-periods\/[^/]+\/edit$/)
+          : pathname.match(/\/provisioned-users\/[^/]+$/)
             ? [
                 {
                   label: organisationName,
                   href: pathname.slice(
                     0,
-                    pathname.lastIndexOf('/contract-periods/'),
+                    pathname.lastIndexOf('/provisioned-users/'),
                   ),
                 },
                 {
-                  label: 'Contract periods',
-                  href: pathname.slice(
-                    0,
-                    pathname.lastIndexOf('/contract-periods/') + 17,
-                  ),
+                  label: 'Provisioned users',
+                  href: pathname.slice(0, pathname.lastIndexOf('/')),
                 },
-                { label: 'Edit contract period' },
+                { label: provisionName },
               ]
-            : pathname.endsWith('/cohorts/new')
+            : pathname.endsWith('/contract-periods/new')
               ? [
                   {
                     label: organisationName,
-                    href: pathname.slice(0, -12),
+                    href: pathname.slice(0, -21),
                   },
                   {
-                    label: 'Cohorts',
+                    label: 'Contract periods',
                     href: pathname.slice(0, -4),
                   },
-                  { label: 'New cohort' },
+                  { label: 'New contract period' },
                 ]
-              : pathname.match(/\/cohorts\/[^/]+\/edit$/)
+              : pathname.match(/\/contract-periods\/[^/]+\/edit$/)
                 ? [
                     {
                       label: organisationName,
                       href: pathname.slice(
                         0,
-                        pathname.lastIndexOf('/cohorts/'),
+                        pathname.lastIndexOf('/contract-periods/'),
                       ),
                     },
                     {
-                      label: 'Cohorts',
+                      label: 'Contract periods',
                       href: pathname.slice(
                         0,
-                        pathname.lastIndexOf('/cohorts/') + 8,
+                        pathname.lastIndexOf('/contract-periods/') + 17,
                       ),
                     },
-                    { label: cohortName, href: pathname.slice(0, -5) },
-                    { label: 'Edit' },
+                    { label: 'Edit contract period' },
                   ]
-                : pathname.endsWith('/groups/new')
+                : pathname.endsWith('/cohorts/new')
                   ? [
                       {
                         label: organisationName,
-                        href: pathname.slice(0, -11),
+                        href: pathname.slice(0, -12),
                       },
                       {
-                        label: 'Groups',
+                        label: 'Cohorts',
                         href: pathname.slice(0, -4),
                       },
-                      { label: 'New group' },
+                      { label: 'New cohort' },
                     ]
-                  : pathname.match(/\/groups\/[^/]+\/edit$/)
+                  : pathname.match(/\/cohorts\/[^/]+\/edit$/)
                     ? [
                         {
                           label: organisationName,
                           href: pathname.slice(
                             0,
-                            pathname.lastIndexOf('/groups/'),
+                            pathname.lastIndexOf('/cohorts/'),
                           ),
                         },
                         {
-                          label: 'Groups',
+                          label: 'Cohorts',
                           href: pathname.slice(
                             0,
-                            pathname.lastIndexOf('/groups/') + 7,
+                            pathname.lastIndexOf('/cohorts/') + 8,
                           ),
                         },
-                        { label: groupName, href: pathname.slice(0, -5) },
+                        { label: cohortName, href: pathname.slice(0, -5) },
                         { label: 'Edit' },
                       ]
-                    : pathname.endsWith('/edit')
+                    : pathname.endsWith('/groups/new')
                       ? [
                           {
                             label: organisationName,
-                            href: pathname.slice(0, -5),
+                            href: pathname.slice(0, -11),
                           },
-                          { label: 'Edit' },
+                          {
+                            label: 'Groups',
+                            href: pathname.slice(0, -4),
+                          },
+                          { label: 'New group' },
                         ]
-                      : pathname.match(/\/groups\/[^/]+$/)
+                      : pathname.match(/\/groups\/[^/]+\/edit$/)
                         ? [
                             {
                               label: organisationName,
@@ -192,70 +192,97 @@ export function breadcrumbsForPath(
                               label: 'Groups',
                               href: pathname.slice(
                                 0,
-                                pathname.lastIndexOf('/'),
+                                pathname.lastIndexOf('/groups/') + 7,
                               ),
                             },
-                            { label: groupName },
+                            { label: groupName, href: pathname.slice(0, -5) },
+                            { label: 'Edit' },
                           ]
-                        : pathname.endsWith('/groups')
+                        : pathname.endsWith('/edit')
                           ? [
                               {
                                 label: organisationName,
-                                href: pathname.slice(0, -7),
+                                href: pathname.slice(0, -5),
                               },
-                              { label: 'Groups' },
+                              { label: 'Edit' },
                             ]
-                          : pathname.match(/\/cohorts\/[^/]+$/)
+                          : pathname.match(/\/groups\/[^/]+$/)
                             ? [
                                 {
                                   label: organisationName,
                                   href: pathname.slice(
                                     0,
-                                    pathname.lastIndexOf('/cohorts/'),
+                                    pathname.lastIndexOf('/groups/'),
                                   ),
                                 },
                                 {
-                                  label: 'Cohorts',
+                                  label: 'Groups',
                                   href: pathname.slice(
                                     0,
                                     pathname.lastIndexOf('/'),
                                   ),
                                 },
-                                { label: cohortName },
+                                { label: groupName },
                               ]
-                            : pathname.endsWith('/cohorts')
+                            : pathname.endsWith('/groups')
                               ? [
                                   {
                                     label: organisationName,
-                                    href: pathname.slice(0, -8),
+                                    href: pathname.slice(0, -7),
                                   },
-                                  { label: 'Cohorts' },
+                                  { label: 'Groups' },
                                 ]
-                              : pathname.endsWith('/contract-periods')
+                              : pathname.match(/\/cohorts\/[^/]+$/)
                                 ? [
                                     {
                                       label: organisationName,
-                                      href: pathname.slice(0, -17),
+                                      href: pathname.slice(
+                                        0,
+                                        pathname.lastIndexOf('/cohorts/'),
+                                      ),
                                     },
-                                    { label: 'Contract periods' },
+                                    {
+                                      label: 'Cohorts',
+                                      href: pathname.slice(
+                                        0,
+                                        pathname.lastIndexOf('/'),
+                                      ),
+                                    },
+                                    { label: cohortName },
                                   ]
-                                : pathname.endsWith('/provisioned-users')
+                                : pathname.endsWith('/cohorts')
                                   ? [
                                       {
                                         label: organisationName,
-                                        href: pathname.slice(0, -18),
+                                        href: pathname.slice(0, -8),
                                       },
-                                      { label: 'Provisioned users' },
+                                      { label: 'Cohorts' },
                                     ]
-                                  : pathname.endsWith('/users')
+                                  : pathname.endsWith('/contract-periods')
                                     ? [
                                         {
                                           label: organisationName,
-                                          href: pathname.slice(0, -6),
+                                          href: pathname.slice(0, -17),
                                         },
-                                        { label: 'Users' },
+                                        { label: 'Contract periods' },
                                       ]
-                                    : [{ label: organisationName }]),
+                                    : pathname.endsWith('/provisioned-users')
+                                      ? [
+                                          {
+                                            label: organisationName,
+                                            href: pathname.slice(0, -18),
+                                          },
+                                          { label: 'Provisioned users' },
+                                        ]
+                                      : pathname.endsWith('/users')
+                                        ? [
+                                            {
+                                              label: organisationName,
+                                              href: pathname.slice(0, -6),
+                                            },
+                                            { label: 'Users' },
+                                          ]
+                                        : [{ label: organisationName }]),
     ];
   }
 
@@ -284,6 +311,7 @@ export function AuthenticatedShell({
   const matchedGroupId = pathname.match(/\/groups\/([^/]+)(?:\/edit)?$/)?.[1];
   const groupId = matchedGroupId === 'new' ? undefined : matchedGroupId;
   const provisionId = pathname.match(/\/provisioned-users\/([^/]+)$/)?.[1];
+  const membershipId = pathname.match(/\/users\/([^/]+)(?:\/edit)?$/)?.[1];
   const breadcrumbOrganisation = useAdminGetOrganisation(
     { params: { organisationId: resolvedOrganisationId ?? '' } },
     { enabled: Boolean(resolvedOrganisationId) },
@@ -315,6 +343,15 @@ export function AuthenticatedShell({
     },
     { enabled: Boolean(resolvedOrganisationId && provisionId) },
   );
+  const breadcrumbMembership = useAdminGetOrganisationMembership(
+    {
+      params: {
+        organisationId: resolvedOrganisationId ?? '',
+        membershipId: membershipId ?? '',
+      },
+    },
+    { enabled: Boolean(resolvedOrganisationId && membershipId) },
+  );
   const breadcrumbs = breadcrumbsForPath(
     pathname,
     breadcrumbOrganisation.data?.data.name,
@@ -322,6 +359,7 @@ export function AuthenticatedShell({
     breadcrumbGroup.data?.data.name,
     breadcrumbProvision.data?.data.provisionedDisplayName ??
       breadcrumbProvision.data?.data.provisionedUserName,
+    breadcrumbMembership.data?.data.user.displayName,
   );
   const currentUser = useGetCurrentUser();
   const [currentContextId, setCurrentContextId] = useState('personal');
