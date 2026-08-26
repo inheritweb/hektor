@@ -227,6 +227,37 @@ export interface UpdateOrganisationMembershipInput {
   status: OrganisationUserStatus;
 }
 
+export interface OrganisationMembershipCandidate extends UserSummary {
+  pendingProvision?: {
+    id: string;
+    role: OrganisationRole;
+  };
+}
+
+export interface CreateOrganisationMembershipsInput {
+  cohortId?: string;
+  role: OrganisationRole;
+  userIds: string[];
+}
+
+export interface CreateOrganisationMembershipsResult {
+  membershipIds: string[];
+  reconciledProvisionIds: string[];
+}
+
+export interface CreateOrganisationUserInput {
+  cohortId?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: OrganisationRole;
+}
+
+export interface CreateOrganisationUserResult {
+  membershipId: string;
+  userId: string;
+}
+
 export interface OrganisationMembershipSummary {
   id: string;
   organisation: OrganisationSummary;

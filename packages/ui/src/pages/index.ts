@@ -32,6 +32,8 @@ export * from './AdminOrganisationUserProvisionDetailPage';
 
 export * from './AdminUserDetailPage';
 
+export * from './AdminUserFormPage';
+
 export * from './AdminUsersPage';
 
 export * from './ProfilePage';

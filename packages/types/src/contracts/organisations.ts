@@ -14,6 +14,7 @@ import {
   type OrganisationGroupProvisionedUserSummary,
   type OrganisationMembershipUserSummary,
   type OrganisationMembership,
+  type OrganisationMembershipCandidate,
   type OrganisationProvisionInvitationResult,
   type OrganisationSummary,
   type OrganisationUserProvision,
@@ -26,6 +27,10 @@ import {
   type UpdateOrganisationGroupInput,
   type UpdateOrganisationGroupMembershipInput,
   type UpdateOrganisationMembershipInput,
+  type CreateOrganisationMembershipsInput,
+  type CreateOrganisationMembershipsResult,
+  type CreateOrganisationUserInput,
+  type CreateOrganisationUserResult,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -482,6 +487,68 @@ export const listOrganisationUsersContract = defineContract({
   ),
 });
 
+export const organisationMembershipCandidateSchema = userSummarySchema.extend({
+  pendingProvision: z
+    .object({ id: z.uuid(), role: z.enum(OrganisationRole) })
+    .optional(),
+}) satisfies z.ZodType<OrganisationMembershipCandidate>;
+
+export const listOrganisationMembershipCandidatesContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/organisations/:organisationId/users/candidates',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  query: paginationQuerySchema.extend({
+    order: z.literal('displayName').default('displayName'),
+    query: z.string().trim().min(1).optional(),
+  }),
+  output: hektorCollectionResponseSchema(
+    z.array(organisationMembershipCandidateSchema),
+  ),
+});
+
+export const createOrganisationMembershipsInputSchema = z.object({
+  cohortId: z.uuid().optional(),
+  role: z.enum(OrganisationRole),
+  userIds: uniqueUuidArraySchema.min(1).max(100),
+}) satisfies z.ZodType<CreateOrganisationMembershipsInput>;
+
+export const createOrganisationMembershipsResultSchema = z.object({
+  membershipIds: z.array(z.uuid()),
+  reconciledProvisionIds: z.array(z.uuid()),
+}) satisfies z.ZodType<CreateOrganisationMembershipsResult>;
+
+export const createOrganisationMembershipsContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/users',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: createOrganisationMembershipsInputSchema,
+  output: hektorResponseSchema(createOrganisationMembershipsResultSchema),
+});
+
+export const createOrganisationUserInputSchema = z.object({
+  cohortId: z.uuid().optional(),
+  email: z.email(),
+  firstName: z.string().trim().min(1).max(100),
+  lastName: z.string().trim().min(1).max(100),
+  role: z.enum(OrganisationRole),
+}) satisfies z.ZodType<CreateOrganisationUserInput>;
+
+export const createOrganisationUserResultSchema = z.object({
+  membershipId: z.uuid(),
+  userId: z.uuid(),
+}) satisfies z.ZodType<CreateOrganisationUserResult>;
+
+export const createOrganisationUserContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/users/new',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: createOrganisationUserInputSchema,
+  output: hektorResponseSchema(createOrganisationUserResultSchema),
+});
+
 export const getOrganisationMembershipContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/users/:membershipId',
@@ -780,6 +847,42 @@ export type ListOrganisationUsersQuery = ContractQuery<
 
 export type ListOrganisationUsersResponse = ContractOutput<
   typeof listOrganisationUsersContract
+>;
+
+export type ListOrganisationMembershipCandidatesParams = ContractParams<
+  typeof listOrganisationMembershipCandidatesContract
+>;
+
+export type ListOrganisationMembershipCandidatesQuery = ContractQuery<
+  typeof listOrganisationMembershipCandidatesContract
+>;
+
+export type ListOrganisationMembershipCandidatesResponse = ContractOutput<
+  typeof listOrganisationMembershipCandidatesContract
+>;
+
+export type CreateOrganisationMembershipsParams = ContractParams<
+  typeof createOrganisationMembershipsContract
+>;
+
+export type CreateOrganisationMembershipsBody = ContractBody<
+  typeof createOrganisationMembershipsContract
+>;
+
+export type CreateOrganisationMembershipsResponse = ContractOutput<
+  typeof createOrganisationMembershipsContract
+>;
+
+export type CreateOrganisationUserParams = ContractParams<
+  typeof createOrganisationUserContract
+>;
+
+export type CreateOrganisationUserBody = ContractBody<
+  typeof createOrganisationUserContract
+>;
+
+export type CreateOrganisationUserResponse = ContractOutput<
+  typeof createOrganisationUserContract
 >;
 
 export type GetOrganisationMembershipParams = ContractParams<

@@ -13,9 +13,11 @@ import {
   type UserIdentity,
   type UserListItem,
   type UserSummary,
+  type CreateUserInput,
 } from '../users';
 import {
   type ContractOutput,
+  type ContractBody,
   type ContractParams,
   type ContractQuery,
   defineContract,
@@ -87,6 +89,21 @@ export const listUsersContract = defineContract({
   output: hektorCollectionResponseSchema(z.array(userListItemSchema)),
 });
 
+export const createUserInputSchema = z.object({
+  email: z.email(),
+  firstName: z.string().trim().min(1).max(100),
+  lastName: z.string().trim().min(1).max(100),
+  platformRole: z.enum(PlatformRole).optional(),
+}) satisfies z.ZodType<CreateUserInput>;
+
+export const createUserContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/users',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  body: createUserInputSchema,
+  output: hektorResponseSchema(userSchema),
+});
+
 export const getUserContract = defineContract({
   method: 'GET',
   path: '/api/admin/users/:userId',
@@ -102,6 +119,10 @@ export type GetCurrentUserResponse = ContractOutput<
 export type ListUsersQuery = ContractQuery<typeof listUsersContract>;
 
 export type ListUsersResponse = ContractOutput<typeof listUsersContract>;
+
+export type CreateUserBody = ContractBody<typeof createUserContract>;
+
+export type CreateUserResponse = ContractOutput<typeof createUserContract>;
 
 export type GetUserParams = ContractParams<typeof getUserContract>;
 

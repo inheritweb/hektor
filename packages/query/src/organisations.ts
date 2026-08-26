@@ -5,6 +5,8 @@ import {
   createOrganisationContractPeriod,
   createOrganisationCohort,
   createOrganisationGroup,
+  createOrganisationMemberships,
+  createOrganisationUser,
   getOrganisation,
   getOrganisationContractPeriod,
   getOrganisationCohort,
@@ -17,6 +19,7 @@ import {
   listOrganisationGroups,
   listOrganisationUserProvisions,
   listOrganisationUsers,
+  listOrganisationMembershipCandidates,
   listOrganisations,
   sendOrganisationProvisionInvitation,
   transitionOrganisationUserProvision,
@@ -136,8 +139,23 @@ export const useAdminUpdateOrganisationMembership = makeMutation(
   ADMIN_ORGANISATIONS_QUERY_KEY,
 );
 
+export const useAdminCreateOrganisationMemberships = makeMutation(
+  createOrganisationMemberships,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminCreateOrganisationUser = makeMutation(
+  createOrganisationUser,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
 export const useAdminGetOrganisationUsers = makeQuery(
   listOrganisationUsers,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminGetOrganisationMembershipCandidates = makeQuery(
+  listOrganisationMembershipCandidates,
   ADMIN_ORGANISATIONS_QUERY_KEY,
 );
 

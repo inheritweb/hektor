@@ -1,5 +1,6 @@
 import { createTableColumn } from '../../atoms/Table';
 import { NavigationLink } from '../../context';
+import { buttonVariants } from '../../atoms/Button';
 import { Grid } from '../../organisms/Grid';
 
 export interface AdminUserListItemViewModel {
@@ -15,6 +16,7 @@ export interface AdminUserListItemViewModel {
 
 export interface AdminUsersPageProps {
   error?: string;
+  addUserHref?: string;
   getUserHref?: (user: AdminUserListItemViewModel) => string;
   loading?: boolean;
   onPageChange: (page: number) => void;
@@ -80,6 +82,7 @@ const columns = [
 ];
 
 export function AdminUsersPage({
+  addUserHref,
   error,
   getUserHref,
   loading,
@@ -109,17 +112,26 @@ export function AdminUsersPage({
     : columns;
 
   return (
-    <Grid
-      caption="Platform users"
-      columns={linkedColumns}
-      empty="No users have signed up yet."
-      error={error}
-      getRowId={(user) => user.id}
-      highlight
-      loading={loading}
-      pagination={{ page, pageSize, totalRecords, onPageChange }}
-      rows={users}
-      title="Users"
-    />
+    <div className="space-y-4">
+      {addUserHref ? (
+        <div className="flex justify-end">
+          <NavigationLink className={buttonVariants()} href={addUserHref}>
+            Add user
+          </NavigationLink>
+        </div>
+      ) : null}
+      <Grid
+        caption="Platform users"
+        columns={linkedColumns}
+        empty="No users have signed up yet."
+        error={error}
+        getRowId={(user) => user.id}
+        highlight
+        loading={loading}
+        pagination={{ page, pageSize, totalRecords, onPageChange }}
+        rows={users}
+        title="Users"
+      />
+    </div>
   );
 }

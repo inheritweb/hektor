@@ -630,6 +630,18 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_organisation_memberships: {
+        Args: {
+          target_cohort_id?: string;
+          target_organisation_id: string;
+          target_role: Database['public']['Enums']['organisation_role'];
+          target_user_ids: string[];
+        };
+        Returns: {
+          membership_id: string;
+          reconciled_provision_id: string;
+        }[];
+      };
       has_organisation_role: {
         Args: {
           allowed_roles: Database['public']['Enums']['organisation_role'][];
@@ -676,6 +688,22 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      search_organisation_membership_candidates: {
+        Args: {
+          page_number?: number;
+          page_size?: number;
+          search_query?: string;
+          target_organisation_id: string;
+        };
+        Returns: {
+          display_name: string;
+          email: string;
+          pending_provision_id: string;
+          pending_provision_role: Database['public']['Enums']['organisation_role'];
+          total_records: number;
+          user_id: string;
+        }[];
       };
       transition_organisation_user_provision: {
         Args: {

@@ -429,6 +429,40 @@ export function buildOrganisationMembershipsCountQuery(
   return query;
 }
 
+export function searchOrganisationMembershipCandidatesQuery(
+  client: DatabaseClient,
+  values: {
+    organisationId: string;
+    page: number;
+    pageSize: number;
+    query?: string;
+  },
+) {
+  return client.rpc('search_organisation_membership_candidates', {
+    page_number: values.page,
+    page_size: values.pageSize,
+    search_query: values.query,
+    target_organisation_id: values.organisationId,
+  });
+}
+
+export function createOrganisationMembershipsQuery(
+  client: DatabaseClient,
+  values: {
+    cohortId?: string;
+    organisationId: string;
+    role: OrganisationRole;
+    userIds: string[];
+  },
+) {
+  return client.rpc('create_organisation_memberships', {
+    target_cohort_id: values.cohortId,
+    target_organisation_id: values.organisationId,
+    target_role: values.role,
+    target_user_ids: values.userIds,
+  });
+}
+
 export function buildOrganisationUserProvisionsCountQuery(
   client: DatabaseClient,
   organisationId: string,

@@ -28,6 +28,8 @@ const {
   createOrganisationContractPeriod,
   createOrganisationCohort,
   createOrganisationGroup,
+  createOrganisationMemberships,
+  createOrganisationUser,
   createOrganisation,
   getOrganisation,
   getOrganisationContractPeriod,
@@ -39,6 +41,7 @@ const {
   listOrganisationContractPeriods,
   listOrganisationCohorts,
   listOrganisationGroups,
+  listOrganisationMembershipCandidates,
   listOrganisations,
   listOrganisationUserProvisions,
   listOrganisationUsers,
@@ -721,6 +724,223 @@ describe('organisation services', () => {
         },
       ),
     ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+  });
+
+  it('searches eligible users and atomically creates manual memberships', async () => {
+    const createdUser = await client.auth.admin.createUser({
+      email: `candidate-${organisationId}@integration.example`,
+      email_confirm: true,
+      user_metadata: { full_name: 'Searchable Candidate' },
+    });
+    if (createdUser.error) throw createdUser.error;
+
+    try {
+      const candidates = await listOrganisationMembershipCandidates(
+        { organisationId },
+        {
+          dir: SortDirection.Ascending,
+          order: 'displayName',
+          page: 1,
+          pageSize: 20,
+          query: 'Searchable Candidate',
+        },
+      );
+      expect(candidates.data).toContainEqual(
+        expect.objectContaining({ id: createdUser.data.user.id }),
+      );
+
+      await expect(
+        createOrganisationMemberships(
+          { organisationId },
+          {
+            role: OrganisationRole.Tutor,
+            userIds: [createdUser.data.user.id, randomUUID()],
+          },
+        ),
+      ).rejects.toMatchObject({ code: HektorErrorCode.NotFound });
+      const { count: partialMembershipCount } = await client
+        .from('organisation_users')
+        .select('id', { count: 'exact', head: true })
+        .eq('organisation_id', organisationId)
+        .eq('user_id', createdUser.data.user.id);
+      expect(partialMembershipCount).toBe(0);
+
+      const created = await createOrganisationMemberships(
+        { organisationId },
+        {
+          cohortId,
+          role: OrganisationRole.Learner,
+          userIds: [createdUser.data.user.id],
+        },
+      );
+      expect(created.data.membershipIds).toHaveLength(1);
+      expect(created.data.reconciledProvisionIds).toHaveLength(0);
+
+      const detail = await getOrganisationMembership({
+        organisationId,
+        membershipId: created.data.membershipIds[0]!,
+      });
+      expect(detail.data).toMatchObject({
+        cohort: { id: cohortId },
+        role: OrganisationRole.Learner,
+        seatActivation: { contractPeriodId },
+      });
+
+      await expect(
+        createOrganisationMemberships(
+          { organisationId },
+          {
+            role: OrganisationRole.Tutor,
+            userIds: [createdUser.data.user.id],
+          },
+        ),
+      ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+    } finally {
+      const { data: membership } = await client
+        .from('organisation_users')
+        .select('id')
+        .eq('user_id', createdUser.data.user.id)
+        .maybeSingle();
+      if (membership) {
+        await client
+          .from('organisation_seat_activations')
+          .delete()
+          .eq('organisation_user_id', membership.id);
+      }
+      await client
+        .from('organisation_users')
+        .delete()
+        .eq('user_id', createdUser.data.user.id);
+      await client.auth.admin.deleteUser(createdUser.data.user.id);
+    }
+  });
+
+  it('creates a login-capable user and organisation membership together', async () => {
+    const email = `new-user-${randomUUID()}@integration.example`;
+    let userId: string | undefined;
+    try {
+      const created = await createOrganisationUser(
+        { organisationId },
+        {
+          cohortId,
+          email,
+          firstName: 'New',
+          lastName: 'Learner',
+          role: OrganisationRole.Learner,
+        },
+      );
+      userId = created.data.userId;
+      const detail = await getOrganisationMembership({
+        organisationId,
+        membershipId: created.data.membershipId,
+      });
+      expect(detail.data).toMatchObject({
+        role: OrganisationRole.Learner,
+        user: { displayName: 'New Learner', email },
+      });
+      const { data: authUser } = await client.auth.admin.getUserById(userId);
+      expect(
+        authUser.user?.identities?.map(({ provider }) => provider),
+      ).toContain('email');
+    } finally {
+      if (userId) {
+        const { data: membership } = await client
+          .from('organisation_users')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+        if (membership) {
+          await client
+            .from('organisation_seat_activations')
+            .delete()
+            .eq('organisation_user_id', membership.id);
+          await client
+            .from('organisation_users')
+            .delete()
+            .eq('id', membership.id);
+        }
+        await client.auth.admin.deleteUser(userId);
+      }
+    }
+  });
+
+  it('reconciles a matching pending provision instead of creating competing state', async () => {
+    const candidateProvisionId = randomUUID();
+    const provisionedUser = await client.auth.admin.createUser({
+      email: `provision-candidate-${candidateProvisionId}@integration.example`,
+      email_confirm: true,
+      user_metadata: { full_name: 'Provisioned Candidate' },
+    });
+    if (provisionedUser.error) throw provisionedUser.error;
+    const { error: candidateProvisionError } = await client
+      .from('organisation_user_provisions')
+      .insert({
+        id: candidateProvisionId,
+        organisation_id: organisationId,
+        organisation_cohort_id: cohortId,
+        provisioning_method: 'csv',
+        provisioned_user_name: provisionedUser.data.user.email!,
+        provisioned_display_name: 'Provisioned Candidate',
+        provisioned_role: 'learner',
+        status: 'pending',
+      });
+    if (candidateProvisionError) throw candidateProvisionError;
+
+    try {
+      const candidates = await listOrganisationMembershipCandidates(
+        { organisationId },
+        {
+          dir: SortDirection.Ascending,
+          order: 'displayName',
+          page: 1,
+          pageSize: 20,
+          query: provisionedUser.data.user.email!,
+        },
+      );
+      expect(candidates.data[0]?.pendingProvision).toMatchObject({
+        id: candidateProvisionId,
+        role: OrganisationRole.Learner,
+      });
+
+      const created = await createOrganisationMemberships(
+        { organisationId },
+        {
+          role: OrganisationRole.Tutor,
+          userIds: [provisionedUser.data.user.id],
+        },
+      );
+      expect(created.data.reconciledProvisionIds).toEqual([
+        candidateProvisionId,
+      ]);
+
+      const { data: provision } = await client
+        .from('organisation_user_provisions')
+        .select('status, organisation_user_id')
+        .eq('id', candidateProvisionId)
+        .single();
+      expect(provision).toMatchObject({ status: ProvisioningStatus.Linked });
+    } finally {
+      const { data: membership } = await client
+        .from('organisation_users')
+        .select('id')
+        .eq('user_id', provisionedUser.data.user.id)
+        .maybeSingle();
+      if (membership) {
+        await client
+          .from('organisation_seat_activations')
+          .delete()
+          .eq('organisation_user_id', membership.id);
+      }
+      await client
+        .from('organisation_user_provisions')
+        .delete()
+        .eq('id', candidateProvisionId);
+      await client
+        .from('organisation_users')
+        .delete()
+        .eq('user_id', provisionedUser.data.user.id);
+      await client.auth.admin.deleteUser(provisionedUser.data.user.id);
+    }
   });
 
   it('does not let direct membership edits override provision-controlled fields', async () => {

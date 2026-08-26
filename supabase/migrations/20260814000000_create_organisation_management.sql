@@ -108,6 +108,58 @@ create index organisation_user_provisions_organisation_cohort_id_idx
 on public.organisation_user_provisions (organisation_cohort_id)
 where organisation_cohort_id is not null;
 
+create or replace function public.search_organisation_membership_candidates(
+  target_organisation_id uuid,
+  search_query text default null,
+  page_number integer default 1,
+  page_size integer default 20
+)
+returns table (
+  user_id uuid,
+  display_name text,
+  email text,
+  pending_provision_id uuid,
+  pending_provision_role public.organisation_role,
+  total_records bigint
+)
+language sql
+security definer
+set search_path = ''
+as $$
+  with candidates as (
+    select
+      users.id as user_id,
+      coalesce(nullif(users.raw_user_meta_data ->> 'full_name', ''), nullif(users.raw_user_meta_data ->> 'name', ''), users.email, 'Unnamed user') as display_name,
+      users.email,
+      provisions.id as pending_provision_id,
+      provisions.provisioned_role as pending_provision_role
+    from auth.users users
+    left join lateral (
+      select provision.id, provision.provisioned_role
+      from public.organisation_user_provisions provision
+      where provision.organisation_id = target_organisation_id
+        and provision.status = 'pending'
+        and lower(provision.provisioned_user_name) = lower(users.email)
+      order by provision.created_at desc
+      limit 1
+    ) provisions on true
+    where not exists (
+      select 1 from public.organisation_users membership
+      where membership.organisation_id = target_organisation_id and membership.user_id = users.id
+    )
+      and (
+        search_query is null
+        or coalesce(users.raw_user_meta_data ->> 'full_name', users.raw_user_meta_data ->> 'name', users.email, '') ilike '%' || search_query || '%'
+        or users.email ilike '%' || search_query || '%'
+      )
+  )
+  select candidates.*, count(*) over () as total_records
+  from candidates
+  order by display_name, user_id
+  offset (greatest(page_number, 1) - 1) * greatest(page_size, 1)
+  limit greatest(page_size, 1);
+$$;
+
 create table public.organisation_groups (
   id uuid primary key default gen_random_uuid(),
   organisation_id uuid not null references public.organisations (id) on delete restrict,
@@ -1115,6 +1167,97 @@ begin
 end;
 $$;
 
+create function public.create_organisation_memberships(
+  target_organisation_id uuid,
+  target_user_ids uuid[],
+  target_role public.organisation_role,
+  target_cohort_id uuid default null
+)
+returns table (membership_id uuid, reconciled_provision_id uuid)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  target_user_id uuid;
+  target_email text;
+  membership public.organisation_users;
+  provision public.organisation_user_provisions;
+begin
+  if coalesce(array_length(target_user_ids, 1), 0) = 0
+    or array_length(target_user_ids, 1) > 100
+    or (select count(distinct id) from unnest(target_user_ids) id) <> array_length(target_user_ids, 1)
+  then
+    raise exception using errcode = 'P0001', message = 'invalid_user_selection';
+  end if;
+
+  perform 1 from public.organisations
+  where id = target_organisation_id and status = 'active'
+  for update;
+  if not found then
+    raise exception using errcode = 'P0001', message = 'organisation_not_active';
+  end if;
+
+  if target_cohort_id is not null and not exists (
+    select 1 from public.organisation_cohorts
+    where id = target_cohort_id and organisation_id = target_organisation_id
+  ) then
+    raise exception using errcode = 'P0002', message = 'cohort_not_found';
+  end if;
+
+  foreach target_user_id in array target_user_ids loop
+    select email into target_email from auth.users where id = target_user_id;
+    if not found then
+      raise exception using errcode = 'P0002', message = 'user_not_found';
+    end if;
+    if exists (
+      select 1 from public.organisation_users
+      where organisation_id = target_organisation_id and user_id = target_user_id
+    ) then
+      raise exception using errcode = 'P0001', message = 'membership_already_exists';
+    end if;
+
+    select * into provision
+    from public.organisation_user_provisions
+    where organisation_id = target_organisation_id
+      and status = 'pending'
+      and lower(provisioned_user_name) = lower(target_email)
+    order by created_at desc
+    limit 1
+    for update;
+
+    if found then
+      perform public.accept_organisation_user_provision(provision.id, provision.status, target_user_id);
+      select * into membership from public.organisation_users
+      where organisation_id = target_organisation_id and user_id = target_user_id;
+      membership_id := membership.id;
+      reconciled_provision_id := provision.id;
+      return next;
+    else
+      insert into public.organisation_users (
+        organisation_id, user_id, organisation_cohort_id, role, status
+      ) values (
+        target_organisation_id, target_user_id, target_cohort_id, target_role, 'active'
+      ) returning * into membership;
+
+      if target_role = 'learner' then
+        membership := public.update_organisation_membership(
+          target_organisation_id,
+          membership.id,
+          membership.updated_at,
+          target_role,
+          membership.status,
+          target_cohort_id
+        );
+      end if;
+      membership_id := membership.id;
+      reconciled_provision_id := null;
+      return next;
+    end if;
+  end loop;
+end;
+$$;
+
 revoke all on function public.transition_organisation_user_provision(
   uuid,
   public.provisioning_status,
@@ -1137,6 +1280,10 @@ grant execute on function public.accept_organisation_user_provision(
   public.provisioning_status,
   uuid
 ) to service_role;
+revoke all on function public.search_organisation_membership_candidates(uuid, text, integer, integer) from public;
+grant execute on function public.search_organisation_membership_candidates(uuid, text, integer, integer) to service_role;
+revoke all on function public.create_organisation_memberships(uuid, uuid[], public.organisation_role, uuid) from public;
+grant execute on function public.create_organisation_memberships(uuid, uuid[], public.organisation_role, uuid) to service_role;
 revoke all on function public.issue_organisation_provision_invitation(
   uuid, uuid, text, timestamptz, integer
 ) from public;

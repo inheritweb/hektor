@@ -1,6 +1,7 @@
 import { createTableColumn } from '../../atoms/Table';
 import { Grid } from '../../organisms/Grid';
 import { NavigationLink } from '../../context';
+import { Button } from '../../atoms/Button';
 
 export interface AdminOrganisationUserListItemViewModel {
   id: string;
@@ -17,6 +18,8 @@ export interface AdminOrganisationUsersPageProps {
   getUserHref?: (user: AdminOrganisationUserListItemViewModel) => string;
   loading?: boolean;
   onPageChange: (page: number) => void;
+  onConnectUsers?: () => void;
+  onAddUser?: () => void;
   organisationName: string;
   page: number;
   pageSize: number;
@@ -58,6 +61,8 @@ export function AdminOrganisationUsersPage({
   getUserHref,
   loading,
   onPageChange,
+  onConnectUsers,
+  onAddUser,
   organisationName,
   page,
   pageSize,
@@ -82,17 +87,31 @@ export function AdminOrganisationUsersPage({
       ]
     : columns;
   return (
-    <Grid
-      caption={`Users in ${organisationName}`}
-      columns={linkedColumns}
-      empty="This organisation has no users."
-      error={error}
-      getRowId={(user) => user.id}
-      highlight
-      loading={loading}
-      pagination={{ page, pageSize, totalRecords, onPageChange }}
-      rows={users}
-      title="Users"
-    />
+    <div className="space-y-4">
+      {onConnectUsers || onAddUser ? (
+        <div className="flex justify-end gap-2">
+          {onAddUser ? (
+            <Button onClick={onAddUser} variant="outline">
+              Add user
+            </Button>
+          ) : null}
+          {onConnectUsers ? (
+            <Button onClick={onConnectUsers}>Connect users</Button>
+          ) : null}
+        </div>
+      ) : null}
+      <Grid
+        caption={`Users in ${organisationName}`}
+        columns={linkedColumns}
+        empty="This organisation has no users."
+        error={error}
+        getRowId={(user) => user.id}
+        highlight
+        loading={loading}
+        pagination={{ page, pageSize, totalRecords, onPageChange }}
+        rows={users}
+        title="Users"
+      />
+    </div>
   );
 }

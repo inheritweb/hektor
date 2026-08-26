@@ -42,3 +42,10 @@ export interface UserListItem extends UserSummary {
 }
 
 export type CurrentUser = User;
+
+export interface CreateUserInput {
+  email: string;
+  firstName: string;
+  lastName: string;
+  platformRole?: PlatformRole;
+}

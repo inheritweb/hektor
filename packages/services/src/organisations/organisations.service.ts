@@ -56,6 +56,15 @@ import type {
   UpdateOrganisationMembershipBody,
   UpdateOrganisationMembershipParams,
   UpdateOrganisationMembershipResponse,
+  ListOrganisationMembershipCandidatesParams,
+  ListOrganisationMembershipCandidatesQuery,
+  ListOrganisationMembershipCandidatesResponse,
+  CreateOrganisationMembershipsBody,
+  CreateOrganisationMembershipsParams,
+  CreateOrganisationMembershipsResponse,
+  CreateOrganisationUserBody,
+  CreateOrganisationUserParams,
+  CreateOrganisationUserResponse,
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import {
@@ -113,6 +122,8 @@ import {
   updateOrganisationGroupQuery,
   updateOrganisationGroupMembershipQuery,
   updateOrganisationMembershipQuery,
+  searchOrganisationMembershipCandidatesQuery,
+  createOrganisationMembershipsQuery,
 } from './organisations.queries';
 import {
   canTransitionProvisioningStatus,
@@ -632,6 +643,143 @@ export function createOrganisationsService(client: DatabaseClient) {
     return {
       data: mapOrganisationMembership(data, mapUserSummary(authData.user)),
     };
+  }
+
+  async function listOrganisationMembershipCandidates(
+    params: ListOrganisationMembershipCandidatesParams,
+    query: ListOrganisationMembershipCandidatesQuery,
+  ): Promise<ListOrganisationMembershipCandidatesResponse> {
+    const { data, error } = await searchOrganisationMembershipCandidatesQuery(
+      client,
+      { ...query, organisationId: params.organisationId },
+    );
+    if (error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to search organisation membership candidates',
+        internalMessage: error.message,
+        cause: error,
+      });
+    }
+
+    return {
+      context: {
+        page: query.page,
+        pageSize: query.pageSize,
+        totalRecords: Number(data[0]?.total_records ?? 0),
+        sort: { order: 'displayName', dir: query.dir },
+      },
+      data: data.map((candidate) => ({
+        id: candidate.user_id,
+        displayName: candidate.display_name,
+        ...(candidate.email ? { email: candidate.email } : {}),
+        ...(candidate.pending_provision_id && candidate.pending_provision_role
+          ? {
+              pendingProvision: {
+                id: candidate.pending_provision_id,
+                role: candidate.pending_provision_role as OrganisationRole,
+              },
+            }
+          : {}),
+      })),
+    };
+  }
+
+  async function createOrganisationMemberships(
+    params: CreateOrganisationMembershipsParams,
+    body: CreateOrganisationMembershipsBody,
+  ): Promise<CreateOrganisationMembershipsResponse> {
+    const { data, error } = await createOrganisationMembershipsQuery(client, {
+      ...body,
+      organisationId: params.organisationId,
+    });
+    if (error) {
+      const notFound =
+        error.message.includes('user_not_found') ||
+        error.message.includes('cohort_not_found');
+      const conflict =
+        error.message.includes('membership_already_exists') ||
+        error.message.includes('learner_seat_capacity_exhausted') ||
+        error.message.includes('organisation_not_active');
+      throw createServiceError(
+        notFound
+          ? HektorErrorCode.NotFound
+          : conflict
+            ? HektorErrorCode.Conflict
+            : HektorErrorCode.InternalServerError,
+        {
+          message: error.message.includes('learner_seat_capacity_exhausted')
+            ? 'No learner seats are available in the current contract period'
+            : error.message.includes('membership_already_exists')
+              ? 'One or more users already belong to this organisation'
+              : error.message.includes('organisation_not_active')
+                ? 'Users can only be added to an active organisation'
+                : error.message.includes('cohort_not_found')
+                  ? 'Organisation cohort not found'
+                  : error.message.includes('user_not_found')
+                    ? 'User not found'
+                    : 'Unable to add organisation users',
+          internalMessage: error.message,
+          cause: error,
+        },
+      );
+    }
+
+    return {
+      data: {
+        membershipIds: data.map((item) => item.membership_id),
+        reconciledProvisionIds: data.flatMap((item) =>
+          item.reconciled_provision_id ? [item.reconciled_provision_id] : [],
+        ),
+      },
+    };
+  }
+
+  async function createOrganisationUser(
+    params: CreateOrganisationUserParams,
+    body: CreateOrganisationUserBody,
+  ): Promise<CreateOrganisationUserResponse> {
+    const { data: authData, error: authError } =
+      await client.auth.admin.createUser({
+        email: body.email,
+        email_confirm: true,
+        user_metadata: {
+          first_name: body.firstName,
+          last_name: body.lastName,
+          full_name: `${body.firstName} ${body.lastName}`,
+        },
+      });
+    if (authError) {
+      throw createServiceError(
+        authError.status === 422
+          ? HektorErrorCode.Conflict
+          : HektorErrorCode.InternalServerError,
+        {
+          message:
+            authError.status === 422
+              ? 'A user with this email already exists; connect that user instead'
+              : 'Unable to create user',
+          internalMessage: authError.message,
+          cause: authError,
+        },
+      );
+    }
+
+    try {
+      const membership = await createOrganisationMemberships(params, {
+        cohortId: body.cohortId,
+        role: body.role,
+        userIds: [authData.user.id],
+      });
+      return {
+        data: {
+          membershipId: membership.data.membershipIds[0]!,
+          userId: authData.user.id,
+        },
+      };
+    } catch (error) {
+      await client.auth.admin.deleteUser(authData.user.id);
+      throw error;
+    }
   }
 
   async function updateOrganisationMembership(
@@ -1273,6 +1421,8 @@ export function createOrganisationsService(client: DatabaseClient) {
     createOrganisationContractPeriod,
     createOrganisationCohort,
     createOrganisationGroup,
+    createOrganisationMemberships,
+    createOrganisationUser,
     getOrganisationContractPeriod,
     getOrganisationCohort,
     getOrganisationGroup,
@@ -1282,6 +1432,7 @@ export function createOrganisationsService(client: DatabaseClient) {
     getProvisionAcceptance,
     listOrganisationCohorts,
     listOrganisationGroups,
+    listOrganisationMembershipCandidates,
     listOrganisationContractPeriods,
     listOrganisations,
     listOrganisationUserProvisions,

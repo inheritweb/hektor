@@ -50,7 +50,12 @@ export function makeQuery<TContract extends AnyHektorContract>(
     const client = useApiClient();
     return useQuery({
       ...options,
-      queryKey: [...baseKey, variables],
+      queryKey: [
+        ...baseKey,
+        method.contract.method,
+        method.contract.path,
+        variables,
+      ],
       queryFn: () =>
         method(
           client,

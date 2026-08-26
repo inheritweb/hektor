@@ -36,6 +36,14 @@ export function breadcrumbsForPath(
   if (pathname === '/profile') return [home, { label: 'Profile' }];
 
   if (pathname.startsWith('/admin/users/')) {
+    if (pathname === '/admin/users/new') {
+      return [
+        home,
+        { label: 'Admin' },
+        { label: 'Users', href: '/admin/users' },
+        { label: 'Add user' },
+      ];
+    }
     return [
       home,
       { label: 'Admin' },

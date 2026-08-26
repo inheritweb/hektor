@@ -5,6 +5,8 @@ import {
   createOrganisationContractPeriodContract,
   createOrganisationCohortContract,
   createOrganisationGroupContract,
+  createOrganisationMembershipsContract,
+  createOrganisationUserContract,
   getOrganisationContract,
   getOrganisationContractPeriodContract,
   getOrganisationCohortContract,
@@ -17,6 +19,7 @@ import {
   listOrganisationGroupsContract,
   listOrganisationUserProvisionsContract,
   listOrganisationUsersContract,
+  listOrganisationMembershipCandidatesContract,
   listOrganisationsContract,
   sendOrganisationProvisionInvitationContract,
   transitionOrganisationUserProvisionContract,
@@ -78,6 +81,14 @@ export const updateOrganisationMembership = registerApiMethod(
   updateOrganisationMembershipContract,
 );
 
+export const createOrganisationMemberships = registerApiMethod(
+  createOrganisationMembershipsContract,
+);
+
+export const createOrganisationUser = registerApiMethod(
+  createOrganisationUserContract,
+);
+
 export const getOrganisationGroup = registerApiMethod(
   getOrganisationGroupContract,
 );
@@ -104,6 +115,10 @@ export const listOrganisationGroups = registerApiMethod(
 
 export const listOrganisationUsers = registerApiMethod(
   listOrganisationUsersContract,
+);
+
+export const listOrganisationMembershipCandidates = registerApiMethod(
+  listOrganisationMembershipCandidatesContract,
 );
 
 export const listOrganisationUserProvisions = registerApiMethod(

@@ -62,7 +62,7 @@ export function AdminOrganisationMembershipFormPage(
             onValueChange={(role) => role && setValues((v) => ({ ...v, role }))}
           >
             <SelectTrigger className="mt-2">
-              <SelectValue />
+              <SelectValue>{values.role.replaceAll('_', ' ')}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {Object.values(OrganisationRole).map((role) => (
@@ -89,7 +89,12 @@ export function AdminOrganisationMembershipFormPage(
             }
           >
             <SelectTrigger className="mt-2">
-              <SelectValue />
+              <SelectValue>
+                {values.cohortId
+                  ? (props.cohorts.find(({ id }) => id === values.cohortId)
+                      ?.name ?? 'Choose cohort')
+                  : 'No cohort'}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">No cohort</SelectItem>
@@ -111,7 +116,7 @@ export function AdminOrganisationMembershipFormPage(
             }
           >
             <SelectTrigger className="mt-2">
-              <SelectValue />
+              <SelectValue>{values.status.replaceAll('_', ' ')}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {Object.values(OrganisationUserStatus).map((status) => (
