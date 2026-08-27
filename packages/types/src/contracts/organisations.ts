@@ -36,6 +36,9 @@ import {
   type OrganisationProvisionImportRow,
   type OrganisationProvisionImportRowReview,
   OrganisationProvisionImportAction,
+  type OrganisationBulkInvitationItemResult,
+  type OrganisationBulkInvitationResult,
+  OrganisationBulkInvitationOutcome,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -640,6 +643,7 @@ export const listOrganisationUserProvisionsContract = defineContract({
   params: z.object({ organisationId: z.uuid() }),
   query: paginationQuerySchema.extend({
     order: z.enum(['displayName', 'role']).default('displayName'),
+    provisioningMethod: z.enum(ProvisioningMethod).optional(),
     role: z.enum(OrganisationRole).optional(),
     status: z.enum(ProvisioningStatus).optional(),
     query: z.string().trim().min(1).optional(),
@@ -702,6 +706,48 @@ export const sendOrganisationProvisionInvitationContract = defineContract({
   params: z.object({ organisationId: z.uuid(), provisionId: z.uuid() }),
   body: emptyObjectSchema,
   output: hektorResponseSchema(organisationProvisionInvitationResultSchema),
+});
+
+export const organisationBulkInvitationItemResultSchema = z.object({
+  email: z.string().min(1).optional(),
+  message: z.string().min(1).optional(),
+  outcome: z.enum(OrganisationBulkInvitationOutcome),
+  provisionId: z.uuid(),
+}) satisfies z.ZodType<OrganisationBulkInvitationItemResult>;
+
+export const organisationBulkInvitationResultSchema = z.object({
+  failed: z.number().int().nonnegative(),
+  items: z.array(organisationBulkInvitationItemResultSchema),
+  sent: z.number().int().nonnegative(),
+  skipped: z.number().int().nonnegative(),
+}) satisfies z.ZodType<OrganisationBulkInvitationResult>;
+
+export const sendOrganisationProvisionInvitationsContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/user-provisions/invitations',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: z.object({
+    selection: z.discriminatedUnion('type', [
+      z.object({
+        ids: z
+          .array(z.uuid())
+          .min(1)
+          .max(500)
+          .refine((ids) => new Set(ids).size === ids.length, {
+            message: 'Provision identifiers must be unique',
+          }),
+        type: z.literal('ids'),
+      }),
+      z.object({
+        provisioningMethod: z.enum(ProvisioningMethod).optional(),
+        query: z.string().trim().min(1).optional(),
+        role: z.enum(OrganisationRole).optional(),
+        type: z.literal('filter'),
+      }),
+    ]),
+  }),
+  output: hektorResponseSchema(organisationBulkInvitationResultSchema),
 });
 
 export const getProvisionAcceptanceContract = defineContract({
@@ -1023,6 +1069,18 @@ export type AutoLinkOrganisationUserProvisionResponse = ContractOutput<
 
 export type SendOrganisationProvisionInvitationResponse = ContractOutput<
   typeof sendOrganisationProvisionInvitationContract
+>;
+
+export type SendOrganisationProvisionInvitationsBody = ContractBody<
+  typeof sendOrganisationProvisionInvitationsContract
+>;
+
+export type SendOrganisationProvisionInvitationsParams = ContractParams<
+  typeof sendOrganisationProvisionInvitationsContract
+>;
+
+export type SendOrganisationProvisionInvitationsResponse = ContractOutput<
+  typeof sendOrganisationProvisionInvitationsContract
 >;
 
 export type GetProvisionAcceptanceResponse = ContractOutput<

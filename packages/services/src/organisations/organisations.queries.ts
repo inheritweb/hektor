@@ -414,6 +414,7 @@ export function buildOrganisationMembershipsCountQuery(
   client: DatabaseClient,
   organisationId: string,
   filters: {
+    provisioningMethod?: ProvisioningMethod;
     role?: OrganisationRole;
     status?: OrganisationUserStatus;
   } = {},
@@ -564,6 +565,7 @@ export function buildOrganisationUserProvisionsQuery(
   client: DatabaseClient,
   organisationId: string,
   filters: {
+    provisioningMethod?: ProvisioningMethod;
     role?: OrganisationRole;
     status?: ProvisioningStatus;
   } = {},
@@ -603,6 +605,8 @@ export function buildOrganisationUserProvisionsQuery(
     .eq('organisation_id', organisationId);
 
   if (filters.role) query = query.eq('provisioned_role', filters.role);
+  if (filters.provisioningMethod)
+    query = query.eq('provisioning_method', filters.provisioningMethod);
   if (filters.status) query = query.eq('status', filters.status);
 
   return query;

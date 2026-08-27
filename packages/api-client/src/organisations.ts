@@ -24,6 +24,7 @@ import {
   listOrganisationsContract,
   previewOrganisationProvisionImportContract,
   sendOrganisationProvisionInvitationContract,
+  sendOrganisationProvisionInvitationsContract,
   transitionOrganisationUserProvisionContract,
   updateOrganisationContract,
   updateOrganisationContractPeriodContract,
@@ -145,6 +146,10 @@ export const autoLinkOrganisationUserProvision = registerApiMethod(
 
 export const sendOrganisationProvisionInvitation = registerApiMethod(
   sendOrganisationProvisionInvitationContract,
+);
+
+export const sendOrganisationProvisionInvitations = registerApiMethod(
+  sendOrganisationProvisionInvitationsContract,
 );
 
 export const getProvisionAcceptance = registerApiMethod(

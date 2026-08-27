@@ -16,6 +16,7 @@ export interface AdminOrganisationUserProvisionsPageProps {
   error?: string;
   loading?: boolean;
   onImportUsers?: () => void;
+  onManageInvitations?: () => void;
   onPageChange: (page: number) => void;
   getProvisionHref?: (
     provision: AdminOrganisationUserProvisionListItemViewModel,
@@ -70,6 +71,7 @@ export function AdminOrganisationUserProvisionsPage({
   getProvisionHref,
   loading,
   onImportUsers,
+  onManageInvitations,
   onPageChange,
   organisationName,
   page,
@@ -97,9 +99,16 @@ export function AdminOrganisationUserProvisionsPage({
 
   return (
     <div className="space-y-4">
-      {onImportUsers ? (
-        <div className="flex justify-end">
-          <Button onClick={onImportUsers}>Import users</Button>
+      {onImportUsers || onManageInvitations ? (
+        <div className="flex justify-end gap-2">
+          {onManageInvitations ? (
+            <Button onClick={onManageInvitations} variant="outline">
+              Manage invitations
+            </Button>
+          ) : null}
+          {onImportUsers ? (
+            <Button onClick={onImportUsers}>Import users</Button>
+          ) : null}
         </div>
       ) : null}
       <Grid

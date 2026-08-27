@@ -297,6 +297,26 @@ export interface OrganisationProvisionImportResult {
   unchanged: number;
 }
 
+export enum OrganisationBulkInvitationOutcome {
+  Failed = 'failed',
+  Sent = 'sent',
+  Skipped = 'skipped',
+}
+
+export interface OrganisationBulkInvitationItemResult {
+  email?: string;
+  message?: string;
+  outcome: OrganisationBulkInvitationOutcome;
+  provisionId: string;
+}
+
+export interface OrganisationBulkInvitationResult {
+  failed: number;
+  items: OrganisationBulkInvitationItemResult[];
+  sent: number;
+  skipped: number;
+}
+
 export interface OrganisationMembershipSummary {
   id: string;
   organisation: OrganisationSummary;

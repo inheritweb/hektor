@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { Message } from '@hektor/messaging';
+import { OrganisationBulkInvitationOutcome } from '@hektor/types';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import { organisationProvisionInvitationResultSchema } from '@hektor/types/contracts/organisations';
 
@@ -18,6 +19,8 @@ const organisationId = randomUUID();
 const provisionId = randomUUID();
 
 const revokedProvisionId = randomUUID();
+
+const bulkProvisionId = randomUUID();
 
 const sentMessages: Message[] = [];
 
@@ -63,6 +66,15 @@ describe('organisation invitation business rules', () => {
           provisioning_method: 'scim',
           status: 'revoked',
           revoked_at: new Date().toISOString(),
+        },
+        {
+          id: bulkProvisionId,
+          organisation_id: organisationId,
+          provisioned_display_name: 'Bulk Tutor',
+          provisioned_role: 'tutor',
+          provisioned_user_name: `bulk-${bulkProvisionId}@integration.example`,
+          provisioning_method: 'csv',
+          status: 'pending',
         },
       ]);
     if (provisions.error) throw provisions.error;
@@ -167,6 +179,36 @@ describe('organisation invitation business rules', () => {
         provisionId: revokedProvisionId,
       }),
     ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
+  });
+
+  it('bulk sends eligible invitations and reports cooldowns and skipped states', async () => {
+    const result = await invitations.sendInvitations(
+      { organisationId },
+      {
+        selection: {
+          ids: [bulkProvisionId, provisionId, revokedProvisionId],
+          type: 'ids',
+        },
+      },
+    );
+
+    expect(result.data).toMatchObject({ failed: 1, sent: 1, skipped: 1 });
+    expect(result.data.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          outcome: OrganisationBulkInvitationOutcome.Sent,
+          provisionId: bulkProvisionId,
+        }),
+        expect.objectContaining({
+          outcome: OrganisationBulkInvitationOutcome.Failed,
+          provisionId,
+        }),
+        expect.objectContaining({
+          outcome: OrganisationBulkInvitationOutcome.Skipped,
+          provisionId: revokedProvisionId,
+        }),
+      ]),
+    );
   });
 });
 

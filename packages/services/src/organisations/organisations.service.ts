@@ -581,7 +581,10 @@ export function createOrganisationsService(client: DatabaseClient) {
     const { data, error } = await buildOrganisationMembershipsQuery(
       client,
       params.organisationId,
-      { role: query.role, status: query.status },
+      {
+        role: query.role,
+        status: query.status,
+      },
     );
 
     if (error) {
@@ -1356,7 +1359,11 @@ export function createOrganisationsService(client: DatabaseClient) {
     const { data, error } = await buildOrganisationUserProvisionsQuery(
       client,
       params.organisationId,
-      { role: query.role, status: query.status },
+      {
+        provisioningMethod: query.provisioningMethod,
+        role: query.role,
+        status: query.status,
+      },
     );
 
     if (error) {

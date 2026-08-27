@@ -24,6 +24,7 @@ import {
   listOrganisationMembershipCandidates,
   listOrganisations,
   sendOrganisationProvisionInvitation,
+  sendOrganisationProvisionInvitations,
   transitionOrganisationUserProvision,
   updateOrganisation,
   updateOrganisationContractPeriod,
@@ -188,6 +189,11 @@ export const useAdminAutoLinkOrganisationUserProvision = makeMutation(
 
 export const useAdminSendOrganisationProvisionInvitation = makeMutation(
   sendOrganisationProvisionInvitation,
+  ADMIN_ORGANISATIONS_QUERY_KEY,
+);
+
+export const useAdminSendOrganisationProvisionInvitations = makeMutation(
+  sendOrganisationProvisionInvitations,
   ADMIN_ORGANISATIONS_QUERY_KEY,
 );
 

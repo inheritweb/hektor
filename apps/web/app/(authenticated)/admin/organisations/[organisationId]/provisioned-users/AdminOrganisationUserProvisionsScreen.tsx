@@ -2,17 +2,26 @@
 
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 
 import {
   useAdminGetOrganisation,
   useAdminGetOrganisationUserProvisions,
   useAdminPreviewOrganisationProvisionImport,
   useAdminCommitOrganisationProvisionImport,
+  useAdminSendOrganisationProvisionInvitations,
 } from '@hektor/query/organisations';
+import {
+  OrganisationRole,
+  ProvisioningMethod,
+  ProvisioningStatus,
+} from '@hektor/types';
 import { SortDirection } from '@hektor/types/contracts';
 import { AdminOrganisationUserProvisionsPage } from '@hektor/ui/pages';
-import { OrganisationProvisionImportSheet } from '@hektor/ui/organisms';
+import {
+  OrganisationInvitationManagerSheet,
+  OrganisationProvisionImportSheet,
+} from '@hektor/ui/organisms';
 
 const PAGE_SIZE = 20;
 
@@ -31,8 +40,16 @@ export function AdminOrganisationUserProvisionsScreen({
   const searchParams = useSearchParams();
   const page = positiveInteger(searchParams.get('page'), 1);
   const [importOpen, setImportOpen] = useState(false);
+  const [invitationsOpen, setInvitationsOpen] = useState(false);
+  const [invitationPage, setInvitationPage] = useState(1);
+  const [invitationQuery, setInvitationQuery] = useState('');
+  const [invitationRole, setInvitationRole] = useState<OrganisationRole>();
+  const [invitationMethod, setInvitationMethod] =
+    useState<ProvisioningMethod>();
+  const deferredInvitationQuery = useDeferredValue(invitationQuery.trim());
   const previewImport = useAdminPreviewOrganisationProvisionImport();
   const commitImport = useAdminCommitOrganisationProvisionImport();
+  const sendInvitations = useAdminSendOrganisationProvisionInvitations();
   const organisation = useAdminGetOrganisation({
     params: { organisationId },
   });
@@ -45,6 +62,22 @@ export function AdminOrganisationUserProvisionsScreen({
       dir: SortDirection.Ascending,
     },
   });
+  const invitationCandidates = useAdminGetOrganisationUserProvisions(
+    {
+      params: { organisationId },
+      query: {
+        page: invitationPage,
+        pageSize: PAGE_SIZE,
+        order: 'displayName',
+        dir: SortDirection.Ascending,
+        provisioningMethod: invitationMethod,
+        query: deferredInvitationQuery || undefined,
+        role: invitationRole,
+        status: ProvisioningStatus.Pending,
+      },
+    },
+    { enabled: invitationsOpen },
+  );
 
   const onPageChange = (nextPage: number) => {
     const nextSearchParams = new URLSearchParams(searchParams);
@@ -68,6 +101,14 @@ export function AdminOrganisationUserProvisionsScreen({
           commitImport.reset();
           setImportOpen(true);
         }}
+        onManageInvitations={() => {
+          setInvitationPage(1);
+          setInvitationQuery('');
+          setInvitationRole(undefined);
+          setInvitationMethod(undefined);
+          sendInvitations.reset();
+          setInvitationsOpen(true);
+        }}
         organisationName={organisation.data?.data.name ?? 'Organisation'}
         page={page}
         pageSize={PAGE_SIZE}
@@ -90,6 +131,56 @@ export function AdminOrganisationUserProvisionsScreen({
         pending={previewImport.isPending || commitImport.isPending}
         preview={previewImport.data?.data}
         result={commitImport.data?.data}
+      />
+      <OrganisationInvitationManagerSheet
+        candidates={(invitationCandidates.data?.data ?? []).map(
+          (candidate) => ({
+            email: candidate.provisionedUserName,
+            id: candidate.id,
+            invitationExpiresAt: candidate.invitationExpiresAt,
+            invitationSentAt: candidate.invitationSentAt,
+            name:
+              candidate.provisionedDisplayName ?? candidate.provisionedUserName,
+            provisioningMethod: candidate.provisioningMethod,
+            role: candidate.provisionedRole,
+          }),
+        )}
+        error={
+          invitationCandidates.error?.message ?? sendInvitations.error?.message
+        }
+        loading={invitationCandidates.isPending}
+        method={invitationMethod}
+        onFilterChange={({ method, query, role }) => {
+          setInvitationPage(1);
+          setInvitationMethod(method);
+          setInvitationQuery(query);
+          setInvitationRole(role);
+        }}
+        onOpenChange={setInvitationsOpen}
+        onPageChange={setInvitationPage}
+        onSend={({ ids, selectAllMatching }) =>
+          sendInvitations.mutate({
+            params: { organisationId },
+            body: {
+              selection: selectAllMatching
+                ? {
+                    type: 'filter',
+                    provisioningMethod: invitationMethod,
+                    query: deferredInvitationQuery || undefined,
+                    role: invitationRole,
+                  }
+                : { type: 'ids', ids: ids ?? [] },
+            },
+          })
+        }
+        open={invitationsOpen}
+        page={invitationPage}
+        pageSize={PAGE_SIZE}
+        pending={sendInvitations.isPending}
+        query={invitationQuery}
+        result={sendInvitations.data?.data}
+        role={invitationRole}
+        totalRecords={invitationCandidates.data?.context.totalRecords ?? 0}
       />
     </>
   );
