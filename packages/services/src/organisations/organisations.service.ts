@@ -65,6 +65,12 @@ import type {
   CreateOrganisationUserBody,
   CreateOrganisationUserParams,
   CreateOrganisationUserResponse,
+  CommitOrganisationProvisionImportBody,
+  CommitOrganisationProvisionImportParams,
+  CommitOrganisationProvisionImportResponse,
+  PreviewOrganisationProvisionImportBody,
+  PreviewOrganisationProvisionImportParams,
+  PreviewOrganisationProvisionImportResponse,
 } from '@hektor/types/contracts/organisations';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import {
@@ -74,6 +80,7 @@ import {
   OrganisationStatus,
   OrganisationUserStatus,
   ProvisioningStatus,
+  OrganisationProvisionImportAction,
 } from '@hektor/types';
 
 import type { DatabaseClient } from '../database';
@@ -124,6 +131,8 @@ import {
   updateOrganisationMembershipQuery,
   searchOrganisationMembershipCandidatesQuery,
   createOrganisationMembershipsQuery,
+  buildOrganisationProvisionImportContextQuery,
+  importOrganisationUserProvisionsQuery,
 } from './organisations.queries';
 import {
   canTransitionProvisioningStatus,
@@ -141,6 +150,24 @@ function includesQuery(values: Array<string | undefined>, query?: string) {
   return values.some((value) =>
     value?.toLocaleLowerCase().includes(normalized),
   );
+}
+
+async function listAllAuthUsers(client: DatabaseClient) {
+  const users = [];
+  let page = 1;
+  while (true) {
+    const result = await client.auth.admin.listUsers({ page, perPage: 1000 });
+    if (result.error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to review provision import',
+        internalMessage: result.error.message,
+        cause: result.error,
+      });
+    }
+    users.push(...result.data.users);
+    if (result.data.users.length < 1000) return users;
+    page += 1;
+  }
 }
 
 export function createOrganisationsService(client: DatabaseClient) {
@@ -1372,6 +1399,274 @@ export function createOrganisationsService(client: DatabaseClient) {
     };
   }
 
+  async function previewOrganisationProvisionImport(
+    params: PreviewOrganisationProvisionImportParams,
+    body: PreviewOrganisationProvisionImportBody,
+  ): Promise<PreviewOrganisationProvisionImportResponse> {
+    const [organisation, cohorts, provisions, memberships] =
+      await buildOrganisationProvisionImportContextQuery(
+        client,
+        params.organisationId,
+      );
+    const contextError =
+      organisation.error ??
+      cohorts.error ??
+      provisions.error ??
+      memberships.error;
+
+    if (contextError || !organisation.data) {
+      throw createServiceError(
+        organisation.error?.code === 'PGRST116'
+          ? HektorErrorCode.NotFound
+          : HektorErrorCode.InternalServerError,
+        {
+          message: organisation.error
+            ? 'Organisation not found'
+            : 'Unable to review provision import',
+          internalMessage: contextError?.message,
+          cause: contextError,
+        },
+      );
+    }
+    if (organisation.data.status !== OrganisationStatus.Active) {
+      throw createServiceError(HektorErrorCode.Conflict, {
+        message: 'Only active organisations can import provisioned users',
+      });
+    }
+
+    const authUsers = await listAllAuthUsers(client);
+    const usersByEmail = new Map(
+      authUsers
+        .filter((user) => user.email)
+        .map((user) => [user.email!.trim().toLocaleLowerCase(), user]),
+    );
+    const memberUserIds = new Set(
+      (memberships.data ?? []).map((membership) => membership.user_id),
+    );
+    const provisionEmails = new Set(
+      (provisions.data ?? []).map((provision) =>
+        provision.provisioned_user_name.trim().toLocaleLowerCase(),
+      ),
+    );
+    const cohortsByName = new Map<
+      string,
+      Array<{ id: string; status: string }>
+    >();
+    for (const cohort of cohorts.data ?? []) {
+      const name = cohort.name.trim().toLocaleLowerCase();
+      cohortsByName.set(name, [...(cohortsByName.get(name) ?? []), cohort]);
+    }
+    const duplicateEmails = new Set<string>();
+    const seenEmails = new Set<string>();
+    for (const row of body.rows) {
+      const email = row.email.trim().toLocaleLowerCase();
+      if (seenEmails.has(email)) duplicateEmails.add(email);
+      seenEmails.add(email);
+    }
+
+    const rows = body.rows.map((row) => {
+      const email = row.email.trim().toLocaleLowerCase();
+      const matchingCohorts = row.cohortName
+        ? (cohortsByName.get(row.cohortName.trim().toLocaleLowerCase()) ?? [])
+        : [];
+      if (duplicateEmails.has(email)) {
+        return {
+          ...row,
+          action: OrganisationProvisionImportAction.Invalid,
+          message: 'Email appears more than once in this file',
+        };
+      }
+      if (row.cohortName && matchingCohorts.length === 0) {
+        return {
+          ...row,
+          action: OrganisationProvisionImportAction.Invalid,
+          message: `Cohort “${row.cohortName}” was not found`,
+        };
+      }
+      if (matchingCohorts.length > 1) {
+        return {
+          ...row,
+          action: OrganisationProvisionImportAction.Invalid,
+          message: `Cohort “${row.cohortName}” is ambiguous`,
+        };
+      }
+      if (
+        matchingCohorts[0]?.status !== undefined &&
+        matchingCohorts[0].status !== 'active'
+      ) {
+        return {
+          ...row,
+          action: OrganisationProvisionImportAction.Invalid,
+          message: `Cohort “${row.cohortName}” is archived`,
+        };
+      }
+      if (provisionEmails.has(email)) {
+        return {
+          ...row,
+          action: OrganisationProvisionImportAction.AlreadyProvisioned,
+          message: 'An active provision already exists',
+        };
+      }
+      const user = usersByEmail.get(email);
+      if (!user) {
+        return {
+          ...row,
+          action: OrganisationProvisionImportAction.CreateProvision,
+          message: 'Will create a pending provision',
+        };
+      }
+      return {
+        ...row,
+        action: memberUserIds.has(user.id)
+          ? OrganisationProvisionImportAction.AlreadyConnected
+          : OrganisationProvisionImportAction.LinkExistingUser,
+        message: memberUserIds.has(user.id)
+          ? 'Will record this provision against the existing organisation user'
+          : 'Will connect the existing Hektor user automatically',
+      };
+    });
+
+    return {
+      data: {
+        rows,
+        summary: {
+          errors: rows.filter(
+            (row) => row.action === OrganisationProvisionImportAction.Invalid,
+          ).length,
+          ready: rows.filter(
+            (row) =>
+              row.action !== OrganisationProvisionImportAction.Invalid &&
+              row.action !==
+                OrganisationProvisionImportAction.AlreadyProvisioned,
+          ).length,
+          unchanged: rows.filter(
+            (row) =>
+              row.action ===
+              OrganisationProvisionImportAction.AlreadyProvisioned,
+          ).length,
+        },
+      },
+    };
+  }
+
+  async function commitOrganisationProvisionImport(
+    params: CommitOrganisationProvisionImportParams,
+    body: CommitOrganisationProvisionImportBody,
+    sendInvitation?: (provisionId: string) => Promise<unknown>,
+  ): Promise<CommitOrganisationProvisionImportResponse> {
+    const preview = await previewOrganisationProvisionImport(params, body);
+    if (preview.data.summary.errors > 0) {
+      throw createServiceError(HektorErrorCode.BadRequest, {
+        message: 'Resolve the import errors before continuing',
+      });
+    }
+
+    const cohortData = await client
+      .from('organisation_cohorts')
+      .select('id, name')
+      .eq('organisation_id', params.organisationId);
+    if (cohortData.error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to import provisioned users',
+        cause: cohortData.error,
+      });
+    }
+    const cohortIds = new Map(
+      cohortData.data.map((cohort) => [
+        cohort.name.trim().toLocaleLowerCase(),
+        cohort.id,
+      ]),
+    );
+    const rowsToImport = preview.data.rows
+      .filter(
+        (row) =>
+          row.action !== OrganisationProvisionImportAction.AlreadyProvisioned,
+      )
+      .map((row) => ({
+        cohortId: row.cohortName
+          ? cohortIds.get(row.cohortName.trim().toLocaleLowerCase())
+          : undefined,
+        email: row.email.trim().toLocaleLowerCase(),
+        firstName: row.firstName.trim(),
+        lastName: row.lastName.trim(),
+        role: row.role,
+        rowNumber: row.rowNumber,
+      }));
+
+    let imported: Array<{
+      import_action: string;
+      provision_id: string;
+      row_number: number;
+    }> = [];
+    if (rowsToImport.length > 0) {
+      const result = await importOrganisationUserProvisionsQuery(
+        client,
+        params.organisationId,
+        rowsToImport,
+      );
+      if (result.error) {
+        throw createServiceError(
+          result.error.message.includes('seat_capacity')
+            ? HektorErrorCode.Conflict
+            : HektorErrorCode.InternalServerError,
+          {
+            message: result.error.message.includes('seat_capacity')
+              ? 'There are not enough learner seats for this import'
+              : 'Unable to import provisioned users',
+            internalMessage: result.error.message,
+            cause: result.error,
+          },
+        );
+      }
+      imported = result.data;
+    }
+
+    let invitationsSent = 0;
+    let invitationsFailed = 0;
+    if (body.sendInvitations && sendInvitation) {
+      const pendingIds = imported
+        .filter(
+          (row) =>
+            row.import_action ===
+            OrganisationProvisionImportAction.CreateProvision,
+        )
+        .map((row) => row.provision_id);
+      const outcomes = await Promise.allSettled(
+        pendingIds.map((provisionId) => sendInvitation(provisionId)),
+      );
+      invitationsSent = outcomes.filter(
+        (outcome) => outcome.status === 'fulfilled',
+      ).length;
+      invitationsFailed = outcomes.length - invitationsSent;
+    }
+
+    return {
+      data: {
+        created: imported.filter(
+          (row) =>
+            row.import_action ===
+            OrganisationProvisionImportAction.CreateProvision,
+        ).length,
+        invitationsFailed,
+        invitationsSent,
+        linked: imported.filter(
+          (row) =>
+            row.import_action ===
+              OrganisationProvisionImportAction.LinkExistingUser ||
+            row.import_action ===
+              OrganisationProvisionImportAction.AlreadyConnected,
+        ).length,
+        unchanged:
+          preview.data.summary.unchanged +
+          imported.filter(
+            (row) =>
+              row.import_action ===
+              OrganisationProvisionImportAction.AlreadyProvisioned,
+          ).length,
+      },
+    };
+  }
+
   async function getOrganisationUserProvision(
     params: GetOrganisationUserProvisionParams,
   ): Promise<GetOrganisationUserProvisionResponse> {
@@ -1423,6 +1718,7 @@ export function createOrganisationsService(client: DatabaseClient) {
     createOrganisationGroup,
     createOrganisationMemberships,
     createOrganisationUser,
+    commitOrganisationProvisionImport,
     getOrganisationContractPeriod,
     getOrganisationCohort,
     getOrganisationGroup,
@@ -1436,6 +1732,7 @@ export function createOrganisationsService(client: DatabaseClient) {
     listOrganisationContractPeriods,
     listOrganisations,
     listOrganisationUserProvisions,
+    previewOrganisationProvisionImport,
     listOrganisationUsers,
     transitionOrganisationUserProvision,
     updateOrganisation,

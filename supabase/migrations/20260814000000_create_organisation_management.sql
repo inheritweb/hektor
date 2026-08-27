@@ -1284,6 +1284,118 @@ revoke all on function public.search_organisation_membership_candidates(uuid, te
 grant execute on function public.search_organisation_membership_candidates(uuid, text, integer, integer) to service_role;
 revoke all on function public.create_organisation_memberships(uuid, uuid[], public.organisation_role, uuid) from public;
 grant execute on function public.create_organisation_memberships(uuid, uuid[], public.organisation_role, uuid) to service_role;
+
+create function public.import_organisation_user_provisions(
+  target_organisation_id uuid,
+  import_rows jsonb
+)
+returns table (row_number integer, provision_id uuid, import_action text)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  import_row jsonb;
+  target_user_id uuid;
+  membership public.organisation_users;
+  provision public.organisation_user_provisions;
+begin
+  if jsonb_typeof(import_rows) <> 'array'
+    or jsonb_array_length(import_rows) = 0
+    or jsonb_array_length(import_rows) > 500
+  then
+    raise exception using errcode = '22023', message = 'invalid_import_rows';
+  end if;
+
+  perform 1 from public.organisations
+  where id = target_organisation_id and status = 'active'
+  for update;
+  if not found then
+    raise exception using errcode = 'P0001', message = 'organisation_not_active';
+  end if;
+
+  for import_row in select value from jsonb_array_elements(import_rows) loop
+    row_number := (import_row ->> 'rowNumber')::integer;
+
+    select * into provision
+    from public.organisation_user_provisions
+    where organisation_id = target_organisation_id
+      and lower(provisioned_user_name) = lower(import_row ->> 'email')
+      and status <> 'revoked'
+    order by created_at desc
+    limit 1
+    for update;
+
+    if found then
+      provision_id := provision.id;
+      import_action := 'already_provisioned';
+      return next;
+      continue;
+    end if;
+
+    target_user_id := null;
+    membership := null;
+    select id into target_user_id
+    from auth.users
+    where lower(email) = lower(import_row ->> 'email')
+    order by created_at
+    limit 1;
+
+    if target_user_id is not null then
+      select * into membership
+      from public.organisation_users
+      where organisation_id = target_organisation_id
+        and user_id = target_user_id
+      for update;
+    end if;
+
+    insert into public.organisation_user_provisions (
+      organisation_id,
+      organisation_cohort_id,
+      provisioning_method,
+      source_external_id,
+      provisioned_user_name,
+      provisioned_display_name,
+      provisioned_given_name,
+      provisioned_family_name,
+      provisioned_role,
+      status,
+      last_synchronized_at
+    ) values (
+      target_organisation_id,
+      nullif(import_row ->> 'cohortId', '')::uuid,
+      'csv',
+      lower(import_row ->> 'email'),
+      lower(import_row ->> 'email'),
+      trim(concat(import_row ->> 'firstName', ' ', import_row ->> 'lastName')),
+      import_row ->> 'firstName',
+      import_row ->> 'lastName',
+      (import_row ->> 'role')::public.organisation_role,
+      'pending',
+      now()
+    ) returning * into provision;
+
+    provision_id := provision.id;
+    if target_user_id is null then
+      import_action := 'create_provision';
+    else
+      perform public.accept_organisation_user_provision(
+        provision.id,
+        provision.status,
+        target_user_id
+      );
+      import_action := case
+        when membership.id is null then 'link_existing_user'
+        else 'already_connected'
+      end;
+    end if;
+    return next;
+  end loop;
+end;
+$$;
+
+revoke all on function public.import_organisation_user_provisions(uuid, jsonb) from public;
+grant execute on function public.import_organisation_user_provisions(uuid, jsonb) to service_role;
 revoke all on function public.issue_organisation_provision_invitation(
   uuid, uuid, text, timestamptz, integer
 ) from public;

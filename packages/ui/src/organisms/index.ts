@@ -12,6 +12,8 @@ export * from './OrganisationMembershipCreateSheet';
 
 export * from './OrganisationUserCreateSheet';
 
+export * from './OrganisationProvisionImportSheet';
+
 export * from './OrganisationDetailsRail';
 
 export * from './UserWidget';

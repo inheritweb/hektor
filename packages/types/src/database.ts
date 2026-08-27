@@ -649,6 +649,14 @@ export type Database = {
         };
         Returns: boolean;
       };
+      import_organisation_user_provisions: {
+        Args: { import_rows: Json; target_organisation_id: string };
+        Returns: {
+          import_action: string;
+          provision_id: string;
+          row_number: number;
+        }[];
+      };
       is_platform_admin: { Args: never; Returns: boolean };
       issue_organisation_provision_invitation: {
         Args: {

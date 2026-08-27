@@ -1,6 +1,7 @@
 import { createTableColumn } from '../../atoms/Table';
 import { Grid } from '../../organisms/Grid';
 import { NavigationLink } from '../../context';
+import { Button } from '../../atoms/Button';
 
 export interface AdminOrganisationUserProvisionListItemViewModel {
   id: string;
@@ -14,6 +15,7 @@ export interface AdminOrganisationUserProvisionListItemViewModel {
 export interface AdminOrganisationUserProvisionsPageProps {
   error?: string;
   loading?: boolean;
+  onImportUsers?: () => void;
   onPageChange: (page: number) => void;
   getProvisionHref?: (
     provision: AdminOrganisationUserProvisionListItemViewModel,
@@ -67,6 +69,7 @@ export function AdminOrganisationUserProvisionsPage({
   error,
   getProvisionHref,
   loading,
+  onImportUsers,
   onPageChange,
   organisationName,
   page,
@@ -93,17 +96,24 @@ export function AdminOrganisationUserProvisionsPage({
     : columns;
 
   return (
-    <Grid
-      caption={`Provisioned users in ${organisationName}`}
-      columns={resolvedColumns}
-      empty="This organisation has no provisioned users."
-      error={error}
-      getRowId={(provision) => provision.id}
-      highlight
-      loading={loading}
-      pagination={{ page, pageSize, totalRecords, onPageChange }}
-      rows={provisions}
-      title="Provisioned users"
-    />
+    <div className="space-y-4">
+      {onImportUsers ? (
+        <div className="flex justify-end">
+          <Button onClick={onImportUsers}>Import users</Button>
+        </div>
+      ) : null}
+      <Grid
+        caption={`Provisioned users in ${organisationName}`}
+        columns={resolvedColumns}
+        empty="This organisation has no provisioned users."
+        error={error}
+        getRowId={(provision) => provision.id}
+        highlight
+        loading={loading}
+        pagination={{ page, pageSize, totalRecords, onPageChange }}
+        rows={provisions}
+        title="Provisioned users"
+      />
+    </div>
   );
 }

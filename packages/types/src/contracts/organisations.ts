@@ -31,6 +31,11 @@ import {
   type CreateOrganisationMembershipsResult,
   type CreateOrganisationUserInput,
   type CreateOrganisationUserResult,
+  type OrganisationProvisionImportPreview,
+  type OrganisationProvisionImportResult,
+  type OrganisationProvisionImportRow,
+  type OrganisationProvisionImportRowReview,
+  OrganisationProvisionImportAction,
   type ProvisioningAutoLinkResult,
   type ProvisioningLifecycleResult,
   GroupStatus,
@@ -549,6 +554,61 @@ export const createOrganisationUserContract = defineContract({
   output: hektorResponseSchema(createOrganisationUserResultSchema),
 });
 
+export const organisationProvisionImportRowSchema = z.object({
+  cohortName: z.string().trim().min(1).max(255).optional(),
+  email: z.email(),
+  firstName: z.string().trim().min(1).max(100),
+  lastName: z.string().trim().min(1).max(100),
+  role: z.enum(OrganisationRole),
+  rowNumber: z.number().int().positive(),
+}) satisfies z.ZodType<OrganisationProvisionImportRow>;
+
+export const organisationProvisionImportRowReviewSchema =
+  organisationProvisionImportRowSchema.extend({
+    action: z.enum(OrganisationProvisionImportAction),
+    message: z.string().min(1).optional(),
+  }) satisfies z.ZodType<OrganisationProvisionImportRowReview>;
+
+export const organisationProvisionImportPreviewSchema = z.object({
+  rows: z.array(organisationProvisionImportRowReviewSchema),
+  summary: z.object({
+    errors: z.number().int().nonnegative(),
+    ready: z.number().int().nonnegative(),
+    unchanged: z.number().int().nonnegative(),
+  }),
+}) satisfies z.ZodType<OrganisationProvisionImportPreview>;
+
+export const organisationProvisionImportResultSchema = z.object({
+  created: z.number().int().nonnegative(),
+  invitationsFailed: z.number().int().nonnegative(),
+  invitationsSent: z.number().int().nonnegative(),
+  linked: z.number().int().nonnegative(),
+  unchanged: z.number().int().nonnegative(),
+}) satisfies z.ZodType<OrganisationProvisionImportResult>;
+
+export const previewOrganisationProvisionImportContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/user-provisions/import/preview',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: z.object({
+    rows: z.array(organisationProvisionImportRowSchema).min(1).max(500),
+  }),
+  output: hektorResponseSchema(organisationProvisionImportPreviewSchema),
+});
+
+export const commitOrganisationProvisionImportContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/organisations/:organisationId/user-provisions/import',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ organisationId: z.uuid() }),
+  body: z.object({
+    rows: z.array(organisationProvisionImportRowSchema).min(1).max(500),
+    sendInvitations: z.boolean(),
+  }),
+  output: hektorResponseSchema(organisationProvisionImportResultSchema),
+});
+
 export const getOrganisationMembershipContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/users/:membershipId',
@@ -883,6 +943,30 @@ export type CreateOrganisationUserBody = ContractBody<
 
 export type CreateOrganisationUserResponse = ContractOutput<
   typeof createOrganisationUserContract
+>;
+
+export type PreviewOrganisationProvisionImportParams = ContractParams<
+  typeof previewOrganisationProvisionImportContract
+>;
+
+export type PreviewOrganisationProvisionImportBody = ContractBody<
+  typeof previewOrganisationProvisionImportContract
+>;
+
+export type PreviewOrganisationProvisionImportResponse = ContractOutput<
+  typeof previewOrganisationProvisionImportContract
+>;
+
+export type CommitOrganisationProvisionImportParams = ContractParams<
+  typeof commitOrganisationProvisionImportContract
+>;
+
+export type CommitOrganisationProvisionImportBody = ContractBody<
+  typeof commitOrganisationProvisionImportContract
+>;
+
+export type CommitOrganisationProvisionImportResponse = ContractOutput<
+  typeof commitOrganisationProvisionImportContract
 >;
 
 export type GetOrganisationMembershipParams = ContractParams<

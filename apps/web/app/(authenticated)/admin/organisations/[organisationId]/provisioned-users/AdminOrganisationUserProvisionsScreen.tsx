@@ -2,13 +2,17 @@
 
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 import {
   useAdminGetOrganisation,
   useAdminGetOrganisationUserProvisions,
+  useAdminPreviewOrganisationProvisionImport,
+  useAdminCommitOrganisationProvisionImport,
 } from '@hektor/query/organisations';
 import { SortDirection } from '@hektor/types/contracts';
 import { AdminOrganisationUserProvisionsPage } from '@hektor/ui/pages';
+import { OrganisationProvisionImportSheet } from '@hektor/ui/organisms';
 
 const PAGE_SIZE = 20;
 
@@ -26,6 +30,9 @@ export function AdminOrganisationUserProvisionsScreen({
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = positiveInteger(searchParams.get('page'), 1);
+  const [importOpen, setImportOpen] = useState(false);
+  const previewImport = useAdminPreviewOrganisationProvisionImport();
+  const commitImport = useAdminCommitOrganisationProvisionImport();
   const organisation = useAdminGetOrganisation({
     params: { organisationId },
   });
@@ -48,18 +55,42 @@ export function AdminOrganisationUserProvisionsScreen({
   };
 
   return (
-    <AdminOrganisationUserProvisionsPage
-      error={provisions.error?.message ?? organisation.error?.message}
-      getProvisionHref={(provision) =>
-        `/admin/organisations/${organisationId}/provisioned-users/${provision.id}`
-      }
-      loading={provisions.isPending || organisation.isPending}
-      onPageChange={onPageChange}
-      organisationName={organisation.data?.data.name ?? 'Organisation'}
-      page={page}
-      pageSize={PAGE_SIZE}
-      provisions={provisions.data?.data ?? []}
-      totalRecords={provisions.data?.context.totalRecords ?? 0}
-    />
+    <>
+      <AdminOrganisationUserProvisionsPage
+        error={provisions.error?.message ?? organisation.error?.message}
+        getProvisionHref={(provision) =>
+          `/admin/organisations/${organisationId}/provisioned-users/${provision.id}`
+        }
+        loading={provisions.isPending || organisation.isPending}
+        onPageChange={onPageChange}
+        onImportUsers={() => {
+          previewImport.reset();
+          commitImport.reset();
+          setImportOpen(true);
+        }}
+        organisationName={organisation.data?.data.name ?? 'Organisation'}
+        page={page}
+        pageSize={PAGE_SIZE}
+        provisions={provisions.data?.data ?? []}
+        totalRecords={provisions.data?.context.totalRecords ?? 0}
+      />
+      <OrganisationProvisionImportSheet
+        error={previewImport.error?.message ?? commitImport.error?.message}
+        onCommit={(body) =>
+          commitImport.mutate({ params: { organisationId }, body })
+        }
+        onOpenChange={setImportOpen}
+        onPreview={(rows) =>
+          previewImport.mutate({
+            params: { organisationId },
+            body: { rows },
+          })
+        }
+        open={importOpen}
+        pending={previewImport.isPending || commitImport.isPending}
+        preview={previewImport.data?.data}
+        result={commitImport.data?.data}
+      />
+    </>
   );
 }

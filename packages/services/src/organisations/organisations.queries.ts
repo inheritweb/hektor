@@ -771,3 +771,47 @@ export function clearOrganisationProvisionInvitationQuery(
     target_provision_id: provisionId,
   });
 }
+
+export function buildOrganisationProvisionImportContextQuery(
+  client: DatabaseClient,
+  organisationId: string,
+) {
+  return Promise.all([
+    client
+      .from('organisations')
+      .select('id, status')
+      .eq('id', organisationId)
+      .single(),
+    client
+      .from('organisation_cohorts')
+      .select('id, name, status')
+      .eq('organisation_id', organisationId),
+    client
+      .from('organisation_user_provisions')
+      .select('id, provisioned_user_name, status')
+      .eq('organisation_id', organisationId)
+      .neq('status', ProvisioningStatus.Revoked),
+    client
+      .from('organisation_users')
+      .select('id, user_id')
+      .eq('organisation_id', organisationId),
+  ]);
+}
+
+export function importOrganisationUserProvisionsQuery(
+  client: DatabaseClient,
+  organisationId: string,
+  rows: Array<{
+    cohortId?: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    rowNumber: number;
+  }>,
+) {
+  return client.rpc('import_organisation_user_provisions', {
+    target_organisation_id: organisationId,
+    import_rows: rows,
+  });
+}

@@ -258,6 +258,45 @@ export interface CreateOrganisationUserResult {
   userId: string;
 }
 
+export enum OrganisationProvisionImportAction {
+  CreateProvision = 'create_provision',
+  LinkExistingUser = 'link_existing_user',
+  AlreadyProvisioned = 'already_provisioned',
+  AlreadyConnected = 'already_connected',
+  Invalid = 'invalid',
+}
+
+export interface OrganisationProvisionImportRow {
+  cohortName?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: OrganisationRole;
+  rowNumber: number;
+}
+
+export interface OrganisationProvisionImportRowReview extends OrganisationProvisionImportRow {
+  action: OrganisationProvisionImportAction;
+  message?: string;
+}
+
+export interface OrganisationProvisionImportPreview {
+  rows: OrganisationProvisionImportRowReview[];
+  summary: {
+    errors: number;
+    ready: number;
+    unchanged: number;
+  };
+}
+
+export interface OrganisationProvisionImportResult {
+  created: number;
+  invitationsFailed: number;
+  invitationsSent: number;
+  linked: number;
+  unchanged: number;
+}
+
 export interface OrganisationMembershipSummary {
   id: string;
   organisation: OrganisationSummary;

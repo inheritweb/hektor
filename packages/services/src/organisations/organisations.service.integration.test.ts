@@ -7,6 +7,7 @@ import {
   OrganisationStatus,
   OrganisationRole,
   OrganisationUserStatus,
+  OrganisationProvisionImportAction,
   ProvisioningAutoLinkOutcome,
   ProvisioningLifecycleAction,
   ProvisioningStatus,
@@ -31,6 +32,7 @@ const {
   createOrganisationMemberships,
   createOrganisationUser,
   createOrganisation,
+  commitOrganisationProvisionImport,
   getOrganisation,
   getOrganisationContractPeriod,
   getOrganisationCohort,
@@ -45,6 +47,7 @@ const {
   listOrganisations,
   listOrganisationUserProvisions,
   listOrganisationUsers,
+  previewOrganisationProvisionImport,
   transitionOrganisationUserProvision,
   updateOrganisation,
   updateOrganisationContractPeriod,
@@ -1662,5 +1665,100 @@ describe('organisation services', () => {
       code: HektorErrorCode.NotFound,
       message: 'Organisation not found',
     } satisfies Partial<HektorServiceError>);
+  });
+
+  it('previews and imports CSV provisions while auto-linking existing users', async () => {
+    const marker = randomUUID();
+    const pendingEmail = `csv-pending-${marker}@integration.example`;
+    const existingEmail = `csv-existing-${marker}@integration.example`;
+    const existing = await client.auth.admin.createUser({
+      email: existingEmail,
+      email_confirm: true,
+      user_metadata: { full_name: 'Existing CSV User' },
+    });
+    if (existing.error) throw existing.error;
+    const rows = [
+      {
+        email: pendingEmail,
+        firstName: 'Pending',
+        lastName: 'CSV User',
+        role: OrganisationRole.Tutor,
+        rowNumber: 2,
+      },
+      {
+        cohortName: 'September 2026',
+        email: existingEmail,
+        firstName: 'Existing',
+        lastName: 'CSV User',
+        role: OrganisationRole.Tutor,
+        rowNumber: 3,
+      },
+    ];
+
+    try {
+      const duplicatePreview = await previewOrganisationProvisionImport(
+        { organisationId },
+        { rows: [rows[0]!, { ...rows[0]!, rowNumber: 4 }] },
+      );
+      expect(duplicatePreview.data.summary.errors).toBe(2);
+      expect(
+        duplicatePreview.data.rows.every(
+          ({ action }) => action === OrganisationProvisionImportAction.Invalid,
+        ),
+      ).toBe(true);
+
+      const preview = await previewOrganisationProvisionImport(
+        { organisationId },
+        { rows },
+      );
+      expect(preview.data.rows.map(({ action }) => action)).toEqual([
+        OrganisationProvisionImportAction.CreateProvision,
+        OrganisationProvisionImportAction.LinkExistingUser,
+      ]);
+
+      const imported = await commitOrganisationProvisionImport(
+        { organisationId },
+        { rows, sendInvitations: false },
+      );
+      expect(imported.data).toMatchObject({
+        created: 1,
+        linked: 1,
+        unchanged: 0,
+      });
+      const { data: provisions } = await client
+        .from('organisation_user_provisions')
+        .select('provisioned_user_name, status, organisation_user_id')
+        .eq('organisation_id', organisationId)
+        .in('provisioned_user_name', [pendingEmail, existingEmail]);
+      expect(provisions).toContainEqual({
+        organisation_user_id: null,
+        provisioned_user_name: pendingEmail,
+        status: ProvisioningStatus.Pending,
+      });
+      expect(provisions).toContainEqual(
+        expect.objectContaining({
+          provisioned_user_name: existingEmail,
+          status: ProvisioningStatus.Linked,
+        }),
+      );
+
+      const repeated = await previewOrganisationProvisionImport(
+        { organisationId },
+        { rows },
+      );
+      expect(repeated.data.summary).toMatchObject({ ready: 0, unchanged: 2 });
+    } finally {
+      await client
+        .from('organisation_user_provisions')
+        .delete()
+        .eq('organisation_id', organisationId)
+        .in('provisioned_user_name', [pendingEmail, existingEmail]);
+      await client
+        .from('organisation_users')
+        .delete()
+        .eq('organisation_id', organisationId)
+        .eq('user_id', existing.data.user.id);
+      await client.auth.admin.deleteUser(existing.data.user.id);
+    }
   });
 });
