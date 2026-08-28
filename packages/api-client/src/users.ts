@@ -3,6 +3,7 @@ import {
   getUserContract,
   listUsersContract,
   createUserContract,
+  updateUserContract,
 } from '@hektor/types/contracts/users';
 
 import { registerApiMethod } from './api-method';
@@ -14,3 +15,5 @@ export const listUsers = registerApiMethod(listUsersContract);
 export const createUser = registerApiMethod(createUserContract);
 
 export const getUser = registerApiMethod(getUserContract);
+
+export const updateUser = registerApiMethod(updateUserContract);

@@ -20,6 +20,7 @@ const meta = {
         lastSignInAt: '2026-08-15T10:00:00.000Z',
         identityProviders: ['email', 'google'],
         membershipCount: 2,
+        status: 'active',
       },
       {
         id: '2',
@@ -28,6 +29,7 @@ const meta = {
         createdAt: '2026-08-10T10:00:00.000Z',
         identityProviders: ['email'],
         membershipCount: 0,
+        status: 'suspended',
       },
     ],
   },

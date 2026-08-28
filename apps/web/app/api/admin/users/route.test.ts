@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PlatformRole } from '@hektor/types';
+import { PlatformRole, UserStatus } from '@hektor/types';
 import { SortDirection } from '@hektor/types/contracts';
 
 import { callApiEndpoint } from '@/tests/api/api-test-client';
@@ -60,6 +60,7 @@ describe('GET /api/admin/users', () => {
           identityProviders: ['google'],
           lastSignInAt: '2026-08-15T11:00:00.000Z',
           membershipCount: 1,
+          status: UserStatus.Active,
         },
       ],
     };

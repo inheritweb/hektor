@@ -12,6 +12,7 @@ import {
   isPlatformAdmin,
   platformAdminEmails,
 } from './platform-admin-policy';
+import { isAuthUserSuspended } from './user-status';
 
 export async function bootstrapPlatformAdmin(user: User) {
   if (isPlatformAdmin(user)) return user;
@@ -44,7 +45,7 @@ export async function requirePlatformAdmin() {
     data: { user },
   } = await client.auth.getUser();
 
-  if (!user || !isPlatformAdmin(user)) {
+  if (!user || isAuthUserSuspended(user) || !isPlatformAdmin(user)) {
     redirect(googleIdentityConfig.loginPath as Route);
   }
 
@@ -57,7 +58,9 @@ export async function requireAuthenticated() {
     data: { user },
   } = await client.auth.getUser();
 
-  if (!user) redirect(googleIdentityConfig.loginPath as Route);
+  if (!user || isAuthUserSuspended(user)) {
+    redirect(googleIdentityConfig.loginPath as Route);
+  }
 
   return user;
 }

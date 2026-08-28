@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@hektor/types/database';
 
 interface LocalSupabaseStatus {
+  ANON_KEY: string;
   API_URL: string;
   SERVICE_ROLE_KEY: string;
 }
@@ -29,6 +30,17 @@ export function createIntegrationDatabaseClient() {
   const status = localSupabaseStatus();
 
   return createClient<Database>(status.API_URL, status.SERVICE_ROLE_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
+export function createIntegrationAuthClient() {
+  const status = localSupabaseStatus();
+
+  return createClient<Database>(status.API_URL, status.ANON_KEY, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

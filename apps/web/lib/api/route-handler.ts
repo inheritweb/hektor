@@ -16,6 +16,8 @@ import {
   toErrorResponse,
 } from '@hektor/services';
 
+import { isAuthUserSuspended } from '../auth/user-status';
+
 interface RouteContext {
   params: Promise<Record<string, string>>;
 }
@@ -112,6 +114,12 @@ async function authenticate(
       message: 'You must be signed in',
       internalMessage: error?.message,
       cause: error,
+    });
+  }
+
+  if (isAuthUserSuspended(user)) {
+    throw createServiceError(HektorErrorCode.Unauthorized, {
+      message: 'Your account is suspended',
     });
   }
 

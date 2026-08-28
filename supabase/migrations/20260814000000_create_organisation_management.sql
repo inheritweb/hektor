@@ -129,7 +129,13 @@ as $$
   with candidates as (
     select
       users.id as user_id,
-      coalesce(nullif(users.raw_user_meta_data ->> 'full_name', ''), nullif(users.raw_user_meta_data ->> 'name', ''), users.email, 'Unnamed user') as display_name,
+      coalesce(
+        nullif(trim(concat_ws(' ', users.raw_user_meta_data ->> 'first_name', users.raw_user_meta_data ->> 'last_name')), ''),
+        nullif(users.raw_user_meta_data ->> 'full_name', ''),
+        nullif(users.raw_user_meta_data ->> 'name', ''),
+        users.email,
+        'Unnamed user'
+      ) as display_name,
       users.email,
       provisions.id as pending_provision_id,
       provisions.provisioned_role as pending_provision_role
@@ -149,7 +155,13 @@ as $$
     )
       and (
         search_query is null
-        or coalesce(users.raw_user_meta_data ->> 'full_name', users.raw_user_meta_data ->> 'name', users.email, '') ilike '%' || search_query || '%'
+        or coalesce(
+          nullif(trim(concat_ws(' ', users.raw_user_meta_data ->> 'first_name', users.raw_user_meta_data ->> 'last_name')), ''),
+          users.raw_user_meta_data ->> 'full_name',
+          users.raw_user_meta_data ->> 'name',
+          users.email,
+          ''
+        ) ilike '%' || search_query || '%'
         or users.email ilike '%' || search_query || '%'
       )
   )
@@ -1522,3 +1534,15 @@ create trigger organisation_groups_set_updated_at before update on public.organi
 for each row execute function public.set_updated_at();
 create trigger organisation_contract_periods_set_updated_at before update on public.organisation_contract_periods
 for each row execute function public.set_updated_at();
+
+create or replace function public.revoke_user_sessions(target_user_id uuid)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from auth.sessions where user_id = target_user_id;
+$$;
+
+revoke all on function public.revoke_user_sessions(uuid) from public;
+grant execute on function public.revoke_user_sessions(uuid) to service_role;

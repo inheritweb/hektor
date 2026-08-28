@@ -21,6 +21,7 @@ describe('AdminUsersPage', () => {
             createdAt: '2026-08-01T10:00:00.000Z',
             identityProviders: ['email'],
             membershipCount: 2,
+            status: 'active',
           },
         ]}
       />,

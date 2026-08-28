@@ -3,6 +3,7 @@ import {
   getCurrentUser,
   getUser,
   listUsers,
+  updateUser,
 } from '@hektor/api-client/users';
 
 import { makeQuery } from './make-query';
@@ -25,3 +26,8 @@ export const useAdminCreateUser = makeMutation(
 );
 
 export const useAdminGetUser = makeQuery(getUser, ADMIN_USERS_QUERY_KEY);
+
+export const useAdminUpdateUser = makeMutation(
+  updateUser,
+  ADMIN_USERS_QUERY_KEY,
+);

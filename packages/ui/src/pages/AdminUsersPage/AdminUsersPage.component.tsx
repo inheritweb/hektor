@@ -2,6 +2,13 @@ import { createTableColumn } from '../../atoms/Table';
 import { NavigationLink } from '../../context';
 import { buttonVariants } from '../../atoms/Button';
 import { Grid } from '../../organisms/Grid';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../atoms/Select';
 
 export interface AdminUserListItemViewModel {
   createdAt: string;
@@ -12,6 +19,7 @@ export interface AdminUserListItemViewModel {
   lastSignInAt?: string;
   membershipCount: number;
   platformRole?: string;
+  status: string;
 }
 
 export interface AdminUsersPageProps {
@@ -20,9 +28,11 @@ export interface AdminUsersPageProps {
   getUserHref?: (user: AdminUserListItemViewModel) => string;
   loading?: boolean;
   onPageChange: (page: number) => void;
+  onStatusChange?: (status?: string) => void;
   page: number;
   pageSize: number;
   totalRecords: number;
+  status?: string;
   users: readonly AdminUserListItemViewModel[];
 }
 
@@ -79,6 +89,10 @@ const columns = [
         <span className="text-muted-foreground">Personal</span>
       ),
   }),
+  column.accessor('status', {
+    header: 'Status',
+    cell: ({ value }) => <span className="capitalize">{value}</span>,
+  }),
 ];
 
 export function AdminUsersPage({
@@ -87,9 +101,11 @@ export function AdminUsersPage({
   getUserHref,
   loading,
   onPageChange,
+  onStatusChange,
   page,
   pageSize,
   totalRecords,
+  status,
   users,
 }: AdminUsersPageProps) {
   const linkedColumns = getUserHref
@@ -113,11 +129,38 @@ export function AdminUsersPage({
 
   return (
     <div className="space-y-4">
-      {addUserHref ? (
-        <div className="flex justify-end">
-          <NavigationLink className={buttonVariants()} href={addUserHref}>
-            Add user
-          </NavigationLink>
+      {addUserHref || onStatusChange ? (
+        <div className="flex items-center justify-between gap-3">
+          {onStatusChange ? (
+            <Select
+              onValueChange={(value) =>
+                onStatusChange(!value || value === 'all' ? undefined : value)
+              }
+              value={status ?? 'all'}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue>
+                  {status === 'active'
+                    ? 'Active'
+                    : status === 'suspended'
+                      ? 'Suspended'
+                      : 'All statuses'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <span />
+          )}
+          {addUserHref ? (
+            <NavigationLink className={buttonVariants()} href={addUserHref}>
+              Add user
+            </NavigationLink>
+          ) : null}
         </div>
       ) : null}
       <Grid

@@ -19,3 +19,5 @@ export * from './OrganisationInvitationManagerSheet';
 export * from './OrganisationDetailsRail';
 
 export * from './UserWidget';
+
+export * from './UserLifecycleEditSheet';

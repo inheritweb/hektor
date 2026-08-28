@@ -9,6 +9,25 @@ export enum PlatformRole {
   Admin = 'admin',
 }
 
+export enum UserStatus {
+  Active = 'active',
+  Suspended = 'suspended',
+}
+
+export interface UserName {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export function getUserDisplayName(user: UserName) {
+  return (
+    [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+    user.email ||
+    'Hektor user'
+  );
+}
+
 export interface UserIdentity {
   id: string;
   provider: IdentityProvider;
@@ -20,6 +39,9 @@ export interface UserIdentity {
 export interface User {
   id: string;
   displayName: string;
+  firstName?: string;
+  lastName?: string;
+  status: UserStatus;
   platformRole?: PlatformRole;
   email?: string;
   avatarUrl?: string;
@@ -35,6 +57,7 @@ export type UserSummary = Pick<
 >;
 
 export interface UserListItem extends UserSummary {
+  status: UserStatus;
   createdAt: string;
   identityProviders: IdentityProvider[];
   lastSignInAt?: string;
@@ -48,4 +71,12 @@ export interface CreateUserInput {
   firstName: string;
   lastName: string;
   platformRole?: PlatformRole;
+}
+
+export interface UpdateUserInput {
+  expectedUpdatedAt: string;
+  firstName: string;
+  lastName: string;
+  platformRole?: PlatformRole;
+  status: UserStatus;
 }

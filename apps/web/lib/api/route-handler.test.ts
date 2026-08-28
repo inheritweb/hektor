@@ -118,6 +118,37 @@ describe('registerEndpoint', () => {
     await expectApiResponse(response, user.id);
   });
 
+  it('rejects a suspended user even when their access token still resolves', async () => {
+    const handler = vi.fn(() => ({ data: 'unused' }));
+    const endpoint = registerEndpoint(
+      defineContract({
+        method: 'GET',
+        path: '/authenticated',
+        access: { type: 'authenticated' },
+        output: hektorResponseSchema(z.string()),
+      }),
+      handler,
+    );
+    getUserMock.mockResolvedValue({
+      data: {
+        user: {
+          id: 'suspended-user-id',
+          app_metadata: {},
+          banned_until: '2126-08-28T00:00:00.000Z',
+        },
+      },
+      error: null,
+    });
+
+    const response = await callApiEndpoint(endpoint);
+
+    await expectApiError(response, {
+      code: HektorErrorCode.Unauthorized,
+      message: 'Your account is suspended',
+    });
+    expect(handler).not.toHaveBeenCalled();
+  });
+
   it('requires a declared platform role', async () => {
     const contract = defineContract({
       method: 'GET',

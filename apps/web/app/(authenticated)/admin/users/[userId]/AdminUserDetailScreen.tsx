@@ -1,14 +1,21 @@
 'use client';
 
-import { useAdminGetUser } from '@hektor/query/users';
+import { useState } from 'react';
+import { useAdminGetUser, useAdminUpdateUser } from '@hektor/query/users';
 import { AdminUserDetailPage } from '@hektor/ui/pages';
+import {
+  UserLifecycleEditSheet,
+  type UserLifecycleEditValues,
+} from '@hektor/ui/organisms';
 
 export interface AdminUserDetailScreenProps {
   userId: string;
 }
 
 export function AdminUserDetailScreen({ userId }: AdminUserDetailScreenProps) {
+  const [editing, setEditing] = useState(false);
   const user = useAdminGetUser({ params: { userId } });
+  const updateUser = useAdminUpdateUser({ onSuccess: () => setEditing(false) });
 
   if (user.isPending) {
     return (
@@ -29,5 +36,33 @@ export function AdminUserDetailScreen({ userId }: AdminUserDetailScreenProps) {
     );
   }
 
-  return <AdminUserDetailPage backHref="/admin/users" user={user.data.data} />;
+  const data = user.data.data;
+
+  return (
+    <>
+      <AdminUserDetailPage
+        backHref="/admin/users"
+        onEdit={() => setEditing(true)}
+        user={data}
+      />
+      <UserLifecycleEditSheet
+        error={updateUser.error?.message}
+        initialValues={{
+          firstName: data.firstName ?? '',
+          lastName: data.lastName ?? '',
+          platformRole: data.platformRole,
+          status: data.status,
+        }}
+        onOpenChange={setEditing}
+        onSave={(values: UserLifecycleEditValues) =>
+          updateUser.mutate({
+            params: { userId },
+            body: { ...values, expectedUpdatedAt: data.updatedAt },
+          })
+        }
+        open={editing}
+        pending={updateUser.isPending}
+      />
+    </>
+  );
 }

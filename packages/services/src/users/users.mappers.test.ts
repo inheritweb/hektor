@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   PlatformRole,
+  UserStatus,
   OrganisationRole,
   OrganisationStatus,
   OrganisationUserStatus,
@@ -51,6 +52,9 @@ describe('user mappers', () => {
     expect(mapCurrentUser(user, memberships)).toEqual({
       id: user.id,
       displayName: 'Alex Morgan',
+      firstName: 'Alex',
+      lastName: 'Morgan',
+      status: UserStatus.Active,
       platformRole: PlatformRole.Admin,
       email: 'alex@example.com',
       avatarUrl: undefined,

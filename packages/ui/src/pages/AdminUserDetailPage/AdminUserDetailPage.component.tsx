@@ -9,6 +9,7 @@ import {
 } from 'react-icons/lu';
 
 import { buttonVariants } from '../../atoms/Button';
+import { Button } from '../../atoms/Button';
 import { createTableColumn, Table } from '../../atoms/Table';
 import { NavigationLink } from '../../context';
 
@@ -35,17 +36,21 @@ export interface AdminUserDetailViewModel {
   avatarUrl?: string;
   createdAt: string;
   displayName: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   id: string;
   identities: readonly AdminUserIdentityViewModel[];
   memberships: readonly AdminUserMembershipViewModel[];
   platformRole?: string;
+  status: string;
   updatedAt: string;
 }
 
 export interface AdminUserDetailPageProps {
   backHref: string;
   user: AdminUserDetailViewModel;
+  onEdit?: () => void;
 }
 
 function initials(displayName: string) {
@@ -97,6 +102,7 @@ const membershipColumns = [
 export function AdminUserDetailPage({
   backHref,
   user,
+  onEdit,
 }: AdminUserDetailPageProps) {
   return (
     <div className="space-y-12">
@@ -122,7 +128,7 @@ export function AdminUserDetailPage({
             )
           )}
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-primary">User account</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
             {user.displayName}
@@ -137,6 +143,15 @@ export function AdminUserDetailPage({
                 Platform admin
               </span>
             ) : null}
+            <span
+              className={
+                user.status === 'suspended'
+                  ? 'inline-flex bg-destructive/10 px-2.5 py-1 text-xs font-semibold text-destructive'
+                  : 'inline-flex bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground'
+              }
+            >
+              {user.status === 'suspended' ? 'Suspended' : 'Active'}
+            </span>
           </div>
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
             {user.email ? (
@@ -151,6 +166,11 @@ export function AdminUserDetailPage({
             </span>
           </div>
         </div>
+        {onEdit ? (
+          <Button onClick={onEdit} variant="outline">
+            Edit user
+          </Button>
+        ) : null}
       </header>
 
       <section aria-labelledby="identities-heading">

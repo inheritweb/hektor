@@ -149,7 +149,10 @@ select
     'providers', jsonb_build_array('email'),
     'role', case when platform_admin then 'admin' else null end
   ) - case when platform_admin then '__unused__' else 'role' end,
-  jsonb_build_object('full_name', display_name),
+  jsonb_build_object(
+    'first_name', split_part(display_name, ' ', 1),
+    'last_name', substring(display_name from position(' ' in display_name) + 1)
+  ),
   now() - interval '30 days',
   now() - interval '1 day',
   now() - interval '1 day'

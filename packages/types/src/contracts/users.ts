@@ -14,6 +14,8 @@ import {
   type UserListItem,
   type UserSummary,
   type CreateUserInput,
+  type UpdateUserInput,
+  UserStatus,
 } from '../users';
 import {
   type ContractOutput,
@@ -56,6 +58,7 @@ export const userSummarySchema = z.object({
 }) satisfies z.ZodType<UserSummary>;
 
 export const userListItemSchema = userSummarySchema.extend({
+  status: z.enum(UserStatus),
   createdAt: z.iso.datetime(),
   identityProviders: z.array(z.enum(IdentityProvider)),
   lastSignInAt: z.iso.datetime().optional(),
@@ -63,6 +66,9 @@ export const userListItemSchema = userSummarySchema.extend({
 }) satisfies z.ZodType<UserListItem>;
 
 export const userSchema = userSummarySchema.extend({
+  status: z.enum(UserStatus),
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
   identities: z.array(userIdentitySchema),
   memberships: z.array(organisationMembershipSummarySchema),
   createdAt: z.iso.datetime(),
@@ -85,6 +91,7 @@ export const listUsersContract = defineContract({
   query: paginationQuerySchema.extend({
     order: z.literal('createdAt').default('createdAt'),
     dir: z.literal(SortDirection.Descending).default(SortDirection.Descending),
+    status: z.enum(UserStatus).optional(),
   }),
   output: hektorCollectionResponseSchema(z.array(userListItemSchema)),
 });
@@ -112,6 +119,23 @@ export const getUserContract = defineContract({
   output: hektorResponseSchema(userSchema),
 });
 
+export const updateUserInputSchema = z.object({
+  expectedUpdatedAt: z.iso.datetime(),
+  firstName: z.string().trim().min(1).max(100),
+  lastName: z.string().trim().min(1).max(100),
+  platformRole: z.enum(PlatformRole).optional(),
+  status: z.enum(UserStatus),
+}) satisfies z.ZodType<UpdateUserInput>;
+
+export const updateUserContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/users/:userId',
+  access: { type: 'platform', roles: [PlatformRole.Admin] },
+  params: z.object({ userId: z.uuid() }),
+  body: updateUserInputSchema,
+  output: hektorResponseSchema(userSchema),
+});
+
 export type GetCurrentUserResponse = ContractOutput<
   typeof getCurrentUserContract
 >;
@@ -127,3 +151,9 @@ export type CreateUserResponse = ContractOutput<typeof createUserContract>;
 export type GetUserParams = ContractParams<typeof getUserContract>;
 
 export type GetUserResponse = ContractOutput<typeof getUserContract>;
+
+export type UpdateUserBody = ContractBody<typeof updateUserContract>;
+
+export type UpdateUserParams = ContractParams<typeof updateUserContract>;
+
+export type UpdateUserResponse = ContractOutput<typeof updateUserContract>;

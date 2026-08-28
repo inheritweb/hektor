@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { PlatformRole } from '@hektor/types';
+import { getUserDisplayName, PlatformRole } from '@hektor/types';
 
 import { requireAuthenticated } from '../../lib/auth/platform-admin';
 
@@ -10,12 +10,27 @@ export default async function AuthenticatedLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   const user = await requireAuthenticated();
-  const displayName =
+  const providerName =
     typeof user.user_metadata.full_name === 'string'
       ? user.user_metadata.full_name
       : typeof user.user_metadata.name === 'string'
         ? user.user_metadata.name
-        : (user.email ?? 'Your account');
+        : undefined;
+  const [providerFirstName, ...providerRemainingNames] =
+    providerName?.split(/\s+/) ?? [];
+  const firstName =
+    typeof user.user_metadata.first_name === 'string'
+      ? user.user_metadata.first_name
+      : providerFirstName;
+  const lastName =
+    typeof user.user_metadata.last_name === 'string'
+      ? user.user_metadata.last_name
+      : providerRemainingNames.join(' ') || undefined;
+  const displayName = getUserDisplayName({
+    firstName,
+    lastName,
+    email: user.email,
+  });
 
   return (
     <AuthenticatedShell

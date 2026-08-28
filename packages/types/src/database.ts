@@ -697,6 +697,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      revoke_user_sessions: {
+        Args: { target_user_id: string };
+        Returns: undefined;
+      };
       search_organisation_membership_candidates: {
         Args: {
           page_number?: number;

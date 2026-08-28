@@ -1,23 +1,33 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-const { useAdminGetUserMock } = vi.hoisted(() => ({
+const { useAdminGetUserMock, useAdminUpdateUserMock } = vi.hoisted(() => ({
   useAdminGetUserMock: vi.fn(),
+  useAdminUpdateUserMock: vi.fn(),
 }));
 
 vi.mock('@hektor/query/users', () => ({
   useAdminGetUser: useAdminGetUserMock,
+  useAdminUpdateUser: useAdminUpdateUserMock,
 }));
 
 import { AdminUserDetailScreen } from './AdminUserDetailScreen';
 
 describe('AdminUserDetailScreen', () => {
   it('loads and presents the requested user', () => {
+    useAdminUpdateUserMock.mockReturnValue({
+      error: null,
+      isPending: false,
+      mutate: vi.fn(),
+    });
     useAdminGetUserMock.mockReturnValue({
       data: {
         data: {
           id: 'ab720a62-06df-408d-9e8c-0201ac69269a',
           displayName: 'Alex Morgan',
+          firstName: 'Alex',
+          lastName: 'Morgan',
+          status: 'active',
           email: 'alex@example.com',
           identities: [],
           memberships: [],

@@ -5,6 +5,8 @@ import {
   OrganisationStatus,
   OrganisationUserStatus,
   PlatformRole,
+  UserStatus,
+  getUserDisplayName,
   type CurrentUser,
   type UserIdentity,
   type UserListItem,
@@ -18,6 +20,24 @@ import type { CurrentUserOrganisationsQueryResult } from './users.queries';
 
 function optionalString(value: unknown) {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function mapUserName(user: User) {
+  const firstName = optionalString(user.user_metadata.first_name);
+  const lastName = optionalString(user.user_metadata.last_name);
+
+  if (firstName || lastName) return { firstName, lastName };
+
+  const providerName =
+    optionalString(user.user_metadata.full_name) ??
+    optionalString(user.user_metadata.name);
+  if (!providerName) return {};
+
+  const [providerFirstName, ...remainingNames] = providerName.split(/\s+/);
+  return {
+    firstName: providerFirstName,
+    lastName: remainingNames.join(' ') || undefined,
+  };
 }
 
 function mapIdentityProvider(provider: string) {
@@ -69,15 +89,22 @@ export function mapCurrentUser(
   user: User,
   memberships: CurrentUserOrganisationsQueryResult,
 ): CurrentUser {
-  const displayName =
-    optionalString(user.user_metadata.full_name) ??
-    optionalString(user.user_metadata.name) ??
-    user.email ??
-    'Hektor user';
+  const { firstName, lastName } = mapUserName(user);
+  const displayName = getUserDisplayName({
+    firstName,
+    lastName,
+    email: user.email,
+  });
+  const suspended =
+    Boolean(user.banned_until) &&
+    new Date(user.banned_until!).getTime() > Date.now();
 
   return {
     id: user.id,
     displayName,
+    firstName,
+    lastName,
+    status: suspended ? UserStatus.Suspended : UserStatus.Active,
     platformRole:
       user.app_metadata.role === PlatformRole.Admin
         ? PlatformRole.Admin
@@ -105,6 +132,7 @@ export function mapUserListItem(
     platformRole: mapped.platformRole,
     email: mapped.email,
     avatarUrl: mapped.avatarUrl,
+    status: mapped.status,
     createdAt: mapped.createdAt,
     identityProviders: mapped.identities.map((identity) => identity.provider),
     lastSignInAt: user.last_sign_in_at,

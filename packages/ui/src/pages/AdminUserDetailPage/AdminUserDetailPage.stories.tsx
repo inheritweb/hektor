@@ -12,6 +12,7 @@ const meta = {
       displayName: 'Alex Morgan',
       email: 'alex@example.com',
       platformRole: 'admin',
+      status: 'active',
       createdAt: '2026-08-01T10:00:00.000Z',
       updatedAt: '2026-08-15T10:00:00.000Z',
       identities: [
