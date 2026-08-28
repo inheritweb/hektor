@@ -15,6 +15,7 @@ Use the account switcher in the application menu to choose your personal account
 
 ## In this section
 
-The first guide explains how to enter and switch organisation workspaces. User, group, cohort and provisioning guides will follow as those tenant-facing tools are released.
+The first guides explain how to enter and switch organisation workspaces and review its user directory. Group, cohort and provisioning guides will follow as those tenant-facing tools are released.
 
 - [Enter an organisation workspace](./getting-started/)
+- [Review organisation users](./users/)

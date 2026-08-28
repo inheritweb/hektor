@@ -38,6 +38,7 @@ export function breadcrumbsForPath(
   if (pathname === '/') return [{ label: 'Home' }];
 
   const home = { label: 'Home', href: '/' };
+  if (pathname === '/users') return [home, { label: 'Users' }];
   if (pathname === '/profile') return [home, { label: 'Profile' }];
 
   if (pathname.startsWith('/admin/users/')) {
@@ -442,12 +443,6 @@ export function AuthenticatedShell({
                 icon: LuUsers,
                 href: '/users',
                 active: pathname.startsWith('/users'),
-              },
-              {
-                label: 'Groups',
-                icon: LuBuilding2,
-                href: '/groups',
-                active: pathname.startsWith('/groups'),
               },
             ],
           },

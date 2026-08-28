@@ -516,6 +516,17 @@ export const listOrganisationUsersContract = defineContract({
   ),
 });
 
+export const listTenantOrganisationUsersContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/users',
+  access: {
+    type: 'tenant',
+    roles: [OrganisationRole.OrganisationAdmin],
+  },
+  query: listOrganisationUsersContract.query,
+  output: listOrganisationUsersContract.output,
+});
+
 export const organisationMembershipCandidateSchema = userSummarySchema.extend({
   pendingProvision: z
     .object({ id: z.uuid(), role: z.enum(OrganisationRole) })
@@ -974,6 +985,14 @@ export type ListOrganisationUsersQuery = ContractQuery<
 
 export type ListOrganisationUsersResponse = ContractOutput<
   typeof listOrganisationUsersContract
+>;
+
+export type ListTenantOrganisationUsersQuery = ContractQuery<
+  typeof listTenantOrganisationUsersContract
+>;
+
+export type ListTenantOrganisationUsersResponse = ContractOutput<
+  typeof listTenantOrganisationUsersContract
 >;
 
 export type ListOrganisationMembershipCandidatesParams = ContractParams<

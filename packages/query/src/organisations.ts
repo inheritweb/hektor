@@ -22,6 +22,7 @@ import {
   listOrganisationUserProvisions,
   previewOrganisationProvisionImport,
   listOrganisationUsers,
+  getOrganisationUsers,
   listOrganisationMembershipCandidates,
   listOrganisations,
   sendOrganisationProvisionInvitation,
@@ -52,6 +53,11 @@ export const useGetTenantOrganisationContext = makeQuery(
   getTenantOrganisationContext,
   TENANT_ORGANISATION_QUERY_KEY,
 );
+
+export const useGetOrganisationUsers = makeQuery(getOrganisationUsers, [
+  ...TENANT_ORGANISATION_QUERY_KEY,
+  'users',
+]);
 
 export const useAdminGetOrganisations = makeQuery(
   listOrganisations,
