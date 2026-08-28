@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { UserStatus } from '@hektor/types';
 import { SortDirection } from '@hektor/types/contracts';
 
 import { Client } from './client';
@@ -46,6 +47,7 @@ describe('admin user API methods', () => {
       data: {
         id: userId,
         displayName: 'Alex Morgan',
+        status: UserStatus.Active,
         email: 'alex@example.com',
         identities: [],
         memberships: [],

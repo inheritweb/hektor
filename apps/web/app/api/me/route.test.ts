@@ -1,5 +1,6 @@
 import { beforeEach, describe, it, vi } from 'vitest';
 
+import { UserStatus } from '@hektor/types';
 import { HektorErrorCode } from '@hektor/types/contracts';
 
 import {
@@ -56,6 +57,7 @@ describe('GET /api/me', () => {
     const currentUser = {
       id: user.id,
       displayName: 'Alex Morgan',
+      status: UserStatus.Active,
       platformRole: 'admin',
       email: 'alex@example.com',
       identities: [
