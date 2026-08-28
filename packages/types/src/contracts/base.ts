@@ -87,6 +87,7 @@ export type ContractAccess =
   | { type: 'public' }
   | { type: 'authenticated' }
   | { type: 'platform'; roles: readonly PlatformRole[] }
+  | { type: 'tenant'; roles: readonly OrganisationRole[] }
   | {
       type: 'organisation';
       organisationIdParam: string;

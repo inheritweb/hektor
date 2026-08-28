@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 
-import { createSimulatorService } from '@hektor/services/simulator';
+import {
+  createSimulatorService,
+  simulatorSessionScenarios,
+} from '@hektor/services/simulator';
 import { Button } from '@hektor/ui/atoms';
 import { Logo } from '@hektor/ui/molecules';
 
@@ -96,6 +99,44 @@ export default async function SimulatorPage({
               </article>
             ),
           )}
+        </section>
+
+        <header>
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Tenant workspace sessions
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            These pods establish a real local session without changing identity
+            or provisioning records.
+          </p>
+        </header>
+
+        <section className="grid gap-4 md:grid-cols-2">
+          {simulatorSessionScenarios.map((scenario) => (
+            <article
+              className="rounded-xl bg-card p-6 shadow-[0_0_24px_-12px_rgb(0_0_0/0.18)]"
+              key={scenario.id}
+            >
+              <h3 className="font-semibold">{scenario.name}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {scenario.email}
+              </p>
+              <p className="mt-4 text-sm">{scenario.startingState}</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Expected: {scenario.expected}
+              </p>
+              <form
+                action="/api/session"
+                className="mt-5"
+                method="post"
+                rel="noopener"
+                target="_blank"
+              >
+                <input name="scenarioId" type="hidden" value={scenario.id} />
+                <Button type="submit">Start session</Button>
+              </form>
+            </article>
+          ))}
         </section>
       </div>
     </main>

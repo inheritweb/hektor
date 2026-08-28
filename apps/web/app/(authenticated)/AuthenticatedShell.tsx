@@ -1,10 +1,15 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import { LuBuilding2, LuHouse, LuUsers } from 'react-icons/lu';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
-import { PlatformRole } from '@hektor/types';
+import { OrganisationRole, PlatformRole } from '@hektor/types';
+import {
+  ACTIVE_ORGANISATION_NAME_STORAGE_KEY,
+  ACTIVE_ORGANISATION_CHANGE_EVENT,
+  ACTIVE_ORGANISATION_STORAGE_KEY,
+} from '@hektor/query';
 import { Logo, ThemeSwitcher } from '@hektor/ui/molecules';
 import {
   AppHeader,
@@ -309,6 +314,7 @@ export function AuthenticatedShell({
   };
 }>) {
   const pathname = usePathname();
+  const router = useRouter();
   const organisationId = pathname.match(
     /^\/admin\/organisations\/([^/]+)/,
   )?.[1];
@@ -370,16 +376,42 @@ export function AuthenticatedShell({
     breadcrumbMembership.data?.data.user.displayName,
   );
   const currentUser = useGetCurrentUser();
-  const [currentContextId, setCurrentContextId] = useState('personal');
+  const currentContextId = useSyncExternalStore(
+    (notify) => {
+      window.addEventListener('storage', notify);
+      window.addEventListener(ACTIVE_ORGANISATION_CHANGE_EVENT, notify);
+      return () => {
+        window.removeEventListener('storage', notify);
+        window.removeEventListener(ACTIVE_ORGANISATION_CHANGE_EVENT, notify);
+      };
+    },
+    () =>
+      window.localStorage.getItem(ACTIVE_ORGANISATION_STORAGE_KEY) ??
+      'personal',
+    () => 'personal',
+  );
   const user = currentUser.data?.data;
   const platformRole = user?.platformRole ?? fallbackUser.platformRole;
+  const activeMembership = user?.memberships.find(
+    (membership) => membership.organisation.id === currentContextId,
+  );
+  const isOrganisationAdmin =
+    activeMembership?.role === OrganisationRole.OrganisationAdmin;
+  const isPlatformTenant =
+    platformRole === PlatformRole.Admin && currentContextId !== 'personal';
+  const activeOrganisationName =
+    activeMembership?.organisation.name ??
+    (typeof window === 'undefined'
+      ? undefined
+      : (window.localStorage.getItem(ACTIVE_ORGANISATION_NAME_STORAGE_KEY) ??
+        undefined));
   const menuSections = [
     {
       items: [
         { label: 'Home', icon: LuHouse, href: '/', active: pathname === '/' },
       ],
     },
-    ...(platformRole === PlatformRole.Admin
+    ...(currentContextId === 'personal' && platformRole === PlatformRole.Admin
       ? [
           {
             label: 'Admin',
@@ -400,7 +432,40 @@ export function AuthenticatedShell({
           },
         ]
       : []),
+    ...(isOrganisationAdmin || isPlatformTenant
+      ? [
+          {
+            label: activeOrganisationName ?? 'Organisation',
+            items: [
+              {
+                label: 'Users',
+                icon: LuUsers,
+                href: '/users',
+                active: pathname.startsWith('/users'),
+              },
+              {
+                label: 'Groups',
+                icon: LuBuilding2,
+                href: '/groups',
+                active: pathname.startsWith('/groups'),
+              },
+            ],
+          },
+        ]
+      : []),
   ];
+
+  const changeContext = (contextId: string) => {
+    if (contextId === 'personal') {
+      window.localStorage.removeItem(ACTIVE_ORGANISATION_STORAGE_KEY);
+      window.localStorage.removeItem(ACTIVE_ORGANISATION_NAME_STORAGE_KEY);
+    } else {
+      window.localStorage.setItem(ACTIVE_ORGANISATION_STORAGE_KEY, contextId);
+    }
+    window.dispatchEvent(new Event(ACTIVE_ORGANISATION_CHANGE_EVENT));
+    router.push('/');
+    router.refresh();
+  };
   const contexts = [
     { id: 'personal', label: 'Personal account' },
     ...(user?.memberships
@@ -413,6 +478,14 @@ export function AuthenticatedShell({
         id: membership.organisation.id,
         label: membership.organisation.name,
       })) ?? []),
+    ...(isPlatformTenant && !activeMembership
+      ? [
+          {
+            id: currentContextId,
+            label: activeOrganisationName ?? 'Organisation',
+          },
+        ]
+      : []),
   ];
 
   const signOut = async () => {
@@ -425,7 +498,7 @@ export function AuthenticatedShell({
     currentContextId,
     displayName: user?.displayName ?? fallbackUser.displayName,
     email: user?.email ?? fallbackUser.email,
-    onContextChange: setCurrentContextId,
+    onContextChange: changeContext,
     onSignOut: signOut,
     profileHref: '/profile',
   };

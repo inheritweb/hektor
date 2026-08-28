@@ -7,7 +7,7 @@ import {
   LuUsers,
 } from 'react-icons/lu';
 
-import { buttonVariants } from '../../atoms/Button';
+import { Button, buttonVariants } from '../../atoms/Button';
 import { NavigationLink } from '../../context';
 
 export interface AdminOrganisationContractPeriodViewModel {
@@ -68,6 +68,7 @@ export interface AdminOrganisationDetailPageProps {
   organisation: AdminOrganisationDetailViewModel;
   provisionsHref: string;
   usersHref: string;
+  onEnterWorkspace?: () => void;
 }
 
 function formatDate(value: string) {
@@ -117,20 +118,28 @@ export function AdminOrganisationDetailPage({
   organisation,
   provisionsHref,
   usersHref,
+  onEnterWorkspace,
 }: AdminOrganisationDetailPageProps) {
   const users = organisation.usersSummary;
   const provisions = organisation.userProvisionsSummary;
 
   return (
     <div className="space-y-10">
-      {editHref ? (
-        <div className="flex justify-end">
-          <NavigationLink
-            className={buttonVariants({ variant: 'outline' })}
-            href={editHref}
-          >
-            Edit organisation
-          </NavigationLink>
+      {editHref || onEnterWorkspace ? (
+        <div className="flex justify-end gap-2">
+          {onEnterWorkspace ? (
+            <Button onClick={onEnterWorkspace} variant="outline">
+              Enter workspace
+            </Button>
+          ) : null}
+          {editHref ? (
+            <NavigationLink
+              className={buttonVariants({ variant: 'outline' })}
+              href={editHref}
+            >
+              Edit organisation
+            </NavigationLink>
+          ) : null}
         </div>
       ) : null}
       <CollectionSection

@@ -15,8 +15,9 @@ import {
   expectApiResponse,
 } from '@/tests/api/api-test-client';
 
-const { createClientMock, getUserMock, rpcMock } = vi.hoisted(() => ({
+const { createClientMock, fromMock, getUserMock, rpcMock } = vi.hoisted(() => ({
   createClientMock: vi.fn(),
+  fromMock: vi.fn(),
   getUserMock: vi.fn(),
   rpcMock: vi.fn(),
 }));
@@ -49,8 +50,10 @@ describe('registerEndpoint', () => {
     createClientMock.mockReset();
     getUserMock.mockReset();
     rpcMock.mockReset();
+    fromMock.mockReset();
     createClientMock.mockResolvedValue({
       auth: { getUser: getUserMock },
+      from: fromMock,
       rpc: rpcMock,
     });
   });
@@ -223,6 +226,103 @@ describe('registerEndpoint', () => {
     await expectApiResponse(
       await callApiEndpoint(endpoint, { params: { organisationId } }),
       'allowed',
+    );
+  });
+
+  it('requires an active tenant membership with an allowed role', async () => {
+    const organisationId = '3492a499-a216-4a30-8e3c-2c021d99d04f';
+    const handler = vi.fn((_, context) => ({ data: context.tenant.mode }));
+    const endpoint = registerEndpoint(
+      defineContract({
+        method: 'GET',
+        path: '/tenant',
+        access: {
+          type: 'tenant',
+          roles: [OrganisationRole.OrganisationAdmin],
+        },
+        output: hektorResponseSchema(z.string()),
+      }),
+      handler,
+    );
+    getUserMock.mockResolvedValue({
+      data: { user: { id: 'user-id', app_metadata: {} } },
+      error: null,
+    });
+
+    await expectApiError(await callApiEndpoint(endpoint), {
+      code: HektorErrorCode.BadRequest,
+      message: 'A valid organisation context is required',
+    });
+
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: { role: OrganisationRole.Tutor },
+      error: null,
+    });
+    const thirdEq = vi.fn().mockReturnValue({ maybeSingle });
+    const secondEq = vi.fn().mockReturnValue({ eq: thirdEq });
+    const firstEq = vi.fn().mockReturnValue({ eq: secondEq });
+    fromMock.mockReturnValue({
+      select: vi.fn().mockReturnValue({ eq: firstEq }),
+    });
+
+    const request = {
+      headers: { 'X-Hektor-Organisation-Id': organisationId },
+    };
+    rpcMock.mockResolvedValue({ data: true, error: null });
+    await expectApiError(await callApiEndpoint(endpoint, request), {
+      code: HektorErrorCode.Forbidden,
+      message: 'You do not have permission to perform this action',
+    });
+    expect(handler).not.toHaveBeenCalled();
+
+    maybeSingle.mockResolvedValue({
+      data: { role: OrganisationRole.OrganisationAdmin },
+      error: null,
+    });
+    await expectApiResponse(
+      await callApiEndpoint(endpoint, request),
+      'membership',
+    );
+
+    rpcMock.mockResolvedValue({ data: false, error: null });
+    await expectApiError(await callApiEndpoint(endpoint, request), {
+      code: HektorErrorCode.Forbidden,
+      message: 'You do not have permission to perform this action',
+    });
+  });
+
+  it('records platform administrators entering a tenant as platform access', async () => {
+    const organisationId = '3492a499-a216-4a30-8e3c-2c021d99d04f';
+    const endpoint = registerEndpoint(
+      defineContract({
+        method: 'GET',
+        path: '/tenant',
+        access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+        output: hektorResponseSchema(z.string()),
+      }),
+      (_, context) => ({ data: context.tenant.mode }),
+    );
+    getUserMock.mockResolvedValue({
+      data: {
+        user: { id: 'admin-id', app_metadata: { role: PlatformRole.Admin } },
+      },
+      error: null,
+    });
+    fromMock.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi
+            .fn()
+            .mockResolvedValue({ data: { id: organisationId }, error: null }),
+        }),
+      }),
+    });
+
+    await expectApiResponse(
+      await callApiEndpoint(endpoint, {
+        headers: { 'X-Hektor-Organisation-Id': organisationId },
+      }),
+      'platform',
     );
   });
 

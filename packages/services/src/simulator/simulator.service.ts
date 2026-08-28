@@ -65,6 +65,50 @@ export const simulatorScenarios = [
   },
 ] as const;
 
+export const simulatorSessionScenarios = [
+  {
+    id: 'organisation-admin',
+    name: 'Maya Patel',
+    email: 'maya.patel@northbridge.example',
+    startingState: 'Organisation administrator for Northbridge University.',
+    expected:
+      'The account switcher offers Northbridge and the organisation administration navigation appears after switching.',
+  },
+  {
+    id: 'multi-organisation-admin',
+    name: 'Daniel Okafor',
+    email: 'daniel.okafor@northbridge.example',
+    startingState:
+      'Organisation administrator for both Northbridge University and Westmere College.',
+    expected:
+      'Both tenants appear in the account switcher and can be changed without authenticating again.',
+  },
+  {
+    id: 'tutor-workspace',
+    name: 'Alice Morgan',
+    email: 'alice.morgan@northbridge.example',
+    startingState: 'Tutor in Northbridge University.',
+    expected:
+      'Northbridge appears in the switcher, but organisation administration navigation does not.',
+  },
+  {
+    id: 'learner-workspace',
+    name: 'Sam Rivera',
+    email: 'sam.rivera@northbridge.example',
+    startingState: 'Learner in Northbridge University.',
+    expected:
+      'Northbridge appears in the switcher with a learner workspace and no administration navigation.',
+  },
+  {
+    id: 'platform-administrator',
+    name: 'Jordan Ellis',
+    email: 'admin@hektor.local',
+    startingState: 'Platform administrator with a personal platform context.',
+    expected:
+      'The platform administration navigation is available. Entering a tenant uses platform access rather than creating a membership.',
+  },
+] as const;
+
 export type SimulatorScenario = (typeof simulatorScenarios)[number];
 
 export interface SimulatorScenarioState {
@@ -203,7 +247,19 @@ export function createSimulatorService({
     };
   }
 
-  return { listScenarios, startScenario };
+  async function startSessionScenario(
+    email: string,
+  ): Promise<SimulatorRedirect> {
+    const properties = await generateSessionToken(adminClient, email);
+    await verifySessionToken(
+      sessionClient,
+      properties.hashed_token,
+      properties.verification_type,
+    );
+    return { destination: 'web', path: '/' };
+  }
+
+  return { listScenarios, startScenario, startSessionScenario };
 }
 
 async function generateSessionToken(client: DatabaseClient, email: string) {

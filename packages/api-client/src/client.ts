@@ -8,12 +8,16 @@ export interface RequestOptions {
   query?: unknown;
   body?: unknown;
   headers?: Record<string, string>;
+  tenantScoped?: boolean;
 }
 
 export interface ClientOptions {
   baseUrl?: string;
   fetch?: typeof globalThis.fetch;
+  getOrganisationId?: () => string | undefined;
 }
+
+export const HEKTOR_ORGANISATION_HEADER = 'X-Hektor-Organisation-Id';
 
 export class HektorApiError extends Error {
   readonly code: HektorErrorCode;
@@ -54,10 +58,12 @@ function encodeQuery(query: unknown) {
 export class Client {
   private readonly baseUrl: string;
   private readonly fetcher?: typeof globalThis.fetch;
+  private readonly getOrganisationId?: () => string | undefined;
 
   constructor(options: ClientOptions = {}) {
     this.baseUrl = (options.baseUrl ?? '').replace(/\/$/, '');
     this.fetcher = options.fetch;
+    this.getOrganisationId = options.getOrganisationId;
   }
 
   async request(
@@ -67,6 +73,13 @@ export class Client {
   ): Promise<unknown> {
     const fetcher = this.fetcher ?? globalThis.fetch;
     const body = options.body;
+    const organisationId = options.tenantScoped
+      ? this.getOrganisationId?.()
+      : undefined;
+
+    if (options.tenantScoped && !organisationId) {
+      throw new Error('An active organisation is required for this request');
+    }
     const response = await fetcher(
       `${this.baseUrl}${buildPath(path, options.params)}${encodeQuery(options.query)}`,
       {
@@ -76,6 +89,9 @@ export class Client {
           accept: 'application/json',
           ...(body === undefined ? {} : { 'content-type': 'application/json' }),
           ...options.headers,
+          ...(organisationId
+            ? { [HEKTOR_ORGANISATION_HEADER]: organisationId }
+            : {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
       },

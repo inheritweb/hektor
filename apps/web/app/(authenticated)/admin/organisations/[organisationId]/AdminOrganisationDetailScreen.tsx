@@ -2,6 +2,12 @@
 
 import { useAdminGetOrganisation } from '@hektor/query/organisations';
 import { AdminOrganisationDetailPage } from '@hektor/ui/pages';
+import {
+  ACTIVE_ORGANISATION_CHANGE_EVENT,
+  ACTIVE_ORGANISATION_NAME_STORAGE_KEY,
+  ACTIVE_ORGANISATION_STORAGE_KEY,
+} from '@hektor/query';
+import { useRouter } from 'next/navigation';
 
 export interface AdminOrganisationDetailScreenProps {
   organisationId: string;
@@ -10,6 +16,7 @@ export interface AdminOrganisationDetailScreenProps {
 export function AdminOrganisationDetailScreen({
   organisationId,
 }: AdminOrganisationDetailScreenProps) {
+  const router = useRouter();
   const organisation = useAdminGetOrganisation({
     params: { organisationId },
   });
@@ -46,6 +53,19 @@ export function AdminOrganisationDetailScreen({
       editHref={`/admin/organisations/${organisationId}/edit`}
       groupsHref={`/admin/organisations/${organisationId}/groups`}
       organisation={organisation.data.data}
+      onEnterWorkspace={() => {
+        window.localStorage.setItem(
+          ACTIVE_ORGANISATION_STORAGE_KEY,
+          organisation.data.data.id,
+        );
+        window.localStorage.setItem(
+          ACTIVE_ORGANISATION_NAME_STORAGE_KEY,
+          organisation.data.data.name,
+        );
+        window.dispatchEvent(new Event(ACTIVE_ORGANISATION_CHANGE_EVENT));
+        router.push('/');
+        router.refresh();
+      }}
       provisionsHref={`/admin/organisations/${organisationId}/provisioned-users`}
       usersHref={`/admin/organisations/${organisationId}/users`}
     />

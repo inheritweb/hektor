@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import {
   createSimulatorService,
   simulatorScenarios,
+  simulatorSessionScenarios,
 } from '@hektor/services/simulator';
 import { createOrganisationInvitationsService } from '@hektor/services/organisations';
 
@@ -49,6 +50,25 @@ export async function POST(request: NextRequest) {
   }
 
   const scenarioId = (await request.formData()).get('scenarioId');
+  const sessionScenario = simulatorSessionScenarios.find(
+    (candidate) => candidate.id === scenarioId,
+  );
+  if (sessionScenario) {
+    try {
+      const result = await (
+        await service()
+      ).startSessionScenario(sessionScenario.email);
+      return NextResponse.redirect(
+        redirectUrl(result.destination, result.path),
+        303,
+      );
+    } catch {
+      return NextResponse.redirect(
+        redirectUrl('simulator', '/?error=session-setup-failed'),
+        303,
+      );
+    }
+  }
   const scenario = simulatorScenarios.find(
     (candidate) => candidate.id === scenarioId,
   );

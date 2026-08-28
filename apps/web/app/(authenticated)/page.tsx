@@ -1,6 +1,52 @@
+'use client';
+
+import { useSyncExternalStore } from 'react';
+import { useGetTenantOrganisationContext } from '@hektor/query/organisations';
+import { ACTIVE_ORGANISATION_STORAGE_KEY } from '@hektor/query';
+import { ACTIVE_ORGANISATION_CHANGE_EVENT } from '@hektor/query';
+
 export default function HomePage() {
+  const hasOrganisation = useSyncExternalStore(
+    (notify) => {
+      window.addEventListener(ACTIVE_ORGANISATION_CHANGE_EVENT, notify);
+      return () =>
+        window.removeEventListener(ACTIVE_ORGANISATION_CHANGE_EVENT, notify);
+    },
+    () => Boolean(window.localStorage.getItem(ACTIVE_ORGANISATION_STORAGE_KEY)),
+    () => false,
+  );
+  const organisation = useGetTenantOrganisationContext(undefined, {
+    enabled: hasOrganisation,
+  });
+
+  if (hasOrganisation) {
+    if (organisation.isPending) return <p>Loading organisation workspace…</p>;
+    if (organisation.isError) {
+      return <p role="alert">We could not load this organisation workspace.</p>;
+    }
+
+    const context = organisation.data?.data;
+    return (
+      <div className="space-y-8">
+        <section>
+          <p className="text-primary text-xs font-semibold uppercase tracking-[0.2em]">
+            Organisation workspace
+          </p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight">
+            {context?.organisation.name}
+          </h1>
+          <p className="mt-3 text-muted-foreground">
+            {context?.accessMode === 'platform'
+              ? 'You are viewing this workspace as a platform administrator.'
+              : `Signed in as ${context?.role?.replace('_', ' ')}.`}
+          </p>
+        </section>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-16">
+    <div className="space-y-8">
       <section>
         <p className="text-primary text-xs font-bold tracking-[0.24em]">
           HEKTOR
@@ -13,29 +59,6 @@ export default function HomePage() {
           together.
         </p>
       </section>
-
-      {Array.from({ length: 10 }, (_, index) => (
-        <section
-          className="grid gap-6 border-t border-border pt-10 md:grid-cols-[12rem_minmax(0,1fr)]"
-          key={index}
-        >
-          <h2 className="text-xl font-semibold tracking-tight">
-            Working area {index + 1}
-          </h2>
-          <div className="max-w-3xl space-y-5 text-base leading-7 text-muted-foreground">
-            <p>
-              This is representative long-form content for reviewing the paper
-              layout. It creates enough vertical depth to exercise scrolling
-              without adding application behavior or committing to final copy.
-            </p>
-            <p>
-              The surrounding application shell should remain still while this
-              paper surface moves independently. Spacing stays generous so the
-              page remains light, calm, and easy to scan.
-            </p>
-          </div>
-        </section>
-      ))}
     </div>
   );
 }

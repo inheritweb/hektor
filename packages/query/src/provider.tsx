@@ -11,6 +11,14 @@ import {
 
 import { Client, type ClientOptions } from '@hektor/api-client';
 
+export const ACTIVE_ORGANISATION_STORAGE_KEY = 'hektor.activeOrganisationId';
+
+export const ACTIVE_ORGANISATION_NAME_STORAGE_KEY =
+  'hektor.activeOrganisationName';
+
+export const ACTIVE_ORGANISATION_CHANGE_EVENT =
+  'hektor-active-organisation-change';
+
 const ApiClientContext = createContext<Client | undefined>(undefined);
 
 interface QueryProviderProps extends PropsWithChildren {
@@ -26,7 +34,17 @@ export function QueryProvider({
   children,
 }: QueryProviderProps) {
   const [fallbackQueryClient] = useState(() => new QueryClient());
-  const [fallbackApiClient] = useState(() => new Client(apiClientOptions));
+  const [fallbackApiClient] = useState(
+    () =>
+      new Client({
+        getOrganisationId: () =>
+          typeof window === 'undefined'
+            ? undefined
+            : (window.localStorage.getItem(ACTIVE_ORGANISATION_STORAGE_KEY) ??
+              undefined),
+        ...apiClientOptions,
+      }),
+  );
   const activeApiClient = apiClient ?? fallbackApiClient;
   const value = useMemo(() => activeApiClient, [activeApiClient]);
 

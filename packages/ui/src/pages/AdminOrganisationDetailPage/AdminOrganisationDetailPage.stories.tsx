@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
 
 import { OrganisationDetailsRail } from '../../organisms';
 
@@ -55,6 +56,7 @@ const meta = {
     contractPeriodsHref: `/admin/organisations/${organisation.id}/contract-periods`,
     groupsHref: `/admin/organisations/${organisation.id}/groups`,
     organisation,
+    onEnterWorkspace: fn(),
     provisionsHref: `/admin/organisations/${organisation.id}/provisioned-users`,
     usersHref: `/admin/organisations/${organisation.id}/users`,
   },

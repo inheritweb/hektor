@@ -9,6 +9,7 @@ import {
   createOrganisationUser,
   commitOrganisationProvisionImport,
   getOrganisation,
+  getTenantOrganisationContext,
   getOrganisationContractPeriod,
   getOrganisationCohort,
   getOrganisationGroup,
@@ -41,6 +42,16 @@ export const ADMIN_ORGANISATIONS_QUERY_KEY = [
   'admin',
   'organisations',
 ] as const;
+
+export const TENANT_ORGANISATION_QUERY_KEY = [
+  'tenant',
+  'organisation',
+] as const;
+
+export const useGetTenantOrganisationContext = makeQuery(
+  getTenantOrganisationContext,
+  TENANT_ORGANISATION_QUERY_KEY,
+);
 
 export const useAdminGetOrganisations = makeQuery(
   listOrganisations,

@@ -17,6 +17,7 @@ import {
   type OrganisationMembershipCandidate,
   type OrganisationProvisionInvitationResult,
   type OrganisationSummary,
+  type TenantOrganisationContext,
   type OrganisationUserProvision,
   type OrganisationUserProvisionDetail,
   type OrganisationUserProvisionsSummary,
@@ -70,6 +71,26 @@ export const organisationSummarySchema = z.object({
   slug: z.string().min(1),
   status: z.enum(OrganisationStatus),
 }) satisfies z.ZodType<OrganisationSummary>;
+
+export const tenantOrganisationContextSchema = z.object({
+  accessMode: z.enum(['membership', 'platform']),
+  organisation: organisationSummarySchema,
+  role: z.enum(OrganisationRole).optional(),
+}) satisfies z.ZodType<TenantOrganisationContext>;
+
+export const getTenantOrganisationContextContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation',
+  access: {
+    type: 'tenant',
+    roles: [
+      OrganisationRole.OrganisationAdmin,
+      OrganisationRole.Tutor,
+      OrganisationRole.Learner,
+    ],
+  },
+  output: hektorResponseSchema(tenantOrganisationContextSchema),
+});
 
 export const organisationCohortSummarySchema = z.object({
   id: z.uuid(),

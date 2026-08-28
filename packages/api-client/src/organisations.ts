@@ -9,6 +9,7 @@ import {
   createOrganisationUserContract,
   commitOrganisationProvisionImportContract,
   getOrganisationContract,
+  getTenantOrganisationContextContract,
   getOrganisationContractPeriodContract,
   getOrganisationCohortContract,
   getOrganisationGroupContract,
@@ -39,6 +40,10 @@ import { registerApiMethod } from './api-method';
 export const listOrganisations = registerApiMethod(listOrganisationsContract);
 
 export const getOrganisation = registerApiMethod(getOrganisationContract);
+
+export const getTenantOrganisationContext = registerApiMethod(
+  getTenantOrganisationContextContract,
+);
 
 export const createOrganisation = registerApiMethod(createOrganisationContract);
 

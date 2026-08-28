@@ -62,6 +62,35 @@ describe('simulator service', () => {
     expect(generateLink).not.toHaveBeenCalled();
     expect(verifyOtp).not.toHaveBeenCalled();
   });
+
+  it('establishes a session pod without changing tenant data', async () => {
+    const generateLink = vi.fn().mockResolvedValue({
+      data: {
+        properties: {
+          hashed_token: 'hashed-token',
+          verification_type: 'magiclink',
+        },
+      },
+      error: null,
+    });
+    const verifyOtp = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const service = createSimulatorService({
+      adminClient: clientWithProvision(null, { generateLink }),
+      sessionClient: { auth: { verifyOtp } } as unknown as DatabaseClient,
+    });
+
+    await expect(
+      service.startSessionScenario('maya.patel@northbridge.example'),
+    ).resolves.toEqual({ destination: 'web', path: '/' });
+    expect(generateLink).toHaveBeenCalledWith({
+      email: 'maya.patel@northbridge.example',
+      type: 'magiclink',
+    });
+    expect(verifyOtp).toHaveBeenCalledWith({
+      token_hash: 'hashed-token',
+      type: 'magiclink',
+    });
+  });
 });
 
 function clientWithProvision(

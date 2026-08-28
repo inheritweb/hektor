@@ -373,4 +373,16 @@ from public.organisation_users
 join public.organisations on organisations.id = organisation_users.organisation_id
 where organisation_users.role = 'learner';
 
+insert into public.organisation_users (
+  id, organisation_id, user_id, organisation_cohort_id, role, status
+)
+values (
+  '2c68004c-eaf4-4516-ae7b-8e4fddbc4ee4',
+  'f29e6891-351a-4445-b2dc-f30cadcf0416',
+  'b8f5c104-1d91-4a9a-bd6d-1401c0745b41',
+  null,
+  'org_admin',
+  'active'
+);
+
 commit;

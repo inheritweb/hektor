@@ -1,10 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { AdminOrganisationDetailPage } from './AdminOrganisationDetailPage.component';
 
 describe('AdminOrganisationDetailPage', () => {
   it('presents organisation details, collections, and user counts', () => {
+    const onEnterWorkspace = vi.fn();
     render(
       <AdminOrganisationDetailPage
         cohortsHref="/admin/organisations/organisation-id/cohorts"
@@ -55,6 +56,7 @@ describe('AdminOrganisationDetailPage', () => {
             },
           ],
         }}
+        onEnterWorkspace={onEnterWorkspace}
         provisionsHref="/admin/organisations/organisation-id/provisioned-users"
         usersHref="/admin/organisations/organisation-id/users"
       />,
@@ -63,6 +65,8 @@ describe('AdminOrganisationDetailPage', () => {
     expect(screen.getByRole('heading', { name: 'Users' })).toBeTruthy();
     expect(screen.getByText('Awaiting account linking')).toBeTruthy();
     expect(screen.getByText('Clinical Practice A')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Enter workspace' }));
+    expect(onEnterWorkspace).toHaveBeenCalledOnce();
     expect(screen.getByText('September 2026')).toBeTruthy();
     expect(
       screen.getByRole('link', { name: 'View groups' }).getAttribute('href'),

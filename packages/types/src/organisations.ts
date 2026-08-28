@@ -12,6 +12,12 @@ export enum OrganisationRole {
   Learner = 'learner',
 }
 
+export interface TenantOrganisationContext {
+  accessMode: 'membership' | 'platform';
+  organisation: OrganisationSummary;
+  role?: OrganisationRole;
+}
+
 export enum OrganisationUserStatus {
   Active = 'active',
   Suspended = 'suspended',

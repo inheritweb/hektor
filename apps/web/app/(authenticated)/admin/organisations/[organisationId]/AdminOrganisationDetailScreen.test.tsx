@@ -9,6 +9,10 @@ vi.mock('@hektor/query/organisations', () => ({
   useAdminGetOrganisation: useAdminGetOrganisationMock,
 }));
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
+
 import { AdminOrganisationDetailScreen } from './AdminOrganisationDetailScreen';
 
 describe('AdminOrganisationDetailScreen', () => {

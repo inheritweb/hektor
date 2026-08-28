@@ -1,8 +1,20 @@
 ---
-title: Org Admins
-description: Documentation for organisation administrators.
+title: Organisation administrators
+description: Manage your organisation's Hektor workspace.
+sidebar:
+  order: 1
 ---
 
-Docs for Org Admins are coming soon. This section will cover managing members,
-roles, and identity provisioning (including Microsoft Entra and SCIM) for your
-organisation.
+Organisation administrators manage users, groups, cohorts and provisioning within one organisation workspace. Platform administration is a separate area and is not covered by these guides.
+
+## Your account and workspace
+
+Signing in establishes one Hektor session for your account. If you belong to more than one organisation, you do not need to sign in again when moving between them.
+
+Use the account switcher in the application menu to choose your personal account or any active organisation membership. The navigation and dashboard change to match the selected workspace and your role there.
+
+## In this section
+
+The first guide explains how to enter and switch organisation workspaces. User, group, cohort and provisioning guides will follow as those tenant-facing tools are released.
+
+- [Enter an organisation workspace](./getting-started/)

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
 import type { Database } from '@hektor/types/database';
+import type { OrganisationRole } from '@hektor/types';
 import type {
   AnyHektorContract,
   ContractBody,
@@ -10,6 +11,7 @@ import type {
   ContractQuery,
 } from '@hektor/types/contracts';
 import { HektorErrorCode } from '@hektor/types/contracts';
+import { HEKTOR_ORGANISATION_HEADER } from '@hektor/api-client';
 import {
   createServiceError,
   normaliseServiceError,
@@ -38,11 +40,26 @@ type EndpointInput<TContract extends AnyHektorContract> = InputForKey<
 
 type ServerSupabaseClient = SupabaseClient<Database>;
 
+interface TenantAuthorization {
+  organisationId: string;
+  mode: 'membership' | 'platform';
+  role?: OrganisationRole;
+}
+
 type EndpointContext<TContract extends AnyHektorContract> = {
   request: Request;
 } & (TContract['access'] extends { type: 'public' }
   ? object
-  : { supabase: ServerSupabaseClient; user: User });
+  : { supabase: ServerSupabaseClient; user: User }) &
+  (TContract['access'] extends { type: 'tenant' }
+    ? {
+        tenant: {
+          organisationId: string;
+          mode: 'membership' | 'platform';
+          role?: OrganisationRole;
+        };
+      }
+    : object);
 
 export type RegisteredEndpoint = (
   request: Request,
@@ -137,10 +154,63 @@ async function authorize(
   input: object,
   user: User | undefined,
   supabase: ServerSupabaseClient | undefined,
-) {
+): Promise<TenantAuthorization | undefined> {
   const access = contract.access;
 
   if (access.type === 'public' || access.type === 'authenticated') return;
+
+  if (access.type === 'tenant' && user && supabase) {
+    const organisationId = inputRequestHeader(
+      input,
+      HEKTOR_ORGANISATION_HEADER,
+    );
+    if (!z.string().uuid().safeParse(organisationId).success) {
+      throw createServiceError(HektorErrorCode.BadRequest, {
+        message: 'A valid organisation context is required',
+      });
+    }
+
+    if (user.app_metadata.role === 'admin') {
+      const { data, error } = await supabase
+        .from('organisations')
+        .select('id')
+        .eq('id', organisationId!)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) return { organisationId: organisationId!, mode: 'platform' };
+    } else {
+      const { data: allowed, error: accessError } = await supabase.rpc(
+        'has_organisation_role',
+        {
+          target_organisation_id: organisationId!,
+          allowed_roles: [...access.roles],
+        },
+      );
+      if (accessError) throw accessError;
+      if (!allowed) {
+        throw createServiceError(HektorErrorCode.Forbidden, {
+          message: 'You do not have permission to perform this action',
+        });
+      }
+
+      const { data, error } = await supabase
+        .from('organisation_users')
+        .select('role')
+        .eq('organisation_id', organisationId!)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle();
+      if (error) throw error;
+      const role = data?.role as OrganisationRole | undefined;
+      if (role && access.roles.includes(role)) {
+        return {
+          organisationId: organisationId!,
+          mode: 'membership',
+          role,
+        };
+      }
+    }
+  }
 
   if (
     access.type === 'platform' &&
@@ -178,6 +248,11 @@ async function authorize(
   });
 }
 
+function inputRequestHeader(input: object, name: string) {
+  if (!('request' in input) || !(input.request instanceof Request)) return null;
+  return input.request.headers.get(name);
+}
+
 export function registerEndpoint<TContract extends AnyHektorContract>(
   contract: TContract,
   handler: (
@@ -195,11 +270,17 @@ export function registerEndpoint<TContract extends AnyHektorContract>(
         ? await authenticate(contract, supabase)
         : undefined;
       const input = await parseRequest(contract, request, context);
-      await authorize(contract, input, user, supabase);
+      const tenant = await authorize(
+        contract,
+        { ...input, request },
+        user,
+        supabase,
+      );
       const result = await handler(input, {
         request,
         ...(supabase ? { supabase } : {}),
         ...(user ? { user } : {}),
+        ...(tenant ? { tenant } : {}),
       } as EndpointContext<TContract>);
       const output = contract.output.safeParse(result);
 

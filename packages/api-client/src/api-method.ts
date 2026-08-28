@@ -57,11 +57,10 @@ export function registerApiMethod<TContract extends AnyHektorContract>(
     client: Client,
     variables?: ApiMethodVariables<TContract>,
   ) => {
-    const payload = await client.request(
-      contract.method,
-      contract.path,
-      variables as RequestOptions | undefined,
-    );
+    const payload = await client.request(contract.method, contract.path, {
+      ...(variables as RequestOptions | undefined),
+      tenantScoped: contract.access.type === 'tenant',
+    });
     return contract.output.parse(payload) as ContractOutput<TContract>;
   };
 
