@@ -1,7 +1,7 @@
 import { createTableColumn } from '../../atoms/Table';
 import { Grid } from '../../organisms/Grid';
 import { NavigationLink } from '../../context';
-import { Button } from '../../atoms/Button';
+import { Button, buttonVariants } from '../../atoms/Button';
 
 export interface AdminOrganisationUserListItemViewModel {
   id: string;
@@ -22,6 +22,7 @@ export interface AdminOrganisationUsersPageProps {
   onPageChange: (page: number) => void;
   onConnectUsers?: () => void;
   onAddUser?: () => void;
+  provisionsHref?: string;
   organisationName: string;
   page: number;
   pageSize: number;
@@ -75,6 +76,7 @@ export function AdminOrganisationUsersPage({
   onPageChange,
   onConnectUsers,
   onAddUser,
+  provisionsHref,
   organisationName,
   page,
   pageSize,
@@ -100,8 +102,16 @@ export function AdminOrganisationUsersPage({
     : columns;
   return (
     <div className="space-y-4">
-      {onConnectUsers || onAddUser ? (
+      {onConnectUsers || onAddUser || provisionsHref ? (
         <div className="flex justify-end gap-2">
+          {provisionsHref ? (
+            <NavigationLink
+              className={buttonVariants({ variant: 'outline' })}
+              href={provisionsHref}
+            >
+              Manage provisions
+            </NavigationLink>
+          ) : null}
           {onAddUser ? (
             <Button onClick={onAddUser} variant="outline">
               Add user

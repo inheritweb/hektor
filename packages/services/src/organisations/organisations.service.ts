@@ -304,11 +304,35 @@ export function createOrganisationsService(client: DatabaseClient) {
   }
 
   async function transitionOrganisationUserProvision(options: {
+    organisationId?: string;
     provisionId: string;
     expectedStatus: ProvisioningStatus;
     action: ProvisioningLifecycleAction;
     organisationUserId?: string;
   }) {
+    if (options.organisationId) {
+      const { error } = await buildOrganisationUserProvisionDetailQuery(
+        client,
+        options.organisationId,
+        options.provisionId,
+      );
+      if (error) {
+        throw createServiceError(
+          error.code === 'PGRST116'
+            ? HektorErrorCode.NotFound
+            : HektorErrorCode.InternalServerError,
+          {
+            message:
+              error.code === 'PGRST116'
+                ? 'Provisioned user not found'
+                : 'Unable to resolve provisioned user',
+            internalMessage: error.message,
+            cause: error,
+          },
+        );
+      }
+    }
+
     if (
       !canTransitionProvisioningStatus(options.expectedStatus, options.action)
     ) {

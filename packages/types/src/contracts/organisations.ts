@@ -789,12 +789,30 @@ export const listTenantOrganisationUserProvisionsContract = defineContract({
   output: listOrganisationUserProvisionsContract.output,
 });
 
+export const createTenantOrganisationUserProvisionContract = defineContract({
+  method: 'POST',
+  path: '/api/organisation/user-provisions',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  body: organisationProvisionImportRowSchema.omit({ rowNumber: true }).extend({
+    sendInvitation: z.boolean().default(true),
+  }),
+  output: hektorResponseSchema(z.object({ accepted: z.literal(true) })),
+});
+
 export const getOrganisationUserProvisionContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/user-provisions/:provisionId',
   access: { type: 'platform', roles: [PlatformRole.Admin] },
   params: z.object({ organisationId: z.uuid(), provisionId: z.uuid() }),
   output: hektorResponseSchema(organisationUserProvisionDetailSchema),
+});
+
+export const getTenantOrganisationUserProvisionContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/user-provisions/:provisionId',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ provisionId: z.uuid() }),
+  output: getOrganisationUserProvisionContract.output,
 });
 
 export const provisioningLifecycleResultSchema = z.object({
@@ -814,6 +832,28 @@ export const transitionOrganisationUserProvisionContract = defineContract({
   }),
   output: hektorResponseSchema(provisioningLifecycleResultSchema),
 });
+
+export const transitionTenantOrganisationUserProvisionContract = defineContract(
+  {
+    method: 'PATCH',
+    path: '/api/organisation/user-provisions/:provisionId/lifecycle',
+    access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+    params: z.object({ provisionId: z.uuid() }),
+    body: z.object({
+      action: z
+        .enum(ProvisioningLifecycleAction)
+        .refine(
+          (action) =>
+            action === ProvisioningLifecycleAction.Deactivate ||
+            action === ProvisioningLifecycleAction.Reactivate ||
+            action === ProvisioningLifecycleAction.Revoke,
+          { message: 'Organisation administrators cannot perform this action' },
+        ),
+      expectedStatus: z.enum(ProvisioningStatus),
+    }),
+    output: transitionOrganisationUserProvisionContract.output,
+  },
+);
 
 export const provisioningAutoLinkResultSchema = z.object({
   outcome: z.enum(ProvisioningAutoLinkOutcome),
@@ -843,6 +883,17 @@ export const sendOrganisationProvisionInvitationContract = defineContract({
   body: emptyObjectSchema,
   output: hektorResponseSchema(organisationProvisionInvitationResultSchema),
 });
+
+export const sendTenantOrganisationProvisionInvitationContract = defineContract(
+  {
+    method: 'POST',
+    path: '/api/organisation/user-provisions/:provisionId/invitation',
+    access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+    params: z.object({ provisionId: z.uuid() }),
+    body: emptyObjectSchema,
+    output: sendOrganisationProvisionInvitationContract.output,
+  },
+);
 
 export const organisationBulkInvitationItemResultSchema = z.object({
   email: z.string().min(1).optional(),
@@ -885,6 +936,15 @@ export const sendOrganisationProvisionInvitationsContract = defineContract({
   }),
   output: hektorResponseSchema(organisationBulkInvitationResultSchema),
 });
+
+export const sendTenantOrganisationProvisionInvitationsContract =
+  defineContract({
+    method: 'POST',
+    path: '/api/organisation/user-provisions/invitations',
+    access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+    body: sendOrganisationProvisionInvitationsContract.body,
+    output: sendOrganisationProvisionInvitationsContract.output,
+  });
 
 export const getProvisionAcceptanceContract = defineContract({
   method: 'GET',

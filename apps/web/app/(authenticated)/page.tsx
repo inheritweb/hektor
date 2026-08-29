@@ -13,7 +13,7 @@ import {
 } from '@hektor/query/statistics';
 import { useGetCurrentUser } from '@hektor/query/users';
 import { OrganisationRole, PlatformRole } from '@hektor/types';
-import { DashboardPage } from '@hektor/ui/pages';
+import { DashboardPage, OrganisationDashboardPage } from '@hektor/ui/pages';
 
 export default function HomePage() {
   const hasOrganisation = useSyncExternalStore(
@@ -66,31 +66,16 @@ export default function HomePage() {
 
     const statistics = organisationStatistics.data?.data;
     return (
-      <DashboardPage
+      <OrganisationDashboardPage
+        cohortCount={statistics?.cohortCount ?? 0}
         error={organisationStatistics.error?.message}
-        eyebrow="Organisation workspace"
+        groupCount={statistics?.groupCount ?? 0}
         loading={organisation.isPending || organisationStatistics.isPending}
-        pods={[
-          {
-            description: 'Manage users connected to this organisation.',
-            href: '/users',
-            label: 'Users',
-            value: statistics?.userCount ?? 0,
-          },
-          {
-            description: 'Manage learner cohorts and their dates.',
-            href: '/cohorts',
-            label: 'Cohorts',
-            value: statistics?.cohortCount ?? 0,
-          },
-          {
-            description: 'Manage local and externally provisioned groups.',
-            href: '/groups',
-            label: 'Groups',
-            value: statistics?.groupCount ?? 0,
-          },
-        ]}
-        title={organisationContext?.organisation.name ?? 'Dashboard'}
+        organisationName={
+          organisationContext?.organisation.name ?? 'Organisation'
+        }
+        provisionCount={statistics?.provisionCount ?? 0}
+        userCount={statistics?.userCount ?? 0}
       />
     );
   }

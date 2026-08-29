@@ -6,6 +6,7 @@ import {
   createOrganisationCohortContract,
   createTenantOrganisationCohortContract,
   createTenantOrganisationGroupContract,
+  createTenantOrganisationUserProvisionContract,
   createOrganisationGroupContract,
   createOrganisationMembershipsContract,
   createOrganisationUserContract,
@@ -19,6 +20,7 @@ import {
   getOrganisationGroupContract,
   getOrganisationMembershipContract,
   getTenantOrganisationMembershipContract,
+  getTenantOrganisationUserProvisionContract,
   getOrganisationUserProvisionContract,
   getProvisionAcceptanceContract,
   listOrganisationContractPeriodsContract,
@@ -35,7 +37,10 @@ import {
   previewOrganisationProvisionImportContract,
   sendOrganisationProvisionInvitationContract,
   sendOrganisationProvisionInvitationsContract,
+  sendTenantOrganisationProvisionInvitationContract,
+  sendTenantOrganisationProvisionInvitationsContract,
   transitionOrganisationUserProvisionContract,
+  transitionTenantOrganisationUserProvisionContract,
   updateOrganisationContract,
   updateOrganisationContractPeriodContract,
   updateOrganisationCohortContract,
@@ -196,6 +201,26 @@ export const updateTenantOrganisationGroupMembership = registerApiMethod(
 
 export const getTenantOrganisationUserProvisions = registerApiMethod(
   listTenantOrganisationUserProvisionsContract,
+);
+
+export const createTenantOrganisationUserProvision = registerApiMethod(
+  createTenantOrganisationUserProvisionContract,
+);
+
+export const getTenantOrganisationUserProvision = registerApiMethod(
+  getTenantOrganisationUserProvisionContract,
+);
+
+export const transitionTenantOrganisationUserProvision = registerApiMethod(
+  transitionTenantOrganisationUserProvisionContract,
+);
+
+export const sendTenantOrganisationProvisionInvitation = registerApiMethod(
+  sendTenantOrganisationProvisionInvitationContract,
+);
+
+export const sendTenantOrganisationProvisionInvitations = registerApiMethod(
+  sendTenantOrganisationProvisionInvitationsContract,
 );
 
 export const listOrganisationMembershipCandidates = registerApiMethod(

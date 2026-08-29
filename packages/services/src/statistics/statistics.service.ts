@@ -32,8 +32,9 @@ export function createStatisticsService(client: DatabaseClient) {
   async function getOrganisationStatistics(
     organisationId: string,
   ): Promise<OrganisationStatistics> {
-    const [users, cohorts, groups] = await Promise.all([
+    const [users, provisions, cohorts, groups] = await Promise.all([
       countOrganisationRecords('organisation_users', organisationId),
+      countOrganisationRecords('organisation_user_provisions', organisationId),
       countOrganisationRecords('organisation_cohorts', organisationId),
       countOrganisationRecords('organisation_groups', organisationId),
     ]);
@@ -41,13 +42,17 @@ export function createStatisticsService(client: DatabaseClient) {
     return {
       cohortCount: cohorts,
       groupCount: groups,
+      provisionCount: provisions,
       userCount: users,
     };
   }
 
   async function countOrganisationRecords(
     table:
-      'organisation_cohorts' | 'organisation_groups' | 'organisation_users',
+      | 'organisation_cohorts'
+      | 'organisation_groups'
+      | 'organisation_user_provisions'
+      | 'organisation_users',
     organisationId: string,
   ) {
     const { count, error } = await client

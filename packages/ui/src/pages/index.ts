@@ -14,6 +14,8 @@ export * from './AdminOrganisationCohortFormPage';
 
 export * from './DashboardPage';
 
+export * from './OrganisationDashboardPage';
+
 export * from './AdminOrganisationCohortDetailPage';
 
 export * from './AdminOrganisationGroupsPage';
@@ -31,6 +33,8 @@ export * from './AdminOrganisationUsersPage';
 export * from './AdminOrganisationUserProvisionsPage';
 
 export * from './AdminOrganisationUserProvisionDetailPage';
+
+export * from './OrganisationUserProvisionFormPage';
 
 export * from './AdminUserDetailPage';
 

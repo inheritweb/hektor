@@ -15,6 +15,7 @@ export interface AdminOrganisationUserProvisionListItemViewModel {
 export interface AdminOrganisationUserProvisionsPageProps {
   error?: string;
   loading?: boolean;
+  onCreateProvision?: () => void;
   onImportUsers?: () => void;
   onManageInvitations?: () => void;
   onPageChange: (page: number) => void;
@@ -70,6 +71,7 @@ export function AdminOrganisationUserProvisionsPage({
   error,
   getProvisionHref,
   loading,
+  onCreateProvision,
   onImportUsers,
   onManageInvitations,
   onPageChange,
@@ -99,7 +101,7 @@ export function AdminOrganisationUserProvisionsPage({
 
   return (
     <div className="space-y-4">
-      {onImportUsers || onManageInvitations ? (
+      {onCreateProvision || onImportUsers || onManageInvitations ? (
         <div className="flex justify-end gap-2">
           {onManageInvitations ? (
             <Button onClick={onManageInvitations} variant="outline">
@@ -108,6 +110,9 @@ export function AdminOrganisationUserProvisionsPage({
           ) : null}
           {onImportUsers ? (
             <Button onClick={onImportUsers}>Import users</Button>
+          ) : null}
+          {onCreateProvision ? (
+            <Button onClick={onCreateProvision}>Invite user</Button>
           ) : null}
         </div>
       ) : null}

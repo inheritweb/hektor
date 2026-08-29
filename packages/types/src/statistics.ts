@@ -6,5 +6,6 @@ export interface PlatformStatistics {
 export interface OrganisationStatistics {
   cohortCount: number;
   groupCount: number;
+  provisionCount: number;
   userCount: number;
 }

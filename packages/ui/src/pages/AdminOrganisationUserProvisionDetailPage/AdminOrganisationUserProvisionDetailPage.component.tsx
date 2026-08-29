@@ -47,6 +47,7 @@ export interface AdminOrganisationUserProvisionDetailPageProps {
   actionMessage?: string;
   getGroupHref?: (group: Summary) => string;
   getUserHref?: (user: LinkedUser) => string;
+  showAccountLinking?: boolean;
   provision: AdminOrganisationUserProvisionDetailViewModel;
 }
 
@@ -72,6 +73,7 @@ export function AdminOrganisationUserProvisionDetailPage({
   getGroupHref,
   getUserHref,
   provision,
+  showAccountLinking = true,
 }: AdminOrganisationUserProvisionDetailPageProps) {
   const displayName =
     provision.provisionedDisplayName ?? provision.provisionedUserName;
@@ -182,31 +184,35 @@ export function AdminOrganisationUserProvisionDetailPage({
         </dl>
       </section>
 
-      <section>
-        <h2 className="text-xl font-bold">Account linking</h2>
-        {provision.linkedUser ? (
-          <div className="mt-4 bg-accent/35 p-4 text-sm">
-            <p className="font-semibold">{provision.linkedUser.displayName}</p>
-            {provision.linkedUser.email ? (
-              <p className="mt-1 text-muted-foreground">
-                {provision.linkedUser.email}
+      {showAccountLinking ? (
+        <section>
+          <h2 className="text-xl font-bold">Account linking</h2>
+          {provision.linkedUser ? (
+            <div className="mt-4 bg-accent/35 p-4 text-sm">
+              <p className="font-semibold">
+                {provision.linkedUser.displayName}
               </p>
-            ) : null}
-            {getUserHref ? (
-              <NavigationLink
-                className="mt-3 inline-flex font-semibold text-primary hover:underline"
-                href={getUserHref(provision.linkedUser)}
-              >
-                View canonical user
-              </NavigationLink>
-            ) : null}
-          </div>
-        ) : (
-          <p className="mt-3 text-sm text-muted-foreground">
-            This provision has not been linked to a Hektor user.
-          </p>
-        )}
-      </section>
+              {provision.linkedUser.email ? (
+                <p className="mt-1 text-muted-foreground">
+                  {provision.linkedUser.email}
+                </p>
+              ) : null}
+              {getUserHref ? (
+                <NavigationLink
+                  className="mt-3 inline-flex font-semibold text-primary hover:underline"
+                  href={getUserHref(provision.linkedUser)}
+                >
+                  View canonical user
+                </NavigationLink>
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">
+              This provision has not been linked to a Hektor user.
+            </p>
+          )}
+        </section>
+      ) : null}
 
       <section>
         <h2 className="text-xl font-bold">Invitation</h2>

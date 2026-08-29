@@ -51,6 +51,7 @@ export function OrganisationUsersScreen() {
       }
       page={page}
       pageSize={PAGE_SIZE}
+      provisionsHref="/users/provisions"
       totalRecords={users.data?.context.totalRecords ?? 0}
       users={users.data?.data ?? []}
     />

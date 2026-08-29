@@ -13,6 +13,7 @@ export const platformStatisticsSchema = z.object({
 export const organisationStatisticsSchema = z.object({
   cohortCount: z.number().int().nonnegative(),
   groupCount: z.number().int().nonnegative(),
+  provisionCount: z.number().int().nonnegative(),
   userCount: z.number().int().nonnegative(),
 }) satisfies z.ZodType<OrganisationStatistics>;
 

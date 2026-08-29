@@ -30,6 +30,7 @@ import {
   useAdminGetOrganisationGroup,
   useAdminGetOrganisationMembership,
   useAdminGetOrganisationUserProvision,
+  useGetOrganisationUserProvision,
 } from '@hektor/query/organisations';
 import { useGetCurrentUser } from '@hektor/query/users';
 
@@ -61,6 +62,25 @@ export function breadcrumbsForPath(
     return [home, { label: 'Cohorts', href: '/cohorts' }, { label: 'Cohort' }];
   }
   if (pathname === '/groups') return [home, { label: 'Groups' }];
+  if (pathname === '/users/provisions') {
+    return [home, { label: 'Users', href: '/users' }, { label: 'Provisions' }];
+  }
+  if (pathname === '/users/provisions/new') {
+    return [
+      home,
+      { label: 'Users', href: '/users' },
+      { label: 'Provisions', href: '/users/provisions' },
+      { label: 'Invite user' },
+    ];
+  }
+  if (pathname.match(/^\/users\/provisions\/[^/]+$/)) {
+    return [
+      home,
+      { label: 'Users', href: '/users' },
+      { label: 'Provisions', href: '/users/provisions' },
+      { label: provisionName },
+    ];
+  }
   if (pathname === '/groups/new') {
     return [home, { label: 'Groups', href: '/groups' }, { label: 'Add' }];
   }
@@ -372,7 +392,9 @@ export function AuthenticatedShell({
   const cohortId = matchedCohortId === 'new' ? undefined : matchedCohortId;
   const matchedGroupId = pathname.match(/\/groups\/([^/]+)(?:\/edit)?$/)?.[1];
   const groupId = matchedGroupId === 'new' ? undefined : matchedGroupId;
-  const provisionId = pathname.match(/\/provisioned-users\/([^/]+)$/)?.[1];
+  const provisionId = pathname.match(
+    /\/(?:provisioned-users|provisions)\/([^/]+)$/,
+  )?.[1];
   const membershipId = pathname.match(/\/users\/([^/]+)(?:\/edit)?$/)?.[1];
   const breadcrumbOrganisation = useAdminGetOrganisation(
     { params: { organisationId: resolvedOrganisationId ?? '' } },
@@ -405,6 +427,10 @@ export function AuthenticatedShell({
     },
     { enabled: Boolean(resolvedOrganisationId && provisionId) },
   );
+  const breadcrumbTenantProvision = useGetOrganisationUserProvision(
+    { params: { provisionId: provisionId ?? '' } },
+    { enabled: Boolean(!resolvedOrganisationId && provisionId) },
+  );
   const breadcrumbMembership = useAdminGetOrganisationMembership(
     {
       params: {
@@ -420,7 +446,9 @@ export function AuthenticatedShell({
     breadcrumbCohort.data?.data.name,
     breadcrumbGroup.data?.data.name,
     breadcrumbProvision.data?.data.provisionedDisplayName ??
-      breadcrumbProvision.data?.data.provisionedUserName,
+      breadcrumbProvision.data?.data.provisionedUserName ??
+      breadcrumbTenantProvision.data?.data.provisionedDisplayName ??
+      breadcrumbTenantProvision.data?.data.provisionedUserName,
     breadcrumbMembership.data?.data.user.displayName,
   );
   const currentUser = useGetCurrentUser();

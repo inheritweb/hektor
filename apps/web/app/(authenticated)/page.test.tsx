@@ -73,7 +73,14 @@ describe('HomePage', () => {
       isPending: false,
     });
     organisationStatisticsMock.mockReturnValue({
-      data: { data: { cohortCount: 3, groupCount: 7, userCount: 18 } },
+      data: {
+        data: {
+          cohortCount: 3,
+          groupCount: 7,
+          provisionCount: 5,
+          userCount: 18,
+        },
+      },
       isPending: false,
     });
 
@@ -84,7 +91,7 @@ describe('HomePage', () => {
     expect(screen.getByText('3')).toBeTruthy();
     expect(screen.getByText('7')).toBeTruthy();
     expect(
-      screen.getByRole('link', { name: /Groups/ }).getAttribute('href'),
+      screen.getByRole('link', { name: /View groups/i }).getAttribute('href'),
     ).toBe('/groups');
   });
 });

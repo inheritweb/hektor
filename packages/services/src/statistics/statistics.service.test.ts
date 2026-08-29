@@ -31,6 +31,7 @@ describe('createStatisticsService', () => {
       ['organisation_users', 18],
       ['organisation_cohorts', 3],
       ['organisation_groups', 7],
+      ['organisation_user_provisions', 5],
     ]);
     const eqMocks: ReturnType<typeof vi.fn>[] = [];
     const client = {
@@ -49,7 +50,12 @@ describe('createStatisticsService', () => {
 
     await expect(
       createStatisticsService(client).getOrganisationStatistics(organisationId),
-    ).resolves.toEqual({ cohortCount: 3, groupCount: 7, userCount: 18 });
+    ).resolves.toEqual({
+      cohortCount: 3,
+      groupCount: 7,
+      provisionCount: 5,
+      userCount: 18,
+    });
     for (const eq of eqMocks) {
       expect(eq).toHaveBeenCalledWith('organisation_id', organisationId);
     }

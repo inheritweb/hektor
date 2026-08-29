@@ -47,6 +47,7 @@ describe('GET /api/organisation/statistics', () => {
     getStatisticsMock.mockResolvedValue({
       cohortCount: 3,
       groupCount: 7,
+      provisionCount: 5,
       userCount: 18,
     });
   });

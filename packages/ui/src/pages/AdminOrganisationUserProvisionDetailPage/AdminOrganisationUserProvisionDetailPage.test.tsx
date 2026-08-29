@@ -89,4 +89,17 @@ describe('AdminOrganisationUserProvisionDetailPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Deactivate' }));
     expect(onSelect).toHaveBeenCalledOnce();
   });
+
+  it('can hide canonical account information from tenant administrators', () => {
+    const view = render(
+      <AdminOrganisationUserProvisionDetailPage
+        provision={provision}
+        showAccountLinking={false}
+      />,
+    );
+
+    expect(view.container.textContent).not.toContain('Account linking');
+    expect(view.container.textContent).not.toContain('Maya Patel');
+    expect(view.container.textContent).toContain('Organisation assignment');
+  });
 });

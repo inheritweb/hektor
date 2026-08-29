@@ -11,4 +11,6 @@ Only users connected to the selected organisation are returned. Changing the org
 
 Select a user to review their cohort, groups, provisioning status and seat allocation. Choose **Edit membership** to change their role, cohort or status.
 
+Choose **Manage provisions** to invite people who are not yet connected and to manage outstanding invitations. Provisions belong to user administration; they are not a separate organisation area.
+
 Hektor prevents you from suspending or demoting your own administrator membership. It also protects the final active administrator in an organisation. A platform administrator can recover administrator access through the platform administration area when necessary.
