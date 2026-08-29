@@ -16,6 +16,10 @@
       "types": "./src/system.ts",
       "import": "./src/system.ts"
     },
+    "./statistics": {
+      "types": "./src/statistics.ts",
+      "import": "./src/statistics.ts"
+    },
     "./contracts/system": {
       "types": "./src/contracts/system.ts",
       "import": "./src/contracts/system.ts"
@@ -27,6 +31,10 @@
     "./contracts/organisations": {
       "types": "./src/contracts/organisations.ts",
       "import": "./src/contracts/organisations.ts"
+    },
+    "./contracts/statistics": {
+      "types": "./src/contracts/statistics.ts",
+      "import": "./src/contracts/statistics.ts"
     },
     "./contracts/users": {
       "types": "./src/contracts/users.ts",

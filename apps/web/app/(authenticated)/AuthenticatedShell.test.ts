@@ -4,7 +4,7 @@ import { breadcrumbsForPath } from './AuthenticatedShell';
 
 describe('breadcrumbsForPath', () => {
   it('describes the current authenticated views', () => {
-    expect(breadcrumbsForPath('/')).toEqual([{ label: 'Home' }]);
+    expect(breadcrumbsForPath('/')).toEqual([]);
     expect(breadcrumbsForPath('/profile')).toEqual([
       { label: 'Home', href: '/' },
       { label: 'Profile' },

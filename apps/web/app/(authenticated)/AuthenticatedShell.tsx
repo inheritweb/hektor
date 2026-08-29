@@ -41,7 +41,7 @@ export function breadcrumbsForPath(
   provisionName = 'Provisioned user',
   membershipName = 'Organisation user',
 ): GlobalToolbarBreadcrumb[] {
-  if (pathname === '/') return [{ label: 'Home' }];
+  if (pathname === '/') return [];
 
   const home = { label: 'Home', href: '/' };
   if (pathname === '/users') return [home, { label: 'Users' }];

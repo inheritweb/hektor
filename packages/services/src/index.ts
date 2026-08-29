@@ -10,3 +10,5 @@ export * from './organisations/index';
 export type { DatabaseClient } from './database';
 
 export { getHealthCheck } from './system/index';
+
+export { createStatisticsService } from './statistics/index';

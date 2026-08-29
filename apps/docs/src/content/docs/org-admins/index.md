@@ -7,6 +7,8 @@ sidebar:
 
 Organisation administrators manage users, groups, cohorts and provisioning within one organisation workspace. Platform administration is a separate area and is not covered by these guides.
 
+The organisation dashboard summarises the users, cohorts and groups in the selected organisation. Each summary links directly to its management area.
+
 ## Your account and workspace
 
 Signing in establishes one Hektor session for your account. If you belong to more than one organisation, you do not need to sign in again when moving between them.
@@ -18,6 +20,7 @@ Use the account switcher in the application menu to choose your personal account
 The first guides explain how to enter and switch organisation workspaces and review its user directory. Group, cohort and provisioning guides will follow as those tenant-facing tools are released.
 
 - [Enter an organisation workspace](./getting-started/)
+- [Use the dashboard](./dashboard/)
 - [Review organisation users](./users/)
 - [Review cohorts](./cohorts/)
 - [Manage groups](./groups/)

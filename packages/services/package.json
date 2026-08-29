@@ -24,6 +24,10 @@
     "./simulator": {
       "types": "./src/simulator/index.ts",
       "import": "./src/simulator/index.ts"
+    },
+    "./statistics": {
+      "types": "./src/statistics/index.ts",
+      "import": "./src/statistics/index.ts"
     }
   },
   "scripts": {

@@ -12,6 +12,8 @@ export * from './AdminOrganisationCohortsPage';
 
 export * from './AdminOrganisationCohortFormPage';
 
+export * from './DashboardPage';
+
 export * from './AdminOrganisationCohortDetailPage';
 
 export * from './AdminOrganisationGroupsPage';
