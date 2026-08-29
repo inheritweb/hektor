@@ -4,6 +4,7 @@ import {
   OrganisationRole,
   OrganisationUserStatus,
   PlatformRole,
+  UserStatus,
 } from '@hektor/types';
 import { callApiEndpoint } from '@/tests/api/api-test-client';
 
@@ -46,6 +47,7 @@ const membership = {
     status: 'active',
   },
   role: OrganisationRole.Tutor,
+  platformStatus: UserStatus.Active,
   status: OrganisationUserStatus.Active,
   user: {
     id: '938b99c0-5355-4dd2-9358-c8fbb99e3f49',
