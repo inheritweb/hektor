@@ -9,4 +9,6 @@ Select your organisation in the account switcher and choose **Users** from the a
 
 Only users connected to the selected organisation are returned. Changing the organisation in the account switcher changes both the visible workspace and the organisation scope applied to subsequent requests.
 
-Adding, connecting and editing users will be introduced in the next user management slices.
+Select a user to review their cohort, groups, provisioning status and seat allocation. Choose **Edit membership** to change their role, cohort or status.
+
+Hektor prevents you from suspending or demoting your own administrator membership. It also protects the final active administrator in an organisation. A platform administrator can recover administrator access through the platform administration area when necessary.

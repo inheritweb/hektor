@@ -36,6 +36,8 @@ describe('OrganisationUsersScreen', () => {
             id: 'membership-id',
             role: OrganisationRole.Tutor,
             status: 'active',
+            seatStatus: 'allocated',
+            platformStatus: 'active',
             user: {
               displayName: 'Alice Morgan',
               email: 'alice.morgan@northbridge.example',

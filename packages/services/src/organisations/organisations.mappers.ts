@@ -15,10 +15,12 @@ import {
   type OrganisationUsersSummary,
   GroupStatus,
   OrganisationRole,
+  OrganisationSeatStatus,
   OrganisationStatus,
   OrganisationUserStatus,
   ProvisioningMethod,
   ProvisioningStatus,
+  UserStatus,
   type UserSummary,
 } from '@hektor/types';
 
@@ -176,21 +178,25 @@ export function mapOrganisation(
 export function mapOrganisationMembershipUserSummary(
   record: Pick<
     OrganisationMembershipsQueryResult[number],
-    'id' | 'role' | 'status'
+    'id' | 'role' | 'status' | 'seatActivations'
   >,
-  user: UserSummary,
+  user: UserSummary & { status: UserStatus },
 ): OrganisationMembershipUserSummary {
   return {
     id: record.id,
     user,
     role: record.role as OrganisationRole,
     status: record.status as OrganisationUserStatus,
+    seatStatus: record.seatActivations.some(({ released_at }) => !released_at)
+      ? OrganisationSeatStatus.Allocated
+      : OrganisationSeatStatus.NotAllocated,
+    platformStatus: user.status,
   };
 }
 
 export function mapOrganisationMembership(
   record: OrganisationMembershipDetailQueryResult,
-  user: UserSummary,
+  user: UserSummary & { status: UserStatus },
 ): OrganisationMembership {
   const provision = record.provisions
     .filter(({ status }) =>
@@ -208,6 +214,7 @@ export function mapOrganisationMembership(
     user,
     role: record.role as OrganisationRole,
     status: record.status as OrganisationUserStatus,
+    platformStatus: user.status,
     organisation: mapOrganisationSummary(record.organisation),
     cohort: record.cohort
       ? mapOrganisationCohortSummary(record.cohort)

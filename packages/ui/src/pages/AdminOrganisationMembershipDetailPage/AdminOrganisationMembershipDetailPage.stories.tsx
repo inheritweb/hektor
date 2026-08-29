@@ -12,6 +12,7 @@ const meta = {
       id: 'membership-1',
       role: 'learner',
       status: 'active',
+      platformStatus: 'active',
       user: {
         id: 'user-1',
         displayName: 'Isla Phillips',
@@ -34,3 +35,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+export const TenantView: Story = {
+  args: {
+    getGroupHref: undefined,
+    provisionHref: undefined,
+  },
+};

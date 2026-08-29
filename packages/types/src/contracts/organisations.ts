@@ -46,12 +46,13 @@ import {
   OrganisationRole,
   OrganisationStatus,
   OrganisationUserStatus,
+  OrganisationSeatStatus,
   ProvisioningMethod,
   ProvisioningAutoLinkOutcome,
   ProvisioningLifecycleAction,
   ProvisioningStatus,
 } from '../organisations';
-import { PlatformRole } from '../users';
+import { PlatformRole, UserStatus } from '../users';
 import { userSummarySchema } from './users';
 import {
   type ContractOutput,
@@ -137,6 +138,8 @@ export const organisationMembershipUserSummarySchema = z.object({
   user: userSummarySchema,
   role: z.enum(OrganisationRole),
   status: z.enum(OrganisationUserStatus),
+  seatStatus: z.enum(OrganisationSeatStatus),
+  platformStatus: z.enum(UserStatus),
 }) satisfies z.ZodType<OrganisationMembershipUserSummary>;
 
 export const organisationMembershipSchema = z.object({
@@ -144,6 +147,7 @@ export const organisationMembershipSchema = z.object({
   user: userSummarySchema,
   role: z.enum(OrganisationRole),
   status: z.enum(OrganisationUserStatus),
+  platformStatus: z.enum(UserStatus),
   organisation: organisationSummarySchema,
   cohort: organisationCohortSummarySchema.optional(),
   groups: z.array(organisationGroupSummarySchema),
@@ -668,6 +672,31 @@ export const updateOrganisationMembershipContract = defineContract({
   output: hektorResponseSchema(organisationMembershipSchema),
 });
 
+export const getTenantOrganisationMembershipContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/users/:membershipId',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ membershipId: z.uuid() }),
+  output: getOrganisationMembershipContract.output,
+});
+
+export const updateTenantOrganisationMembershipContract = defineContract({
+  method: 'PATCH',
+  path: '/api/organisation/users/:membershipId',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ membershipId: z.uuid() }),
+  body: updateOrganisationMembershipInputSchema,
+  output: updateOrganisationMembershipContract.output,
+});
+
+export const listTenantOrganisationCohortsContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/cohorts',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  query: listOrganisationCohortsContract.query,
+  output: listOrganisationCohortsContract.output,
+});
+
 export const listOrganisationUserProvisionsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/user-provisions',
@@ -1073,6 +1102,14 @@ export type UpdateOrganisationMembershipBody = ContractBody<
 
 export type UpdateOrganisationMembershipResponse = ContractOutput<
   typeof updateOrganisationMembershipContract
+>;
+
+export type GetTenantOrganisationMembershipParams = ContractParams<
+  typeof getTenantOrganisationMembershipContract
+>;
+
+export type UpdateTenantOrganisationMembershipBody = ContractBody<
+  typeof updateTenantOrganisationMembershipContract
 >;
 
 export type ListOrganisationUserProvisionsParams = ContractParams<

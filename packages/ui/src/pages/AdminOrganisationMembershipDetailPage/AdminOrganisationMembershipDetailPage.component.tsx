@@ -9,6 +9,7 @@ export interface AdminOrganisationMembershipDetailViewModel {
   id: string;
   provisioning?: { id: string; method: string; status: string };
   role: string;
+  platformStatus: string;
   seatActivation?: { activatedAt: string; contractPeriodId: string };
   status: string;
   user: { displayName: string; email?: string; id: string };
@@ -16,7 +17,7 @@ export interface AdminOrganisationMembershipDetailViewModel {
 
 export interface AdminOrganisationMembershipDetailPageProps {
   editHref: string;
-  getGroupHref: (groupId: string) => string;
+  getGroupHref?: (groupId: string) => string;
   membership: AdminOrganisationMembershipDetailViewModel;
   provisionHref?: string;
 }
@@ -74,13 +75,21 @@ export function AdminOrganisationMembershipDetailPage({
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Platform status
+          </p>
+          <p className="mt-1 capitalize">
+            {readable(membership.platformStatus)}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Cohort
           </p>
           <p className="mt-1">{membership.cohort?.name ?? 'None'}</p>
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Seat
+            Organisation seat
           </p>
           <p className="mt-1">
             {membership.seatActivation ? 'Allocated' : 'Not allocated'}
@@ -97,15 +106,24 @@ export function AdminOrganisationMembershipDetailPage({
         </div>
         {membership.groups.length ? (
           <div className="mt-4 flex flex-wrap gap-2">
-            {membership.groups.map((group) => (
-              <NavigationLink
-                className="rounded bg-accent px-3 py-1.5 text-sm hover:bg-accent/70"
-                href={getGroupHref(group.id)}
-                key={group.id}
-              >
-                {group.name}
-              </NavigationLink>
-            ))}
+            {membership.groups.map((group) =>
+              getGroupHref ? (
+                <NavigationLink
+                  className="rounded bg-accent px-3 py-1.5 text-sm hover:bg-accent/70"
+                  href={getGroupHref(group.id)}
+                  key={group.id}
+                >
+                  {group.name}
+                </NavigationLink>
+              ) : (
+                <span
+                  className="rounded bg-accent px-3 py-1.5 text-sm"
+                  key={group.id}
+                >
+                  {group.name}
+                </span>
+              ),
+            )}
           </div>
         ) : (
           <p className="mt-3 text-sm text-muted-foreground">

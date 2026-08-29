@@ -238,7 +238,10 @@ export function buildOrganisationCohortDetailQuery(
       groups:organisation_groups (
         id, name, status, provisioning_method, source_external_id
       ),
-      memberships:organisation_users (id, user_id, role, status)
+      memberships:organisation_users (
+        id, user_id, role, status,
+        seatActivations:organisation_seat_activations (released_at)
+      )
     `,
     )
     .eq('organisation_id', organisationId)
@@ -370,7 +373,10 @@ export function buildOrganisationGroupDetailQuery(
       organisation:organisations (id, name, slug, status),
       cohort:organisation_cohorts (id, name, starts_on, ends_on, status),
       userLinks:organisation_group_users (
-        membership:organisation_users (id, user_id, role, status)
+        membership:organisation_users (
+          id, user_id, role, status,
+          seatActivations:organisation_seat_activations (released_at)
+        )
       ),
       provisionLinks:organisation_provisioned_group_users (
         provision:organisation_user_provisions (
@@ -493,7 +499,12 @@ export function buildOrganisationMembershipsQuery(
 ) {
   let query = client
     .from('organisation_users')
-    .select('id, user_id, role, status, created_at, updated_at')
+    .select(
+      `
+      id, user_id, role, status, created_at, updated_at,
+      seatActivations:organisation_seat_activations (released_at)
+    `,
+    )
     .eq('organisation_id', organisationId);
 
   if (filters.role) query = query.eq('role', filters.role);

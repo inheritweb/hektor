@@ -15,15 +15,25 @@ describe('AdminOrganisationUsersPage', () => {
         users={[
           {
             id: '1',
-            user: { displayName: 'Maya Patel', email: 'maya@example.com' },
+            user: {
+              displayName: 'Maya Patel',
+              email: 'maya@example.com',
+            },
             role: 'org_admin',
             status: 'active',
+            seatStatus: 'not_allocated',
+            platformStatus: 'active',
           },
           {
             id: '2',
-            user: { displayName: 'Sam Rivera', email: 'sam@example.com' },
+            user: {
+              displayName: 'Sam Rivera',
+              email: 'sam@example.com',
+            },
             role: 'learner',
             status: 'active',
+            seatStatus: 'allocated',
+            platformStatus: 'suspended',
           },
         ]}
       />,
@@ -32,5 +42,11 @@ describe('AdminOrganisationUsersPage', () => {
     expect(screen.getByText('Maya Patel')).toBeTruthy();
     expect(screen.getByText('Sam Rivera')).toBeTruthy();
     expect(screen.getByText('maya@example.com')).toBeTruthy();
+    expect(
+      screen.getByRole('columnheader', { name: 'Platform status' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('columnheader', { name: 'Organisation seat' }),
+    ).toBeTruthy();
   });
 });

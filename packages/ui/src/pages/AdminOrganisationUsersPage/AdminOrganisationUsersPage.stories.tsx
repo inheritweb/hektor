@@ -30,6 +30,8 @@ const meta = {
         },
         role: 'org_admin',
         status: 'active',
+        seatStatus: 'not_allocated',
+        platformStatus: 'active',
       },
       {
         id: '2',
@@ -39,6 +41,8 @@ const meta = {
         },
         role: 'learner',
         status: 'active',
+        seatStatus: 'allocated',
+        platformStatus: 'suspended',
       },
     ],
   },

@@ -14,6 +14,7 @@ import {
   getOrganisationCohortContract,
   getOrganisationGroupContract,
   getOrganisationMembershipContract,
+  getTenantOrganisationMembershipContract,
   getOrganisationUserProvisionContract,
   getProvisionAcceptanceContract,
   listOrganisationContractPeriodsContract,
@@ -22,6 +23,7 @@ import {
   listOrganisationUserProvisionsContract,
   listOrganisationUsersContract,
   listTenantOrganisationUsersContract,
+  listTenantOrganisationCohortsContract,
   listOrganisationMembershipCandidatesContract,
   listOrganisationsContract,
   previewOrganisationProvisionImportContract,
@@ -34,6 +36,7 @@ import {
   updateOrganisationGroupContract,
   updateOrganisationGroupMembershipContract,
   updateOrganisationMembershipContract,
+  updateTenantOrganisationMembershipContract,
 } from '@hektor/types/contracts/organisations';
 
 import { registerApiMethod } from './api-method';
@@ -136,6 +139,18 @@ export const listOrganisationUsers = registerApiMethod(
 
 export const getOrganisationUsers = registerApiMethod(
   listTenantOrganisationUsersContract,
+);
+
+export const getTenantOrganisationMembership = registerApiMethod(
+  getTenantOrganisationMembershipContract,
+);
+
+export const updateTenantOrganisationMembership = registerApiMethod(
+  updateTenantOrganisationMembershipContract,
+);
+
+export const getTenantOrganisationCohorts = registerApiMethod(
+  listTenantOrganisationCohortsContract,
 );
 
 export const listOrganisationMembershipCandidates = registerApiMethod(

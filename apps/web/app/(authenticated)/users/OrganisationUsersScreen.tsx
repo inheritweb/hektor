@@ -43,6 +43,7 @@ export function OrganisationUsersScreen() {
   return (
     <AdminOrganisationUsersPage
       error={users.error?.message ?? organisation.error?.message}
+      getUserHref={(membership) => `/users/${membership.id}`}
       loading={users.isPending || organisation.isPending}
       onPageChange={onPageChange}
       organisationName={

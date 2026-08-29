@@ -23,6 +23,9 @@ import {
   previewOrganisationProvisionImport,
   listOrganisationUsers,
   getOrganisationUsers,
+  getTenantOrganisationMembership,
+  updateTenantOrganisationMembership,
+  getTenantOrganisationCohorts,
   listOrganisationMembershipCandidates,
   listOrganisations,
   sendOrganisationProvisionInvitation,
@@ -58,6 +61,21 @@ export const useGetOrganisationUsers = makeQuery(getOrganisationUsers, [
   ...TENANT_ORGANISATION_QUERY_KEY,
   'users',
 ]);
+
+export const useGetOrganisationMembership = makeQuery(
+  getTenantOrganisationMembership,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'users'],
+);
+
+export const useUpdateOrganisationMembership = makeMutation(
+  updateTenantOrganisationMembership,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'users'],
+);
+
+export const useGetOrganisationCohorts = makeQuery(
+  getTenantOrganisationCohorts,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'cohorts'],
+);
 
 export const useAdminGetOrganisations = makeQuery(
   listOrganisations,

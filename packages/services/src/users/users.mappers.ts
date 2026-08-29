@@ -82,6 +82,7 @@ export function mapUserSummary(user: User) {
     platformRole: mapped.platformRole,
     email: mapped.email,
     avatarUrl: mapped.avatarUrl,
+    status: mapped.status,
   };
 }
 

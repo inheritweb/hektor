@@ -1,4 +1,4 @@
-import type { UserSummary } from './users';
+import type { UserStatus, UserSummary } from './users';
 
 export enum OrganisationStatus {
   Active = 'active',
@@ -21,6 +21,11 @@ export interface TenantOrganisationContext {
 export enum OrganisationUserStatus {
   Active = 'active',
   Suspended = 'suspended',
+}
+
+export enum OrganisationSeatStatus {
+  Allocated = 'allocated',
+  NotAllocated = 'not_allocated',
 }
 
 export enum ProvisioningMethod {
@@ -210,6 +215,7 @@ export interface OrganisationMembership {
   user: UserSummary;
   role: OrganisationRole;
   status: OrganisationUserStatus;
+  platformStatus: UserStatus;
   organisation: OrganisationSummary;
   cohort?: OrganisationCohortSummary;
   groups: OrganisationGroupSummary[];
@@ -335,6 +341,8 @@ export interface OrganisationMembershipUserSummary {
   user: UserSummary;
   role: OrganisationRole;
   status: OrganisationUserStatus;
+  seatStatus: OrganisationSeatStatus;
+  platformStatus: UserStatus;
 }
 
 export interface OrganisationUserProvision {

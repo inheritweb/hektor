@@ -56,6 +56,7 @@ import type {
   UpdateOrganisationMembershipBody,
   UpdateOrganisationMembershipParams,
   UpdateOrganisationMembershipResponse,
+  UpdateTenantOrganisationMembershipBody,
   ListOrganisationMembershipCandidatesParams,
   ListOrganisationMembershipCandidatesQuery,
   ListOrganisationMembershipCandidatesResponse,
@@ -138,6 +139,7 @@ import {
   canTransitionProvisioningStatus,
   getProvisioningTransition,
 } from './provisioning-lifecycle';
+import { assertOrganisationAdminMembershipUpdate } from './organisation-membership-policy';
 
 function paginate<T>(items: T[], page: number, pageSize: number) {
   const first = (page - 1) * pageSize;
@@ -864,6 +866,37 @@ export function createOrganisationsService(client: DatabaseClient) {
     }
 
     return getOrganisationMembership(params);
+  }
+
+  async function updateOrganisationMembershipAsOrganisationAdmin(
+    params: UpdateOrganisationMembershipParams,
+    body: UpdateTenantOrganisationMembershipBody,
+    actorUserId: string,
+  ): Promise<UpdateOrganisationMembershipResponse> {
+    const current = await getOrganisationMembership(params);
+    const { count, error } = await client
+      .from('organisation_users')
+      .select('id', { count: 'exact', head: true })
+      .eq('organisation_id', params.organisationId)
+      .eq('role', OrganisationRole.OrganisationAdmin)
+      .eq('status', OrganisationUserStatus.Active);
+
+    if (error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to validate organisation administrator coverage',
+        internalMessage: error.message,
+        cause: error,
+      });
+    }
+
+    assertOrganisationAdminMembershipUpdate({
+      activeOrganisationAdminCount: count ?? 0,
+      actorUserId,
+      current: current.data,
+      next: body,
+    });
+
+    return updateOrganisationMembership(params, body);
   }
 
   async function listOrganisationContractPeriods(
@@ -1748,5 +1781,6 @@ export function createOrganisationsService(client: DatabaseClient) {
     updateOrganisationGroup,
     updateOrganisationGroupMembership,
     updateOrganisationMembership,
+    updateOrganisationMembershipAsOrganisationAdmin,
   };
 }

@@ -7,6 +7,8 @@ export interface AdminOrganisationUserListItemViewModel {
   id: string;
   role: string;
   status: string;
+  seatStatus: string;
+  platformStatus: string;
   user: {
     displayName: string;
     email?: string;
@@ -51,7 +53,17 @@ const columns = [
     cell: ({ value }) => <span className="capitalize">{readable(value)}</span>,
   }),
   column.accessor('status', {
-    header: 'Status',
+    header: 'Organisation status',
+    cell: ({ value }) => <span className="capitalize">{readable(value)}</span>,
+  }),
+  column.display('platformStatus', {
+    header: 'Platform status',
+    cell: ({ row }) => (
+      <span className="capitalize">{readable(row.platformStatus)}</span>
+    ),
+  }),
+  column.accessor('seatStatus', {
+    header: 'Organisation seat',
     cell: ({ value }) => <span className="capitalize">{readable(value)}</span>,
   }),
 ];
