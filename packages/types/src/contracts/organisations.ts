@@ -755,6 +755,15 @@ export const updateTenantOrganisationGroupContract = defineContract({
   output: updateOrganisationGroupContract.output,
 });
 
+export const updateTenantOrganisationGroupMembershipContract = defineContract({
+  method: 'POST',
+  path: '/api/organisation/groups/:groupId/memberships',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ groupId: z.uuid() }),
+  body: updateOrganisationGroupMembershipInputSchema,
+  output: updateOrganisationGroupMembershipContract.output,
+});
+
 export const listOrganisationUserProvisionsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/user-provisions',
@@ -770,6 +779,14 @@ export const listOrganisationUserProvisionsContract = defineContract({
   output: hektorCollectionResponseSchema(
     z.array(organisationUserProvisionSchema),
   ),
+});
+
+export const listTenantOrganisationUserProvisionsContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/user-provisions',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  query: listOrganisationUserProvisionsContract.query,
+  output: listOrganisationUserProvisionsContract.output,
 });
 
 export const getOrganisationUserProvisionContract = defineContract({

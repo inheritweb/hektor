@@ -31,6 +31,7 @@ import {
   getTenantOrganisationCohort,
   getTenantOrganisationGroup,
   getTenantOrganisationGroups,
+  getTenantOrganisationUserProvisions,
   listOrganisationMembershipCandidates,
   listOrganisations,
   sendOrganisationProvisionInvitation,
@@ -41,6 +42,7 @@ import {
   updateOrganisationCohort,
   updateTenantOrganisationCohort,
   updateTenantOrganisationGroup,
+  updateTenantOrganisationGroupMembership,
   updateOrganisationGroup,
   updateOrganisationGroupMembership,
   updateOrganisationMembership,
@@ -117,6 +119,16 @@ export const useCreateOrganisationGroup = makeMutation(
 export const useUpdateOrganisationGroup = makeMutation(
   updateTenantOrganisationGroup,
   [...TENANT_ORGANISATION_QUERY_KEY, 'groups'],
+);
+
+export const useUpdateOrganisationGroupMembership = makeMutation(
+  updateTenantOrganisationGroupMembership,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'groups'],
+);
+
+export const useGetOrganisationUserProvisions = makeQuery(
+  getTenantOrganisationUserProvisions,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'user-provisions'],
 );
 
 export const useAdminGetOrganisations = makeQuery(
