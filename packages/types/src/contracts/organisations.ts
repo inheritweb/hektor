@@ -705,6 +705,23 @@ export const getTenantOrganisationCohortContract = defineContract({
   output: getOrganisationCohortContract.output,
 });
 
+export const createTenantOrganisationCohortContract = defineContract({
+  method: 'POST',
+  path: '/api/organisation/cohorts',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  body: createOrganisationCohortInputSchema,
+  output: createOrganisationCohortContract.output,
+});
+
+export const updateTenantOrganisationCohortContract = defineContract({
+  method: 'PATCH',
+  path: '/api/organisation/cohorts/:cohortId',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ cohortId: z.uuid() }),
+  body: updateOrganisationCohortInputSchema,
+  output: updateOrganisationCohortContract.output,
+});
+
 export const listOrganisationUserProvisionsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/user-provisions',

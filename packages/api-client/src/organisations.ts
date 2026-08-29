@@ -4,6 +4,7 @@ import {
   createOrganisationContract,
   createOrganisationContractPeriodContract,
   createOrganisationCohortContract,
+  createTenantOrganisationCohortContract,
   createOrganisationGroupContract,
   createOrganisationMembershipsContract,
   createOrganisationUserContract,
@@ -34,6 +35,7 @@ import {
   updateOrganisationContract,
   updateOrganisationContractPeriodContract,
   updateOrganisationCohortContract,
+  updateTenantOrganisationCohortContract,
   updateOrganisationGroupContract,
   updateOrganisationGroupMembershipContract,
   updateOrganisationMembershipContract,
@@ -156,6 +158,14 @@ export const getTenantOrganisationCohorts = registerApiMethod(
 
 export const getTenantOrganisationCohort = registerApiMethod(
   getTenantOrganisationCohortContract,
+);
+
+export const createTenantOrganisationCohort = registerApiMethod(
+  createTenantOrganisationCohortContract,
+);
+
+export const updateTenantOrganisationCohort = registerApiMethod(
+  updateTenantOrganisationCohortContract,
 );
 
 export const listOrganisationMembershipCandidates = registerApiMethod(

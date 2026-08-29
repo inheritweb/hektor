@@ -40,6 +40,17 @@ export function breadcrumbsForPath(
   const home = { label: 'Home', href: '/' };
   if (pathname === '/users') return [home, { label: 'Users' }];
   if (pathname === '/cohorts') return [home, { label: 'Cohorts' }];
+  if (pathname === '/cohorts/new') {
+    return [home, { label: 'Cohorts', href: '/cohorts' }, { label: 'Add' }];
+  }
+  if (pathname.match(/^\/cohorts\/[^/]+\/edit$/)) {
+    return [
+      home,
+      { label: 'Cohorts', href: '/cohorts' },
+      { label: cohortName, href: pathname.slice(0, -5) },
+      { label: 'Edit' },
+    ];
+  }
   if (pathname.match(/^\/cohorts\/[^/]+$/)) {
     return [home, { label: 'Cohorts', href: '/cohorts' }, { label: 'Cohort' }];
   }

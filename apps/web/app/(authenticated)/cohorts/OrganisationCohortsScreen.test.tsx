@@ -20,7 +20,7 @@ vi.mock('next/navigation', () => ({
 import { OrganisationCohortsScreen } from './OrganisationCohortsScreen';
 
 describe('OrganisationCohortsScreen', () => {
-  it('presents cohorts from the selected tenant without creation controls', () => {
+  it('presents cohorts from the selected tenant with creation controls', () => {
     getOrganisationMock.mockReturnValue({
       data: { data: { organisation: { name: 'Northbridge University' } } },
       isPending: false,
@@ -44,6 +44,8 @@ describe('OrganisationCohortsScreen', () => {
     render(<OrganisationCohortsScreen />);
 
     expect(screen.getByText('September 2026')).toBeTruthy();
-    expect(screen.queryByRole('link', { name: 'Add cohort' })).toBeNull();
+    expect(
+      screen.getByRole('link', { name: 'Add cohort' }).getAttribute('href'),
+    ).toBe('/cohorts/new');
   });
 });

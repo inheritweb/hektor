@@ -32,6 +32,7 @@ export function OrganisationCohortDetailScreen({
   return (
     <AdminOrganisationCohortDetailPage
       cohort={cohort.data.data}
+      editHref={`/cohorts/${cohortId}/edit`}
       getUserHref={(learner) => `/users/${learner.id}`}
     />
   );

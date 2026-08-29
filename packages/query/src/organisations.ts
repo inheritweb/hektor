@@ -4,6 +4,7 @@ import {
   createOrganisation,
   createOrganisationContractPeriod,
   createOrganisationCohort,
+  createTenantOrganisationCohort,
   createOrganisationGroup,
   createOrganisationMemberships,
   createOrganisationUser,
@@ -35,6 +36,7 @@ import {
   updateOrganisation,
   updateOrganisationContractPeriod,
   updateOrganisationCohort,
+  updateTenantOrganisationCohort,
   updateOrganisationGroup,
   updateOrganisationGroupMembership,
   updateOrganisationMembership,
@@ -82,6 +84,16 @@ export const useGetOrganisationCohort = makeQuery(getTenantOrganisationCohort, [
   ...TENANT_ORGANISATION_QUERY_KEY,
   'cohorts',
 ]);
+
+export const useCreateOrganisationCohort = makeMutation(
+  createTenantOrganisationCohort,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'cohorts'],
+);
+
+export const useUpdateOrganisationCohort = makeMutation(
+  updateTenantOrganisationCohort,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'cohorts'],
+);
 
 export const useAdminGetOrganisations = makeQuery(
   listOrganisations,

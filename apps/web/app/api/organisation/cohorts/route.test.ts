@@ -5,21 +5,14 @@ import { OrganisationRole } from '@hektor/types';
 
 import { callApiEndpoint } from '@/tests/api/api-test-client';
 
-const {
-  fromMock,
-  getCohortMock,
-  getUserMock,
-  rpcMock,
-  serviceMock,
-  updateCohortMock,
-} = vi.hoisted(() => ({
-  fromMock: vi.fn(),
-  getCohortMock: vi.fn(),
-  getUserMock: vi.fn(),
-  rpcMock: vi.fn(),
-  serviceMock: vi.fn(),
-  updateCohortMock: vi.fn(),
-}));
+const { createCohortMock, fromMock, getUserMock, rpcMock, serviceMock } =
+  vi.hoisted(() => ({
+    createCohortMock: vi.fn(),
+    fromMock: vi.fn(),
+    getUserMock: vi.fn(),
+    rpcMock: vi.fn(),
+    serviceMock: vi.fn(),
+  }));
 
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: async () => ({
@@ -37,14 +30,13 @@ vi.mock('@hektor/services/organisations', () => ({
   createOrganisationsService: serviceMock,
 }));
 
-import { GET, PATCH } from './route';
+import { POST } from './route';
 
-describe('/api/organisation/cohorts/:cohortId', () => {
+describe('POST /api/organisation/cohorts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     serviceMock.mockReturnValue({
-      getOrganisationCohort: getCohortMock,
-      updateOrganisationCohort: updateCohortMock,
+      createOrganisationCohort: createCohortMock,
     });
     getUserMock.mockResolvedValue({
       data: { user: { id: 'actor-user', app_metadata: {} } },
@@ -63,44 +55,69 @@ describe('/api/organisation/cohorts/:cohortId', () => {
     });
   });
 
-  it('scopes cohort updates to the verified tenant', async () => {
+  it('creates the cohort inside the verified tenant', async () => {
     const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
     const cohortId = '289eb836-9965-4f32-8ea2-238077d18de9';
     const body = {
       endsOn: '2029-08-31',
-      expectedUpdatedAt: '2026-08-28T12:00:00.000Z',
       name: 'September 2026',
       startsOn: '2026-09-01',
-      status: 'active',
     };
-    updateCohortMock.mockResolvedValue({ data: cohortFixture(cohortId) });
+    createCohortMock.mockResolvedValue({ data: cohortFixture(cohortId) });
 
-    const response = await callApiEndpoint(PATCH, {
+    const response = await callApiEndpoint(POST, {
       body,
-      method: 'PATCH',
+      method: 'POST',
       headers: { [HEKTOR_ORGANISATION_HEADER]: organisationId },
-      params: { cohortId },
     });
 
     expect(response.status).toBe(200);
-    expect(updateCohortMock).toHaveBeenCalledWith(
-      { organisationId, cohortId },
-      body,
-    );
+    expect(createCohortMock).toHaveBeenCalledWith({ organisationId }, body);
   });
 
-  it('scopes cohort retrieval to the verified tenant', async () => {
-    const organisationId = 'ab720a62-06df-408d-9e8c-0201ac69269a';
-    const cohortId = '289eb836-9965-4f32-8ea2-238077d18de9';
-    getCohortMock.mockResolvedValue({ data: cohortFixture(cohortId) });
-
-    const response = await callApiEndpoint(GET, {
-      headers: { [HEKTOR_ORGANISATION_HEADER]: organisationId },
-      params: { cohortId },
+  it('rejects a cohort whose end date is not after its start date', async () => {
+    const response = await callApiEndpoint(POST, {
+      body: {
+        endsOn: '2026-09-01',
+        name: 'Invalid cohort',
+        startsOn: '2026-09-01',
+      },
+      method: 'POST',
+      headers: {
+        [HEKTOR_ORGANISATION_HEADER]: 'ab720a62-06df-408d-9e8c-0201ac69269a',
+      },
     });
 
-    expect(response.status).toBe(200);
-    expect(getCohortMock).toHaveBeenCalledWith({ organisationId, cohortId });
+    expect(response.status).toBe(422);
+    expect(createCohortMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects organisation members who are not administrators', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: { role: OrganisationRole.Learner },
+      error: null,
+    });
+    const thirdEq = vi.fn().mockReturnValue({ maybeSingle });
+    const secondEq = vi.fn().mockReturnValue({ eq: thirdEq });
+    const firstEq = vi.fn().mockReturnValue({ eq: secondEq });
+    fromMock.mockReturnValue({
+      select: vi.fn().mockReturnValue({ eq: firstEq }),
+    });
+
+    const response = await callApiEndpoint(POST, {
+      body: {
+        endsOn: '2029-08-31',
+        name: 'September 2026',
+        startsOn: '2026-09-01',
+      },
+      method: 'POST',
+      headers: {
+        [HEKTOR_ORGANISATION_HEADER]: 'ab720a62-06df-408d-9e8c-0201ac69269a',
+      },
+    });
+
+    expect(response.status).toBe(403);
+    expect(createCohortMock).not.toHaveBeenCalled();
   });
 });
 
