@@ -309,6 +309,31 @@ export interface OrganisationProvisionImportResult {
   unchanged: number;
 }
 
+export enum TenantOrganisationProvisionImportAction {
+  Ready = 'ready',
+  Unchanged = 'unchanged',
+  Invalid = 'invalid',
+}
+
+export interface TenantOrganisationProvisionImportRowReview extends OrganisationProvisionImportRow {
+  action: TenantOrganisationProvisionImportAction;
+  message?: string;
+}
+
+export interface TenantOrganisationProvisionImportPreview {
+  rows: TenantOrganisationProvisionImportRowReview[];
+  summary: {
+    errors: number;
+    ready: number;
+    unchanged: number;
+  };
+}
+
+export interface TenantOrganisationProvisionImportResult {
+  processed: number;
+  unchanged: number;
+}
+
 export enum OrganisationBulkInvitationOutcome {
   Failed = 'failed',
   Sent = 'sent',

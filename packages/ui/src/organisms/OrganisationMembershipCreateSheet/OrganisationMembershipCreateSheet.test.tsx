@@ -1,11 +1,12 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { OrganisationRole } from '@hektor/types';
 
 import { OrganisationMembershipCreateSheet } from './OrganisationMembershipCreateSheet.component';
 
 describe('OrganisationMembershipCreateSheet', () => {
-  it('selects canonical users and submits shared membership settings', () => {
+  it('selects canonical users and submits shared membership settings', async () => {
     const onSave = vi.fn();
     render(
       <OrganisationMembershipCreateSheet
@@ -30,8 +31,9 @@ describe('OrganisationMembershipCreateSheet', () => {
       />,
     );
 
-    fireEvent.click(screen.getByLabelText('Select all 2 on this page'));
-    fireEvent.click(screen.getByRole('button', { name: 'Connect users' }));
+    const user = userEvent.setup();
+    await user.click(screen.getByLabelText('Select all 2 on this page'));
+    await user.click(screen.getByRole('button', { name: 'Connect users' }));
 
     expect(screen.getByText('Pending provision · learner')).toBeTruthy();
     expect(onSave).toHaveBeenCalledWith({

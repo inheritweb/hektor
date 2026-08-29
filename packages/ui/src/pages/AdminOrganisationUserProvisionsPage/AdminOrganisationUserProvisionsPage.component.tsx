@@ -109,7 +109,7 @@ export function AdminOrganisationUserProvisionsPage({
             </Button>
           ) : null}
           {onImportUsers ? (
-            <Button onClick={onImportUsers}>Import users</Button>
+            <Button onClick={onImportUsers}>Import CSV</Button>
           ) : null}
           {onCreateProvision ? (
             <Button onClick={onCreateProvision}>Invite user</Button>

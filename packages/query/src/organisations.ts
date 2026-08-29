@@ -11,6 +11,7 @@ import {
   createOrganisationMemberships,
   createOrganisationUser,
   commitOrganisationProvisionImport,
+  commitTenantOrganisationProvisionImport,
   getOrganisation,
   getTenantOrganisationContext,
   getOrganisationContractPeriod,
@@ -24,6 +25,7 @@ import {
   listOrganisationGroups,
   listOrganisationUserProvisions,
   previewOrganisationProvisionImport,
+  previewTenantOrganisationProvisionImport,
   listOrganisationUsers,
   getOrganisationUsers,
   getTenantOrganisationMembership,
@@ -133,6 +135,16 @@ export const useUpdateOrganisationGroupMembership = makeMutation(
 
 export const useGetOrganisationUserProvisions = makeQuery(
   getTenantOrganisationUserProvisions,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'user-provisions'],
+);
+
+export const usePreviewOrganisationProvisionImport = makeMutation(
+  previewTenantOrganisationProvisionImport,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'user-provisions'],
+);
+
+export const useCommitOrganisationProvisionImport = makeMutation(
+  commitTenantOrganisationProvisionImport,
   [...TENANT_ORGANISATION_QUERY_KEY, 'user-provisions'],
 );
 

@@ -7,6 +7,8 @@ import { useDeferredValue, useState } from 'react';
 import {
   useGetOrganisationUserProvisions,
   useGetTenantOrganisationContext,
+  usePreviewOrganisationProvisionImport,
+  useCommitOrganisationProvisionImport,
   useSendOrganisationProvisionInvitations,
 } from '@hektor/query/organisations';
 import {
@@ -15,7 +17,10 @@ import {
   ProvisioningStatus,
 } from '@hektor/types';
 import { SortDirection } from '@hektor/types/contracts';
-import { OrganisationInvitationManagerSheet } from '@hektor/ui/organisms';
+import {
+  OrganisationInvitationManagerSheet,
+  OrganisationProvisionImportSheet,
+} from '@hektor/ui/organisms';
 import { AdminOrganisationUserProvisionsPage } from '@hektor/ui/pages';
 
 const PAGE_SIZE = 20;
@@ -26,6 +31,7 @@ export function OrganisationUserProvisionsScreen() {
   const searchParams = useSearchParams();
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const [invitationsOpen, setInvitationsOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [invitationPage, setInvitationPage] = useState(1);
   const [query, setQuery] = useState('');
   const [role, setRole] = useState<OrganisationRole>();
@@ -56,6 +62,8 @@ export function OrganisationUserProvisionsScreen() {
     { enabled: invitationsOpen },
   );
   const sendInvitations = useSendOrganisationProvisionInvitations();
+  const previewImport = usePreviewOrganisationProvisionImport();
+  const commitImport = useCommitOrganisationProvisionImport();
 
   const onPageChange = (nextPage: number) => {
     const next = new URLSearchParams(searchParams);
@@ -71,6 +79,11 @@ export function OrganisationUserProvisionsScreen() {
         getProvisionHref={({ id }) => `/users/provisions/${id}`}
         loading={provisions.isPending || organisation.isPending}
         onCreateProvision={() => router.push('/users/provisions/new' as Route)}
+        onImportUsers={() => {
+          previewImport.reset();
+          commitImport.reset();
+          setImportOpen(true);
+        }}
         onManageInvitations={() => {
           setInvitationPage(1);
           setQuery('');
@@ -87,6 +100,17 @@ export function OrganisationUserProvisionsScreen() {
         pageSize={PAGE_SIZE}
         provisions={provisions.data?.data ?? []}
         totalRecords={provisions.data?.context.totalRecords ?? 0}
+      />
+      <OrganisationProvisionImportSheet
+        error={previewImport.error?.message ?? commitImport.error?.message}
+        onCommit={(body) => commitImport.mutate({ body })}
+        onOpenChange={setImportOpen}
+        onPreview={(rows) => previewImport.mutate({ body: { rows } })}
+        open={importOpen}
+        pending={previewImport.isPending || commitImport.isPending}
+        preview={previewImport.data?.data}
+        privacyMode
+        result={commitImport.data?.data}
       />
       <OrganisationInvitationManagerSheet
         candidates={(candidates.data?.data ?? []).map((candidate) => ({

@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import {
   OrganisationProvisionImportAction,
   OrganisationRole,
+  TenantOrganisationProvisionImportAction,
   type OrganisationProvisionImportPreview,
   type OrganisationProvisionImportResult,
   type OrganisationProvisionImportRow,
+  type TenantOrganisationProvisionImportPreview,
+  type TenantOrganisationProvisionImportResult,
 } from '@hektor/types';
 
 import {
@@ -29,8 +32,12 @@ export interface OrganisationProvisionImportSheetProps {
   onPreview: (rows: OrganisationProvisionImportRow[]) => void;
   open: boolean;
   pending?: boolean;
-  preview?: OrganisationProvisionImportPreview;
-  result?: OrganisationProvisionImportResult;
+  preview?:
+    | OrganisationProvisionImportPreview
+    | TenantOrganisationProvisionImportPreview;
+  privacyMode?: boolean;
+  result?:
+    OrganisationProvisionImportResult | TenantOrganisationProvisionImportResult;
 }
 
 export function OrganisationProvisionImportSheet(
@@ -69,8 +76,9 @@ export function OrganisationProvisionImportSheet(
         <header className="border-b border-border px-5 py-5 pr-12">
           <SheetTitle>Import provisioned users</SheetTitle>
           <SheetDescription className="mt-1">
-            Preview a CSV before creating provisions or connecting existing
-            Hektor users.
+            {props.privacyMode
+              ? 'Preview a CSV before preparing organisation access.'
+              : 'Preview a CSV before creating provisions or connecting existing Hektor users.'}
           </SheetDescription>
         </header>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
@@ -141,8 +149,7 @@ export function OrganisationProvisionImportSheet(
                             </td>
                             <td
                               className={`px-2 py-2 ${
-                                row.action ===
-                                OrganisationProvisionImportAction.Invalid
+                                isInvalidAction(row.action)
                                   ? 'text-destructive'
                                   : 'text-muted-foreground'
                               }`}
@@ -167,7 +174,7 @@ export function OrganisationProvisionImportSheet(
                         Send invitations after import
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        Invitations are sent only for new pending provisions.
+                        Invitations are sent where an invitation is required.
                       </span>
                     </span>
                   </label>
@@ -178,22 +185,28 @@ export function OrganisationProvisionImportSheet(
             <div className="rounded-lg border border-border bg-background p-5">
               <h3 className="font-semibold">Import complete</h3>
               <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                <Result
-                  label="Provisions created"
-                  value={props.result.created}
-                />
-                <Result label="Users linked" value={props.result.linked} />
+                {'processed' in props.result ? (
+                  <Result label="Processed" value={props.result.processed} />
+                ) : (
+                  <>
+                    <Result
+                      label="Provisions created"
+                      value={props.result.created}
+                    />
+                    <Result label="Users linked" value={props.result.linked} />
+                    <Result
+                      label="Invitations sent"
+                      value={props.result.invitationsSent}
+                    />
+                    {props.result.invitationsFailed ? (
+                      <Result
+                        label="Invitations failed"
+                        value={props.result.invitationsFailed}
+                      />
+                    ) : null}
+                  </>
+                )}
                 <Result label="Unchanged" value={props.result.unchanged} />
-                <Result
-                  label="Invitations sent"
-                  value={props.result.invitationsSent}
-                />
-                {props.result.invitationsFailed ? (
-                  <Result
-                    label="Invitations failed"
-                    value={props.result.invitationsFailed}
-                  />
-                ) : null}
               </dl>
             </div>
           )}
@@ -229,6 +242,16 @@ export function OrganisationProvisionImportSheet(
         </footer>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function isInvalidAction(
+  action:
+    OrganisationProvisionImportAction | TenantOrganisationProvisionImportAction,
+) {
+  return (
+    action === OrganisationProvisionImportAction.Invalid ||
+    action === TenantOrganisationProvisionImportAction.Invalid
   );
 }
 

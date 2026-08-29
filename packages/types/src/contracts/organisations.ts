@@ -37,6 +37,9 @@ import {
   type OrganisationProvisionImportRow,
   type OrganisationProvisionImportRowReview,
   OrganisationProvisionImportAction,
+  type TenantOrganisationProvisionImportPreview,
+  type TenantOrganisationProvisionImportResult,
+  TenantOrganisationProvisionImportAction,
   type OrganisationBulkInvitationItemResult,
   type OrganisationBulkInvitationResult,
   OrganisationBulkInvitationOutcome,
@@ -646,6 +649,38 @@ export const commitOrganisationProvisionImportContract = defineContract({
     sendInvitations: z.boolean(),
   }),
   output: hektorResponseSchema(organisationProvisionImportResultSchema),
+});
+
+export const tenantOrganisationProvisionImportRowReviewSchema =
+  organisationProvisionImportRowSchema.extend({
+    action: z.enum(TenantOrganisationProvisionImportAction),
+    message: z.string().min(1).optional(),
+  });
+
+export const tenantOrganisationProvisionImportPreviewSchema = z.object({
+  rows: z.array(tenantOrganisationProvisionImportRowReviewSchema),
+  summary: organisationProvisionImportPreviewSchema.shape.summary,
+}) satisfies z.ZodType<TenantOrganisationProvisionImportPreview>;
+
+export const tenantOrganisationProvisionImportResultSchema = z.object({
+  processed: z.number().int().nonnegative(),
+  unchanged: z.number().int().nonnegative(),
+}) satisfies z.ZodType<TenantOrganisationProvisionImportResult>;
+
+export const previewTenantOrganisationProvisionImportContract = defineContract({
+  method: 'POST',
+  path: '/api/organisation/user-provisions/import/preview',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  body: previewOrganisationProvisionImportContract.body,
+  output: hektorResponseSchema(tenantOrganisationProvisionImportPreviewSchema),
+});
+
+export const commitTenantOrganisationProvisionImportContract = defineContract({
+  method: 'POST',
+  path: '/api/organisation/user-provisions/import',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  body: commitOrganisationProvisionImportContract.body,
+  output: hektorResponseSchema(tenantOrganisationProvisionImportResultSchema),
 });
 
 export const getOrganisationMembershipContract = defineContract({
