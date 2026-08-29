@@ -15,6 +15,8 @@ export interface AdminOrganisationCohortDetailViewModel {
   learners: readonly {
     id: string;
     role: string;
+    platformStatus: string;
+    seatStatus: string;
     status: string;
     user: {
       displayName: string;
@@ -61,6 +63,18 @@ const learnerColumns = [
   learnerColumn.accessor('status', {
     header: 'Membership',
     cell: ({ value }) => <span className="capitalize">{value}</span>,
+  }),
+  learnerColumn.accessor('platformStatus', {
+    header: 'Platform status',
+    cell: ({ value }) => (
+      <span className="capitalize">{value.replaceAll('_', ' ')}</span>
+    ),
+  }),
+  learnerColumn.accessor('seatStatus', {
+    header: 'Organisation seat',
+    cell: ({ value }) => (
+      <span className="capitalize">{value.replaceAll('_', ' ')}</span>
+    ),
   }),
 ];
 

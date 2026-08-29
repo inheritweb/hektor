@@ -697,6 +697,14 @@ export const listTenantOrganisationCohortsContract = defineContract({
   output: listOrganisationCohortsContract.output,
 });
 
+export const getTenantOrganisationCohortContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/cohorts/:cohortId',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ cohortId: z.uuid() }),
+  output: getOrganisationCohortContract.output,
+});
+
 export const listOrganisationUserProvisionsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/user-provisions',

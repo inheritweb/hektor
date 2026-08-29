@@ -10,6 +10,7 @@ import {
   commitOrganisationProvisionImportContract,
   getOrganisationContract,
   getTenantOrganisationContextContract,
+  getTenantOrganisationCohortContract,
   getOrganisationContractPeriodContract,
   getOrganisationCohortContract,
   getOrganisationGroupContract,
@@ -151,6 +152,10 @@ export const updateTenantOrganisationMembership = registerApiMethod(
 
 export const getTenantOrganisationCohorts = registerApiMethod(
   listTenantOrganisationCohortsContract,
+);
+
+export const getTenantOrganisationCohort = registerApiMethod(
+  getTenantOrganisationCohortContract,
 );
 
 export const listOrganisationMembershipCandidates = registerApiMethod(

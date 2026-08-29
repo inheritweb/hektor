@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore, type ReactNode } from 'react';
-import { LuBuilding2, LuHouse, LuUsers } from 'react-icons/lu';
+import { LuBuilding2, LuGraduationCap, LuHouse, LuUsers } from 'react-icons/lu';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { OrganisationRole, PlatformRole } from '@hektor/types';
@@ -39,6 +39,10 @@ export function breadcrumbsForPath(
 
   const home = { label: 'Home', href: '/' };
   if (pathname === '/users') return [home, { label: 'Users' }];
+  if (pathname === '/cohorts') return [home, { label: 'Cohorts' }];
+  if (pathname.match(/^\/cohorts\/[^/]+$/)) {
+    return [home, { label: 'Cohorts', href: '/cohorts' }, { label: 'Cohort' }];
+  }
   if (pathname.match(/^\/users\/[^/]+\/edit$/)) {
     return [
       home,
@@ -454,6 +458,12 @@ export function AuthenticatedShell({
                 icon: LuUsers,
                 href: '/users',
                 active: pathname.startsWith('/users'),
+              },
+              {
+                label: 'Cohorts',
+                icon: LuGraduationCap,
+                href: '/cohorts',
+                active: pathname.startsWith('/cohorts'),
               },
             ],
           },

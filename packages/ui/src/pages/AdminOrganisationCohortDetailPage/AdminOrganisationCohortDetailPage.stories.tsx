@@ -29,7 +29,9 @@ const meta = {
       learners: [
         {
           id: 'membership-id',
+          platformStatus: 'active',
           role: 'learner',
+          seatStatus: 'allocated',
           status: 'active',
           user: {
             id: 'user-id',

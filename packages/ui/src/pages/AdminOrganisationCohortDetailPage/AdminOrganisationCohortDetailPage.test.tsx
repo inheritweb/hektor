@@ -13,7 +13,9 @@ const cohort = {
   learners: [
     {
       id: 'membership-id',
+      platformStatus: 'active',
       role: 'learner',
+      seatStatus: 'allocated',
       status: 'active',
       user: {
         id: 'user-id',
@@ -39,6 +41,9 @@ describe('AdminOrganisationCohortDetailPage', () => {
     expect(screen.getByText('Clinical Practice A')).toBeTruthy();
     expect(screen.getByText('Maya Patel')).toBeTruthy();
     expect(screen.getByText('maya@example.com')).toBeTruthy();
+    expect(screen.getByText('Platform status')).toBeTruthy();
+    expect(screen.getByText('Organisation seat')).toBeTruthy();
+    expect(screen.getByText('allocated')).toBeTruthy();
     expect(
       screen.getByRole('link', { name: 'View' }).getAttribute('href'),
     ).toBe('/admin/users/user-id');
