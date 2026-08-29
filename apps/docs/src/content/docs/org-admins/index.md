@@ -20,3 +20,4 @@ The first guides explain how to enter and switch organisation workspaces and rev
 - [Enter an organisation workspace](./getting-started/)
 - [Review organisation users](./users/)
 - [Review cohorts](./cohorts/)
+- [Manage groups](./groups/)

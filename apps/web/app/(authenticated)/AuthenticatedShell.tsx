@@ -1,7 +1,13 @@
 'use client';
 
 import { useSyncExternalStore, type ReactNode } from 'react';
-import { LuBuilding2, LuGraduationCap, LuHouse, LuUsers } from 'react-icons/lu';
+import {
+  LuBuilding2,
+  LuGraduationCap,
+  LuHouse,
+  LuLayers3,
+  LuUsers,
+} from 'react-icons/lu';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { OrganisationRole, PlatformRole } from '@hektor/types';
@@ -53,6 +59,21 @@ export function breadcrumbsForPath(
   }
   if (pathname.match(/^\/cohorts\/[^/]+$/)) {
     return [home, { label: 'Cohorts', href: '/cohorts' }, { label: 'Cohort' }];
+  }
+  if (pathname === '/groups') return [home, { label: 'Groups' }];
+  if (pathname === '/groups/new') {
+    return [home, { label: 'Groups', href: '/groups' }, { label: 'Add' }];
+  }
+  if (pathname.match(/^\/groups\/[^/]+\/edit$/)) {
+    return [
+      home,
+      { label: 'Groups', href: '/groups' },
+      { label: groupName, href: pathname.slice(0, -5) },
+      { label: 'Edit' },
+    ];
+  }
+  if (pathname.match(/^\/groups\/[^/]+$/)) {
+    return [home, { label: 'Groups', href: '/groups' }, { label: groupName }];
   }
   if (pathname.match(/^\/users\/[^/]+\/edit$/)) {
     return [
@@ -475,6 +496,12 @@ export function AuthenticatedShell({
                 icon: LuGraduationCap,
                 href: '/cohorts',
                 active: pathname.startsWith('/cohorts'),
+              },
+              {
+                label: 'Groups',
+                icon: LuLayers3,
+                href: '/groups',
+                active: pathname.startsWith('/groups'),
               },
             ],
           },

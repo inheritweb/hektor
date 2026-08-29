@@ -722,6 +722,39 @@ export const updateTenantOrganisationCohortContract = defineContract({
   output: updateOrganisationCohortContract.output,
 });
 
+export const listTenantOrganisationGroupsContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/groups',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  query: listOrganisationGroupsContract.query,
+  output: listOrganisationGroupsContract.output,
+});
+
+export const getTenantOrganisationGroupContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/groups/:groupId',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ groupId: z.uuid() }),
+  output: getOrganisationGroupContract.output,
+});
+
+export const createTenantOrganisationGroupContract = defineContract({
+  method: 'POST',
+  path: '/api/organisation/groups',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  body: createOrganisationGroupInputSchema,
+  output: createOrganisationGroupContract.output,
+});
+
+export const updateTenantOrganisationGroupContract = defineContract({
+  method: 'PATCH',
+  path: '/api/organisation/groups/:groupId',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ groupId: z.uuid() }),
+  body: updateOrganisationGroupInputSchema,
+  output: updateOrganisationGroupContract.output,
+});
+
 export const listOrganisationUserProvisionsContract = defineContract({
   method: 'GET',
   path: '/api/admin/organisations/:organisationId/user-provisions',
