@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "identity": {
+    "givenNames": ["Adam"],
+    "familyName": "Marsden",
+    "dateOfBirth": "2003-03-14",
+    "sexAtBirth": { "status": "known", "value": "male" }
+  },
+  "identifiers": [
+    {
+      "id": "hektor-patient-number",
+      "kind": "local_patient_number",
+      "value": "SIM-HKT-71304",
+      "display": "Hektor patient number",
+      "issuer": "Hektor",
+      "synthetic": true
+    }
+  ],
+  "demographics": {
+    "ethnicity": {
+      "status": "known",
+      "value": { "display": "White British" }
+    },
+    "faithOrBelief": { "status": "unknown" }
+  },
+  "communication": {
+    "languages": [
+      {
+        "id": "english",
+        "language": { "display": "English" },
+        "interpreterRequired": { "status": "known", "value": false }
+      }
+    ],
+    "preferredLanguageId": "english",
+    "preferences": [],
+    "accessibilityNeeds": []
+  },
+  "contact": {
+    "address": {
+      "lines": ["14 Meredith Street"],
+      "city": "Manchester",
+      "postalCode": "M12 6BE",
+      "country": "United Kingdom",
+      "synthetic": true
+    }
+  },
+  "relationships": [
+    {
+      "id": "sandra-marsden",
+      "name": "Sandra Marsden",
+      "relationship": { "display": "Mother" },
+      "roles": ["next_of_kin"],
+      "notes": "Lives with Adam and his younger siblings."
+    }
+  ],
+  "background": [
+    {
+      "id": "family-home",
+      "category": "living_arrangements",
+      "summary": "Lives with his mother and younger siblings in Ardwick.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "limited-social-network",
+      "category": "social",
+      "summary": "Has no wider social network and is experiencing financial difficulties.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "childhood-adversity",
+      "category": "adverse_life_event",
+      "summary": "Experienced domestic violence, physical abuse and paternal alcohol dependence during childhood.",
+      "details": "His father died when Adam was 15. His later history includes school exclusion and early contact with the criminal justice system.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "exploitation-risk",
+      "category": "safeguarding",
+      "summary": "Cannabis-related debts may create vulnerability to exploitation.",
+      "sensitivity": "restricted"
+    }
+  ],
+  "problems": [
+    {
+      "id": "schizophrenia",
+      "problem": { "display": "Schizophrenia" },
+      "clinicalStatus": "active",
+      "details": "A recent diagnosis in the source material."
+    }
+  ],
+  "allergies": [],
+  "baselineMedications": [],
+  "catalogue": {
+    "synopsis": "A young adult with recently diagnosed schizophrenia, limited social support and a history requiring trauma-informed and safeguarding-aware care.",
+    "lifeStage": "young_person",
+    "careSettings": ["community_mental_health", "home"],
+    "specialties": ["mental_health"],
+    "tags": ["mental_health", "safeguarding"]
+  }
+}

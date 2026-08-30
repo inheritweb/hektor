@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "identity": {
+    "givenNames": ["Esther"],
+    "familyName": "Jenkins",
+    "dateOfBirth": "1951-09-19",
+    "pronouns": { "status": "known", "value": ["she", "her"] },
+    "sexAtBirth": { "status": "known", "value": "female" }
+  },
+  "identifiers": [
+    {
+      "id": "hektor-patient-number",
+      "kind": "local_patient_number",
+      "value": "SIM-HKT-37194",
+      "display": "Hektor patient number",
+      "issuer": "Hektor",
+      "synthetic": true
+    }
+  ],
+  "demographics": {
+    "ethnicity": {
+      "status": "known",
+      "value": { "display": "White British" }
+    },
+    "faithOrBelief": { "status": "unknown" }
+  },
+  "communication": {
+    "languages": [
+      {
+        "id": "english",
+        "language": { "display": "English" },
+        "interpreterRequired": { "status": "known", "value": false }
+      }
+    ],
+    "preferredLanguageId": "english",
+    "preferences": [],
+    "accessibilityNeeds": []
+  },
+  "contact": {
+    "address": {
+      "lines": ["34 Beech Grove"],
+      "city": "Manchester",
+      "postalCode": "M11 2QP",
+      "country": "United Kingdom",
+      "synthetic": true
+    }
+  },
+  "relationships": [
+    {
+      "id": "tasha-jenkins",
+      "name": "Tasha Jenkins",
+      "relationship": { "display": "Daughter" },
+      "roles": ["next_of_kin", "carer"],
+      "notes": "Lives with Esther and is her main source of support."
+    }
+  ],
+  "background": [
+    {
+      "id": "retired-cleaner",
+      "category": "occupation",
+      "summary": "Retired cleaner.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "living-with-daughter",
+      "category": "living_arrangements",
+      "summary": "Lives with her daughter Tasha in a two-bedroom terraced house.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "widowed",
+      "category": "adverse_life_event",
+      "summary": "Widowed and experienced a depressive episode after her husband's death.",
+      "details": "Previously took antidepressants for two years.",
+      "sensitivity": "standard"
+    }
+  ],
+  "problems": [
+    {
+      "id": "hypertension",
+      "problem": { "display": "Hypertension" },
+      "clinicalStatus": "active"
+    },
+    {
+      "id": "atrial-fibrillation",
+      "problem": { "display": "Atrial fibrillation" },
+      "clinicalStatus": "active"
+    },
+    {
+      "id": "past-depressive-episode",
+      "problem": { "display": "Depressive episode" },
+      "clinicalStatus": "resolved",
+      "details": "Occurred after bereavement and was treated with antidepressants for two years."
+    }
+  ],
+  "allergies": [
+    {
+      "id": "erythromycin",
+      "substance": { "display": "Erythromycin" },
+      "clinicalStatus": "active",
+      "verificationStatus": "unconfirmed",
+      "reactions": ["Diarrhoea", "Stomach pains"],
+      "details": "Patient-reported reaction in the source profile."
+    }
+  ],
+  "baselineMedications": [],
+  "catalogue": {
+    "synopsis": "An older adult with hypertension and atrial fibrillation, living with and supported by her daughter, suitable for acute stroke and interprofessional learning.",
+    "lifeStage": "older_adult",
+    "careSettings": ["acute_inpatient"],
+    "specialties": ["stroke", "interprofessional"],
+    "tags": ["carer_relationship", "long_term_condition"]
+  }
+}

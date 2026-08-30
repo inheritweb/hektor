@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "identity": {
+    "givenNames": ["Adebayo"],
+    "familyName": "Omolade",
+    "dateOfBirth": "2006-03-15",
+    "sexAtBirth": { "status": "known", "value": "male" }
+  },
+  "identifiers": [
+    {
+      "id": "hektor-patient-number",
+      "kind": "local_patient_number",
+      "value": "SIM-HKT-63820",
+      "display": "Hektor patient number",
+      "issuer": "Hektor",
+      "synthetic": true
+    }
+  ],
+  "demographics": {
+    "ethnicity": {
+      "status": "known",
+      "value": { "display": "Black British, with family roots in Nigeria" }
+    },
+    "faithOrBelief": {
+      "status": "known",
+      "value": { "display": "Christian" }
+    }
+  },
+  "communication": {
+    "languages": [
+      {
+        "id": "english",
+        "language": { "display": "English" },
+        "proficiency": "fluent",
+        "interpreterRequired": { "status": "known", "value": false }
+      }
+    ],
+    "preferredLanguageId": "english",
+    "preferences": [
+      {
+        "id": "plain-language",
+        "summary": "Use plain language and avoid unexplained medical terminology.",
+        "details": "Allow time to process information and check understanding without rushing."
+      }
+    ],
+    "accessibilityNeeds": [
+      {
+        "id": "learning-disability-support",
+        "summary": "Requires reasonable adjustments for a mild to moderate learning disability.",
+        "details": "May become anxious or overwhelmed by complex written information and has a learning disability healthcare passport."
+      }
+    ]
+  },
+  "contact": {
+    "address": {
+      "lines": ["14 Ashton View"],
+      "city": "Tameside",
+      "postalCode": "AS1 4NN",
+      "country": "United Kingdom",
+      "synthetic": true
+    }
+  },
+  "relationships": [
+    {
+      "id": "folake-omolade",
+      "name": "Folake Omolade",
+      "relationship": { "display": "Sister" },
+      "roles": ["next_of_kin", "carer"],
+      "notes": "Main source of emotional and practical support, including help with appointments, forms and written information."
+    }
+  ],
+  "background": [
+    {
+      "id": "living-with-sister",
+      "category": "living_arrangements",
+      "summary": "Lives with his older sister Folake.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "charity-shop-work",
+      "category": "occupation",
+      "summary": "Works part-time in a charity shop with support and values the structure and independence.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "prayer-when-worried",
+      "category": "cultural",
+      "summary": "Finds quiet prayer comforting when worried and prefers this to be approached sensitively.",
+      "sensitivity": "standard"
+    }
+  ],
+  "problems": [
+    {
+      "id": "type-2-diabetes",
+      "problem": { "display": "Type 2 diabetes mellitus" },
+      "clinicalStatus": "active",
+      "details": "Diagnosed five months before the source scenario."
+    },
+    {
+      "id": "learning-disability",
+      "problem": { "display": "Learning disability" },
+      "clinicalStatus": "active",
+      "details": "Described as mild to moderate in the source material."
+    }
+  ],
+  "allergies": [],
+  "baselineMedications": [],
+  "catalogue": {
+    "synopsis": "A young adult with type 2 diabetes and a learning disability who values independence and benefits from accessible communication.",
+    "lifeStage": "young_person",
+    "careSettings": ["primary_care", "community"],
+    "specialties": ["diabetes", "learning_disability"],
+    "tags": [
+      "accessibility",
+      "carer_relationship",
+      "cultural_context",
+      "long_term_condition"
+    ]
+  }
+}

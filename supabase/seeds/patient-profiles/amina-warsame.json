@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "identity": {
+    "givenNames": ["Amina"],
+    "familyName": "Warsame",
+    "dateOfBirth": "1998-05-11",
+    "sexAtBirth": { "status": "known", "value": "female" }
+  },
+  "identifiers": [
+    {
+      "id": "hektor-patient-number",
+      "kind": "local_patient_number",
+      "value": "SIM-HKT-15238",
+      "display": "Hektor patient number",
+      "issuer": "Hektor",
+      "synthetic": true
+    }
+  ],
+  "demographics": {
+    "ethnicity": {
+      "status": "known",
+      "value": { "display": "Black African, Somali heritage" }
+    },
+    "faithOrBelief": {
+      "status": "known",
+      "value": { "display": "Muslim" }
+    }
+  },
+  "communication": {
+    "languages": [
+      {
+        "id": "english",
+        "language": { "display": "English" },
+        "proficiency": "fluent",
+        "interpreterRequired": { "status": "known", "value": false }
+      }
+    ],
+    "preferredLanguageId": "english",
+    "preferences": [],
+    "accessibilityNeeds": []
+  },
+  "contact": {
+    "address": {
+      "lines": ["12 Beresford Road"],
+      "city": "Manchester",
+      "postalCode": "M16 8NG",
+      "country": "United Kingdom",
+      "synthetic": true
+    }
+  },
+  "relationships": [
+    {
+      "id": "yusuf-warsame",
+      "name": "Yusuf Warsame",
+      "relationship": { "display": "Husband" },
+      "roles": ["next_of_kin"],
+      "notes": "Amina describes strong support from her husband and wider family."
+    }
+  ],
+  "background": [
+    {
+      "id": "pharmacy-assistant",
+      "category": "occupation",
+      "summary": "Works part-time as a pharmacy dispensing assistant.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "family-support",
+      "category": "family",
+      "summary": "Has strong support from her husband and mother.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "muslim-practice",
+      "category": "cultural",
+      "summary": "Practising Muslim; requests halal food and welcomes family involvement in care planning.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "non-smoker",
+      "category": "lifestyle",
+      "summary": "Does not smoke.",
+      "sensitivity": "standard"
+    }
+  ],
+  "problems": [],
+  "allergies": [],
+  "baselineMedications": [],
+  "catalogue": {
+    "synopsis": "An adult with strong family support and Somali Muslim heritage, authored for maternity and postnatal learning experiences.",
+    "lifeStage": "adult",
+    "careSettings": ["maternity", "postnatal"],
+    "specialties": ["maternity"],
+    "tags": ["carer_relationship", "cultural_context", "newborn_relationship"]
+  }
+}

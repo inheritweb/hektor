@@ -11,7 +11,11 @@ interface LocalSupabaseStatus {
   SERVICE_ROLE_KEY: string;
 }
 
+let cachedLocalSupabaseStatus: LocalSupabaseStatus | undefined;
+
 function localSupabaseStatus(): LocalSupabaseStatus {
+  if (cachedLocalSupabaseStatus) return cachedLocalSupabaseStatus;
+
   const repositoryRoot = resolve(process.cwd(), '../..');
   const output = execFileSync(
     'yarn',
@@ -23,7 +27,8 @@ function localSupabaseStatus(): LocalSupabaseStatus {
     },
   );
 
-  return JSON.parse(output) as LocalSupabaseStatus;
+  cachedLocalSupabaseStatus = JSON.parse(output) as LocalSupabaseStatus;
+  return cachedLocalSupabaseStatus;
 }
 
 export function createIntegrationDatabaseClient() {

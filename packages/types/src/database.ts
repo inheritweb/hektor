@@ -709,6 +709,147 @@ export type Database = {
         };
         Relationships: [];
       };
+      patient_profile_versions: {
+        Row: {
+          authored_by: string | null;
+          change_summary: string;
+          content_hash: string;
+          created_at: string;
+          document: Json;
+          id: string;
+          patient_profile_id: string;
+          published_at: string | null;
+          published_by: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          schema_version: number;
+          source_reference: string | null;
+          source_revision: string | null;
+          state: Database['public']['Enums']['patient_profile_version_state'];
+          submitted_at: string | null;
+          updated_at: string;
+          version_number: number;
+          withdrawn_at: string | null;
+        };
+        Insert: {
+          authored_by?: string | null;
+          change_summary: string;
+          content_hash: string;
+          created_at?: string;
+          document: Json;
+          id?: string;
+          patient_profile_id: string;
+          published_at?: string | null;
+          published_by?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          schema_version: number;
+          source_reference?: string | null;
+          source_revision?: string | null;
+          state?: Database['public']['Enums']['patient_profile_version_state'];
+          submitted_at?: string | null;
+          updated_at?: string;
+          version_number: number;
+          withdrawn_at?: string | null;
+        };
+        Update: {
+          authored_by?: string | null;
+          change_summary?: string;
+          content_hash?: string;
+          created_at?: string;
+          document?: Json;
+          id?: string;
+          patient_profile_id?: string;
+          published_at?: string | null;
+          published_by?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          schema_version?: number;
+          source_reference?: string | null;
+          source_revision?: string | null;
+          state?: Database['public']['Enums']['patient_profile_version_state'];
+          submitted_at?: string | null;
+          updated_at?: string;
+          version_number?: number;
+          withdrawn_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'patient_profile_versions_patient_profile_id_fkey';
+            columns: ['patient_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'patient_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      patient_profiles: {
+        Row: {
+          archived_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          organisation_id: string | null;
+          scope: Database['public']['Enums']['patient_profile_scope'];
+          slug: string;
+          source_profile_id: string | null;
+          source_version_id: string | null;
+          status: Database['public']['Enums']['patient_profile_status'];
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          archived_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          organisation_id?: string | null;
+          scope: Database['public']['Enums']['patient_profile_scope'];
+          slug: string;
+          source_profile_id?: string | null;
+          source_version_id?: string | null;
+          status?: Database['public']['Enums']['patient_profile_status'];
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          archived_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          organisation_id?: string | null;
+          scope?: Database['public']['Enums']['patient_profile_scope'];
+          slug?: string;
+          source_profile_id?: string | null;
+          source_version_id?: string | null;
+          status?: Database['public']['Enums']['patient_profile_status'];
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'patient_profiles_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'patient_profiles_source_profile_id_fkey';
+            columns: ['source_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'patient_profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'patient_profiles_source_version_lineage_fkey';
+            columns: ['source_version_id', 'source_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'patient_profile_versions';
+            referencedColumns: ['id', 'patient_profile_id'];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1199,6 +1340,10 @@ export type Database = {
       organisation_role: 'org_admin' | 'tutor' | 'learner';
       organisation_status: 'active' | 'suspended' | 'archived';
       organisation_user_status: 'active' | 'suspended';
+      patient_profile_scope: 'system' | 'user' | 'organisation';
+      patient_profile_status: 'active' | 'archived';
+      patient_profile_version_state:
+        'draft' | 'in_review' | 'published' | 'superseded' | 'withdrawn';
       provisioning_method: 'scim' | 'csv' | 'manual';
       provisioning_status:
         'pending' | 'linked' | 'inactive' | 'revoked' | 'failed';
@@ -1337,6 +1482,15 @@ export const Constants = {
       organisation_role: ['org_admin', 'tutor', 'learner'],
       organisation_status: ['active', 'suspended', 'archived'],
       organisation_user_status: ['active', 'suspended'],
+      patient_profile_scope: ['system', 'user', 'organisation'],
+      patient_profile_status: ['active', 'archived'],
+      patient_profile_version_state: [
+        'draft',
+        'in_review',
+        'published',
+        'superseded',
+        'withdrawn',
+      ],
       provisioning_method: ['scim', 'csv', 'manual'],
       provisioning_status: [
         'pending',

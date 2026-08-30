@@ -32,6 +32,10 @@
       "types": "./src/contracts/organisations.ts",
       "import": "./src/contracts/organisations.ts"
     },
+    "./contracts/patient-profiles": {
+      "types": "./src/contracts/patient-profiles.ts",
+      "import": "./src/contracts/patient-profiles.ts"
+    },
     "./contracts/statistics": {
       "types": "./src/contracts/statistics.ts",
       "import": "./src/contracts/statistics.ts"
@@ -43,6 +47,7 @@
   },
   "scripts": {
     "lint": "eslint src",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -51,7 +56,9 @@
   "devDependencies": {
     "@hektor/eslint-config": "workspace:*",
     "@hektor/typescript-config": "workspace:*",
+    "@types/node": "^24.0.0",
     "eslint": "^9.39.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
   }
 }

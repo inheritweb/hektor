@@ -1,8 +1,10 @@
 # Patient-profile model
 
-Status: proposed implementation design for review. This document defines the
-patient-profile slice and its production seed; it does not yet authorize a
-database migration or source-content import.
+Status: approved design. The document contract, database foundation and five
+draft source profiles are implemented by Slice 1.
+
+The approved first implementation slice is planned in
+`docs/patient-profile-slice-1-plan.md`.
 
 ## Design outcome
 

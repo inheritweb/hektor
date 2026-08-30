@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "identity": {
+    "givenNames": ["Emma"],
+    "familyName": "Barlow",
+    "dateOfBirth": "2016-02-15",
+    "sexAtBirth": { "status": "known", "value": "female" }
+  },
+  "identifiers": [
+    {
+      "id": "hektor-patient-number",
+      "kind": "local_patient_number",
+      "value": "SIM-HKT-52847",
+      "display": "Hektor patient number",
+      "issuer": "Hektor",
+      "synthetic": true
+    }
+  ],
+  "demographics": {
+    "ethnicity": { "status": "unknown" },
+    "faithOrBelief": { "status": "unknown" }
+  },
+  "communication": {
+    "languages": [
+      {
+        "id": "english",
+        "language": { "display": "English" },
+        "interpreterRequired": { "status": "known", "value": false }
+      }
+    ],
+    "preferredLanguageId": "english",
+    "preferences": [],
+    "accessibilityNeeds": []
+  },
+  "contact": {
+    "address": {
+      "lines": ["7 Rowan Close"],
+      "city": "Manchester",
+      "postalCode": "M20 3DT",
+      "country": "United Kingdom",
+      "synthetic": true
+    }
+  },
+  "relationships": [
+    {
+      "id": "nadine-barlow",
+      "name": "Nadine Barlow",
+      "relationship": { "display": "Mother" },
+      "roles": ["parent", "guardian", "carer", "next_of_kin"],
+      "notes": "Emma's sole carer; her father has not been involved since infancy."
+    }
+  ],
+  "background": [
+    {
+      "id": "single-parent-home",
+      "category": "living_arrangements",
+      "summary": "Lives with her mother, who is her sole carer.",
+      "sensitivity": "standard"
+    }
+  ],
+  "problems": [
+    {
+      "id": "childhood-cancer",
+      "problem": { "display": "Childhood cancer" },
+      "clinicalStatus": "active",
+      "details": "The source profile deliberately leaves the cancer type to the later clinical record."
+    }
+  ],
+  "allergies": [],
+  "baselineMedications": [],
+  "catalogue": {
+    "synopsis": "A child living with cancer whose mother is her sole carer and whose care requires child- and family-centred communication.",
+    "lifeStage": "child",
+    "careSettings": ["paediatric_community", "home"],
+    "specialties": ["childrens_nursing", "oncology", "palliative_care"],
+    "tags": ["carer_relationship", "long_term_condition"]
+  }
+}
