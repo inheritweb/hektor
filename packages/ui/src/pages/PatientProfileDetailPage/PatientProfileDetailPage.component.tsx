@@ -37,6 +37,14 @@ export interface PatientProfileDetailViewModel {
       dose?: string;
       frequency?: string;
     }[];
+    clinicalRecord?: {
+      facts: readonly {
+        id: string;
+        category: string;
+        summary: string;
+        details?: string;
+      }[];
+    };
   };
 }
 
@@ -188,6 +196,33 @@ export function PatientProfileDetailPage({
               </article>
             ))}
           </div>
+        </section>
+
+        <section aria-labelledby="clinical-record-heading">
+          <h2 className="text-xl font-bold" id="clinical-record-heading">
+            Clinical record
+          </h2>
+          {document.clinicalRecord?.facts.length ? (
+            <div className="mt-4 space-y-4">
+              {document.clinicalRecord.facts.map((fact) => (
+                <article key={fact.id}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                    {fact.category.replaceAll('_', ' ')}
+                  </p>
+                  <h3 className="mt-1 font-semibold">{fact.summary}</h3>
+                  {fact.details ? (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {fact.details}
+                    </p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">
+              No additional clinical-record facts are recorded.
+            </p>
+          )}
         </section>
       </div>
 

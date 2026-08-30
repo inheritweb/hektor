@@ -79,6 +79,17 @@ export enum PatientClinicalStatus {
   Resolved = 'resolved',
 }
 
+export enum PatientClinicalRecordFactCategory {
+  Condition = 'condition',
+  History = 'history',
+  Procedure = 'procedure',
+  Episode = 'episode',
+  Observation = 'observation',
+  Investigation = 'investigation',
+  Risk = 'risk',
+  CarePlan = 'care_plan',
+}
+
 export enum PatientAllergyVerificationStatus {
   Confirmed = 'confirmed',
   Unconfirmed = 'unconfirmed',
@@ -197,7 +208,22 @@ export interface PatientProfileDocumentV1 {
   problems: PatientProblem[];
   allergies: PatientAllergy[];
   baselineMedications: PatientBaselineMedication[];
+  clinicalRecord?: PatientClinicalRecord;
   catalogue: PatientCatalogueMetadata;
+}
+
+export interface PatientClinicalRecord {
+  facts: PatientClinicalRecordFact[];
+}
+
+export interface PatientClinicalRecordFact {
+  id: string;
+  category: PatientClinicalRecordFactCategory;
+  clinicalStatus: PatientClinicalStatus;
+  summary: string;
+  details?: string;
+  occurredOn?: string;
+  sensitivity: PatientDataSensitivity;
 }
 
 export interface PatientIdentity {

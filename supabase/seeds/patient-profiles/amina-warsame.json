@@ -87,6 +87,46 @@
   "problems": [],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "gestational-diabetes",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Diet-controlled gestational diabetes diagnosed at 28 weeks' gestation.",
+        "details": "OGTT fasting 5.9 mmol/L and 2-hour 8.4 mmol/L; capillary glucose monitoring remained within target range.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "ventouse-delivery",
+        "category": "procedure",
+        "clinicalStatus": "active",
+        "summary": "Ventouse-assisted vaginal delivery following a prolonged second stage and maternal exhaustion.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "second-degree-tear-repair",
+        "category": "procedure",
+        "clinicalStatus": "active",
+        "summary": "Second-degree perineal tear repaired under local anaesthetic.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "postnatal-haemoglobin",
+        "category": "investigation",
+        "clinicalStatus": "active",
+        "summary": "Postnatal day 1 haemoglobin 108 g/L; mild anaemia with no transfusion indicated.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "vte-prophylaxis-plan",
+        "category": "care_plan",
+        "clinicalStatus": "active",
+        "summary": "Seven days of postnatal VTE prophylaxis planned following instrumental delivery and booking BMI of 31.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "An adult with strong family support and Somali Muslim heritage, authored for maternity and postnatal learning experiences.",
     "lifeStage": "adult",

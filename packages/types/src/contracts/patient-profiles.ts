@@ -12,6 +12,9 @@ import {
   type PatientCatalogueMetadata,
   PatientCareSetting,
   PatientClinicalStatus,
+  PatientClinicalRecordFactCategory,
+  type PatientClinicalRecord,
+  type PatientClinicalRecordFact,
   type PatientCommunication,
   type PatientCommunicationNeed,
   type PatientContact,
@@ -229,6 +232,24 @@ export const patientBaselineMedicationSchema = z
   })
   .strict() satisfies z.ZodType<PatientBaselineMedication>;
 
+export const patientClinicalRecordFactSchema = z
+  .object({
+    id: itemIdSchema,
+    category: z.enum(PatientClinicalRecordFactCategory),
+    clinicalStatus: z.enum(PatientClinicalStatus),
+    summary: plainText(500),
+    details: plainText(4000).optional(),
+    occurredOn: z.iso.date().optional(),
+    sensitivity: z.enum(PatientDataSensitivity),
+  })
+  .strict() satisfies z.ZodType<PatientClinicalRecordFact>;
+
+export const patientClinicalRecordSchema = z
+  .object({
+    facts: z.array(patientClinicalRecordFactSchema).max(200),
+  })
+  .strict() satisfies z.ZodType<PatientClinicalRecord>;
+
 export const patientCatalogueMetadataSchema = z
   .object({
     synopsis: plainText(1000),
@@ -256,6 +277,7 @@ const uniqueIds = (
     ['problems', document.problems],
     ['allergies', document.allergies],
     ['baselineMedications', document.baselineMedications],
+    ['clinicalRecord.facts', document.clinicalRecord?.facts ?? []],
   ] as const;
 
   for (const [name, values] of collections) {
@@ -282,6 +304,7 @@ export const patientProfileDocumentV1Schema = z
     problems: z.array(patientProblemSchema).max(100),
     allergies: z.array(patientAllergySchema).max(100),
     baselineMedications: z.array(patientBaselineMedicationSchema).max(100),
+    clinicalRecord: patientClinicalRecordSchema.optional(),
     catalogue: patientCatalogueMetadataSchema,
   })
   .strict()

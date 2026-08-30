@@ -17,6 +17,30 @@ publication and provenance around a typed JSON patient document. This preserves
 specialty variation without turning unvalidated JSON into the domain model or
 prematurely normalising every clinical concept into a table.
 
+## Clinical record
+
+The patient document includes a `clinicalRecord`: an authored, base-history
+ledger for the fictional patient. It is not an EHR screen model and it contains
+no learner, assignment or interface configuration. Each fact has a stable ID,
+category, clinical status, sensitivity and optional effective date, so a later
+patient-project layer can add, amend, supersede or reveal it reproducibly.
+
+The initial categories are condition, history, procedure, episode,
+observation, investigation, risk and care plan. This supports the first five
+profiles without prematurely creating generic relational tables for every
+clinical concept. Their existing problem list, allergy list and baseline
+medications remain established structured baseline fields; the clinical record
+adds the richer historical and temporal facts that make an EHR projection
+credible.
+
+The current five seed profiles now include clinical-record facts extracted from
+the prototype: diabetes and learning-disability context for Adebayo; mental
+health, trauma and safeguarding context for Adam; oncology and advance-care
+context for Emma; pregnancy, delivery and postnatal facts for Amina; and stroke,
+cardiovascular, observation and risk facts for Esther. Scenario navigation,
+ward/visit configuration, alert banners and teaching instructions remain out of
+the base record for patient projects and layers.
+
 Patient projects will later pin a published patient-profile version and apply an
 ordered sequence of conceptual layers. Layers belong to projects, not profiles.
 This keeps one patient reusable in multiple experiences and makes every point in

@@ -91,6 +91,32 @@
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "schizophrenia-diagnosis",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Recent diagnosis of schizophrenia.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "childhood-trauma-history",
+        "category": "history",
+        "clinicalStatus": "active",
+        "summary": "History of childhood domestic violence, physical abuse and paternal alcohol dependence.",
+        "details": "Father died when Adam was 15; later history includes school exclusion and early contact with the criminal justice system.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "self-neglect-and-exploitation-risk",
+        "category": "risk",
+        "clinicalStatus": "active",
+        "summary": "Risk of self-neglect and exploitation associated with deteriorating self-care, substance use and cannabis-related debts.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A young adult with recently diagnosed schizophrenia, limited social support and a history requiring trauma-informed and safeguarding-aware care.",
     "lifeStage": "young_person",

@@ -69,6 +69,24 @@
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "childhood-cancer-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Childhood cancer under specialist oncology care.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "advance-care-plan",
+        "category": "care_plan",
+        "clinicalStatus": "active",
+        "summary": "Children and Young People's Advance Care Plan is in progress.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A child living with cancer whose mother is her sole carer and whose care requires child- and family-centred communication.",
     "lifeStage": "child",

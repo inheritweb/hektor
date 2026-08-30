@@ -140,6 +140,32 @@ with content as (
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "schizophrenia-diagnosis",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Recent diagnosis of schizophrenia.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "childhood-trauma-history",
+        "category": "history",
+        "clinicalStatus": "active",
+        "summary": "History of childhood domestic violence, physical abuse and paternal alcohol dependence.",
+        "details": "Father died when Adam was 15; later history includes school exclusion and early contact with the criminal justice system.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "self-neglect-and-exploitation-risk",
+        "category": "risk",
+        "clinicalStatus": "active",
+        "summary": "Risk of self-neglect and exploitation associated with deteriorating self-care, substance use and cannabis-related debts.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A young adult with recently diagnosed schizophrenia, limited social support and a history requiring trauma-informed and safeguarding-aware care.",
     "lifeStage": "young_person",
@@ -317,6 +343,32 @@ begin
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "schizophrenia-diagnosis",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Recent diagnosis of schizophrenia.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "childhood-trauma-history",
+        "category": "history",
+        "clinicalStatus": "active",
+        "summary": "History of childhood domestic violence, physical abuse and paternal alcohol dependence.",
+        "details": "Father died when Adam was 15; later history includes school exclusion and early contact with the criminal justice system.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "self-neglect-and-exploitation-risk",
+        "category": "risk",
+        "clinicalStatus": "active",
+        "summary": "Risk of self-neglect and exploitation associated with deteriorating self-care, substance use and cannabis-related debts.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A young adult with recently diagnosed schizophrenia, limited social support and a history requiring trauma-informed and safeguarding-aware care.",
     "lifeStage": "young_person",
@@ -513,6 +565,38 @@ with content as (
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "type-2-diabetes-diagnosis",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Type 2 diabetes mellitus diagnosed five months before the source scenario.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "learning-disability-assessment",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Mild to moderate learning disability affecting understanding of complex health information.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "weight-at-review",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Weight recorded as 102 kg; 98 kg at diabetes diagnosis.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "height-record",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Height recorded as 167 cm.",
+        "sensitivity": "standard"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A young adult with type 2 diabetes and a learning disability who values independence and benefits from accessible communication.",
     "lifeStage": "young_person",
@@ -711,6 +795,38 @@ begin
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "type-2-diabetes-diagnosis",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Type 2 diabetes mellitus diagnosed five months before the source scenario.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "learning-disability-assessment",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Mild to moderate learning disability affecting understanding of complex health information.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "weight-at-review",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Weight recorded as 102 kg; 98 kg at diabetes diagnosis.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "height-record",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Height recorded as 167 cm.",
+        "sensitivity": "standard"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A young adult with type 2 diabetes and a learning disability who values independence and benefits from accessible communication.",
     "lifeStage": "young_person",
@@ -886,6 +1002,46 @@ with content as (
   "problems": [],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "gestational-diabetes",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Diet-controlled gestational diabetes diagnosed at 28 weeks' gestation.",
+        "details": "OGTT fasting 5.9 mmol/L and 2-hour 8.4 mmol/L; capillary glucose monitoring remained within target range.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "ventouse-delivery",
+        "category": "procedure",
+        "clinicalStatus": "active",
+        "summary": "Ventouse-assisted vaginal delivery following a prolonged second stage and maternal exhaustion.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "second-degree-tear-repair",
+        "category": "procedure",
+        "clinicalStatus": "active",
+        "summary": "Second-degree perineal tear repaired under local anaesthetic.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "postnatal-haemoglobin",
+        "category": "investigation",
+        "clinicalStatus": "active",
+        "summary": "Postnatal day 1 haemoglobin 108 g/L; mild anaemia with no transfusion indicated.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "vte-prophylaxis-plan",
+        "category": "care_plan",
+        "clinicalStatus": "active",
+        "summary": "Seven days of postnatal VTE prophylaxis planned following instrumental delivery and booking BMI of 31.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "An adult with strong family support and Somali Muslim heritage, authored for maternity and postnatal learning experiences.",
     "lifeStage": "adult",
@@ -1058,6 +1214,46 @@ begin
   "problems": [],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "gestational-diabetes",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Diet-controlled gestational diabetes diagnosed at 28 weeks' gestation.",
+        "details": "OGTT fasting 5.9 mmol/L and 2-hour 8.4 mmol/L; capillary glucose monitoring remained within target range.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "ventouse-delivery",
+        "category": "procedure",
+        "clinicalStatus": "active",
+        "summary": "Ventouse-assisted vaginal delivery following a prolonged second stage and maternal exhaustion.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "second-degree-tear-repair",
+        "category": "procedure",
+        "clinicalStatus": "active",
+        "summary": "Second-degree perineal tear repaired under local anaesthetic.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "postnatal-haemoglobin",
+        "category": "investigation",
+        "clinicalStatus": "active",
+        "summary": "Postnatal day 1 haemoglobin 108 g/L; mild anaemia with no transfusion indicated.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "vte-prophylaxis-plan",
+        "category": "care_plan",
+        "clinicalStatus": "active",
+        "summary": "Seven days of postnatal VTE prophylaxis planned following instrumental delivery and booking BMI of 31.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "An adult with strong family support and Somali Muslim heritage, authored for maternity and postnatal learning experiences.",
     "lifeStage": "adult",
@@ -1218,6 +1414,24 @@ with content as (
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "childhood-cancer-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Childhood cancer under specialist oncology care.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "advance-care-plan",
+        "category": "care_plan",
+        "clinicalStatus": "active",
+        "summary": "Children and Young People's Advance Care Plan is in progress.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A child living with cancer whose mother is her sole carer and whose care requires child- and family-centred communication.",
     "lifeStage": "child",
@@ -1378,6 +1592,24 @@ begin
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "childhood-cancer-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Childhood cancer under specialist oncology care.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "advance-care-plan",
+        "category": "care_plan",
+        "clinicalStatus": "active",
+        "summary": "Children and Young People's Advance Care Plan is in progress.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A child living with cancer whose mother is her sole carer and whose care requires child- and family-centred communication.",
     "lifeStage": "child",
@@ -1588,6 +1820,46 @@ with content as (
     }
   ],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "acute-ischaemic-stroke",
+        "category": "episode",
+        "clinicalStatus": "active",
+        "summary": "Acute ischaemic stroke affecting the right hemisphere with left-sided facial droop, arm weakness and slurred speech.",
+        "occurredOn": "2026-07-19",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "hypertension-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "History of hypertension.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "atrial-fibrillation-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "History of atrial fibrillation.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "stroke-admission-weight",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Weight recorded as 77 kg; height recorded as 163 cm.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "swallow-and-falls-risk",
+        "category": "risk",
+        "clinicalStatus": "active",
+        "summary": "Falls risk and swallow screening requirement identified following acute stroke presentation.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "An older adult with hypertension and atrial fibrillation, living with and supported by her daughter, suitable for acute stroke and interprofessional learning.",
     "lifeStage": "older_adult",
@@ -1795,6 +2067,46 @@ begin
     }
   ],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "acute-ischaemic-stroke",
+        "category": "episode",
+        "clinicalStatus": "active",
+        "summary": "Acute ischaemic stroke affecting the right hemisphere with left-sided facial droop, arm weakness and slurred speech.",
+        "occurredOn": "2026-07-19",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "hypertension-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "History of hypertension.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "atrial-fibrillation-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "History of atrial fibrillation.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "stroke-admission-weight",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Weight recorded as 77 kg; height recorded as 163 cm.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "swallow-and-falls-risk",
+        "category": "risk",
+        "clinicalStatus": "active",
+        "summary": "Falls risk and swallow screening requirement identified following acute stroke presentation.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "An older adult with hypertension and atrial fibrillation, living with and supported by her daughter, suitable for acute stroke and interprofessional learning.",
     "lifeStage": "older_adult",

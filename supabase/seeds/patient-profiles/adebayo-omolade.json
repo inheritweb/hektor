@@ -106,6 +106,38 @@
   ],
   "allergies": [],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "type-2-diabetes-diagnosis",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Type 2 diabetes mellitus diagnosed five months before the source scenario.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "learning-disability-assessment",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "Mild to moderate learning disability affecting understanding of complex health information.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "weight-at-review",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Weight recorded as 102 kg; 98 kg at diabetes diagnosis.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "height-record",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Height recorded as 167 cm.",
+        "sensitivity": "standard"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "A young adult with type 2 diabetes and a learning disability who values independence and benefits from accessible communication.",
     "lifeStage": "young_person",

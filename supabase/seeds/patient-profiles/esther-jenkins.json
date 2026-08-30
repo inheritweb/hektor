@@ -105,6 +105,46 @@
     }
   ],
   "baselineMedications": [],
+  "clinicalRecord": {
+    "facts": [
+      {
+        "id": "acute-ischaemic-stroke",
+        "category": "episode",
+        "clinicalStatus": "active",
+        "summary": "Acute ischaemic stroke affecting the right hemisphere with left-sided facial droop, arm weakness and slurred speech.",
+        "occurredOn": "2026-07-19",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "hypertension-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "History of hypertension.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "atrial-fibrillation-history",
+        "category": "condition",
+        "clinicalStatus": "active",
+        "summary": "History of atrial fibrillation.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "stroke-admission-weight",
+        "category": "observation",
+        "clinicalStatus": "active",
+        "summary": "Weight recorded as 77 kg; height recorded as 163 cm.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "swallow-and-falls-risk",
+        "category": "risk",
+        "clinicalStatus": "active",
+        "summary": "Falls risk and swallow screening requirement identified following acute stroke presentation.",
+        "sensitivity": "restricted"
+      }
+    ]
+  },
   "catalogue": {
     "synopsis": "An older adult with hypertension and atrial fibrillation, living with and supported by her daughter, suitable for acute stroke and interprofessional learning.",
     "lifeStage": "older_adult",
