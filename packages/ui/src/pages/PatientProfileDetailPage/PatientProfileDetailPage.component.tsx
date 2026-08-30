@@ -5,6 +5,9 @@ import {
   LuTriangleAlert,
 } from 'react-icons/lu';
 
+import { buttonVariants } from '../../atoms';
+import { NavigationLink } from '../../context';
+
 export interface PatientProfileDetailViewModel {
   displayName: string;
   dateOfBirth: string;
@@ -50,8 +53,10 @@ export interface PatientProfileDetailViewModel {
 
 export function PatientProfileDetailPage({
   profile,
+  editHref,
 }: {
   profile: PatientProfileDetailViewModel;
+  editHref?: string;
 }) {
   const { document } = profile;
   return (
@@ -78,6 +83,14 @@ export function PatientProfileDetailPage({
           · Version {profile.versionNumber}
         </p>
         <p className="mt-5 max-w-4xl text-base leading-7">{profile.synopsis}</p>
+        {editHref ? (
+          <NavigationLink
+            className={`${buttonVariants({ variant: 'outline' })} mt-5`}
+            href={editHref}
+          >
+            Edit draft
+          </NavigationLink>
+        ) : null}
       </header>
 
       {profile.versionState === 'draft' ? (

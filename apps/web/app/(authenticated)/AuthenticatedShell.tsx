@@ -146,6 +146,16 @@ export function breadcrumbsForPath(
     return [home, { label: 'Admin' }, { label: 'Patient profiles' }];
   }
 
+  if (pathname.match(/^\/admin\/patient-profiles\/[^/]+\/edit$/)) {
+    return [
+      home,
+      { label: 'Admin' },
+      { label: 'Patient profiles', href: '/admin/patient-profiles' },
+      { label: 'Patient profile', href: pathname.slice(0, -5) },
+      { label: 'Edit' },
+    ];
+  }
+
   if (pathname.match(/^\/admin\/patient-profiles\/[^/]+$/)) {
     return [
       home,

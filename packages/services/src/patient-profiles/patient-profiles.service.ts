@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import {
   PatientProfileScope,
   PatientProfileStatus,
@@ -7,7 +9,7 @@ import {
 } from '@hektor/types';
 import { patientProfileDocumentV1Schema } from '@hektor/types/contracts/patient-profiles';
 import { HektorErrorCode } from '@hektor/types/contracts';
-import type { Database } from '@hektor/types/database';
+import type { Database, Json } from '@hektor/types/database';
 
 import type { DatabaseClient } from '../database';
 import { createServiceError } from '../errors';
@@ -56,6 +58,21 @@ function mapCatalogueItem(profile: ProfileRow, version: VersionRow) {
     specialties: catalogue.specialties,
     tags: catalogue.tags,
   } satisfies PatientProfileCatalogueItem;
+}
+
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.entries(value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, nested]) => `${JSON.stringify(key)}:${canonicalJson(nested)}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function contentHash(document: PatientProfileDetail['document']) {
+  return createHash('sha256').update(canonicalJson(document)).digest('hex');
 }
 
 export function createPatientProfilesService(client: DatabaseClient) {
@@ -151,5 +168,47 @@ export function createPatientProfilesService(client: DatabaseClient) {
     };
   }
 
-  return { getAdminPatientProfile, listAdminPatientProfiles };
+  async function updateAdminPatientProfileDraft(
+    profileId: string,
+    input: {
+      changeSummary: string;
+      document: PatientProfileDetail['document'];
+      expectedUpdatedAt: string;
+    },
+    userId: string,
+  ): Promise<PatientProfileDetail> {
+    const updated = await client
+      .from('patient_profile_versions')
+      .update({
+        authored_by: userId,
+        change_summary: input.changeSummary,
+        content_hash: contentHash(input.document),
+        document: input.document as unknown as Json,
+      })
+      .eq('patient_profile_id', profileId)
+      .eq('state', PatientProfileVersionState.Draft)
+      .eq('updated_at', input.expectedUpdatedAt)
+      .select('id')
+      .maybeSingle();
+    if (updated.error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to update patient profile draft',
+        internalMessage: updated.error.message,
+        cause: updated.error,
+      });
+    }
+    if (!updated.data) {
+      throw createServiceError(HektorErrorCode.Conflict, {
+        message:
+          'This draft has changed or is no longer available. Reload it before saving.',
+      });
+    }
+    return getAdminPatientProfile(profileId);
+  }
+
+  return {
+    getAdminPatientProfile,
+    listAdminPatientProfiles,
+    updateAdminPatientProfileDraft,
+  };
 }

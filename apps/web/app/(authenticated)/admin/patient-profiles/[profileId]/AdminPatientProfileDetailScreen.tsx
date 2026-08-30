@@ -22,5 +22,14 @@ export function AdminPatientProfileDetailScreen({
         {profile.error.message}
       </p>
     );
-  return <PatientProfileDetailPage profile={profile.data.data} />;
+  return (
+    <PatientProfileDetailPage
+      editHref={
+        profile.data.data.versionState === 'draft'
+          ? `/admin/patient-profiles/${profileId}/edit`
+          : undefined
+      }
+      profile={profile.data.data}
+    />
+  );
 }

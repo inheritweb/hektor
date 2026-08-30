@@ -356,3 +356,18 @@ export const getAdminPatientProfileContract = defineContract({
   params: z.object({ profileId: z.uuid() }),
   output: hektorResponseSchema(patientProfileDetailSchema),
 });
+
+export const updateAdminPatientProfileDraftInputSchema = z.object({
+  changeSummary: plainText(1000),
+  document: patientProfileDocumentV1Schema,
+  expectedUpdatedAt: z.iso.datetime(),
+});
+
+export const updateAdminPatientProfileDraftContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/patient-profiles/:profileId',
+  access: adminPatientProfileAccess,
+  params: z.object({ profileId: z.uuid() }),
+  body: updateAdminPatientProfileDraftInputSchema,
+  output: hektorResponseSchema(patientProfileDetailSchema),
+});
