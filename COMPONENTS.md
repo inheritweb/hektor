@@ -301,10 +301,9 @@ If a component starts fetching, reading the router, or importing application
 state, move that responsibility to the consuming app rather than moving the
 component to a higher atomic layer.
 
-## Initial implementation boundary
+## Initial implementation boundary — done
 
-The first implementation phase creates the two packages, theme entrypoints,
-atomic directories, public exports, Storybook configuration, and verification
-scripts. It does not add speculative design-system components. Atoms and higher
-layers are introduced in response to concrete product needs and reviewed through
-Storybook as they arrive.
+The initial packages, theme entrypoints, atomic directories, public exports,
+Storybook configuration and verification scripts are in place. New atoms and
+higher layers continue to be introduced only for concrete product needs and are
+reviewed through Storybook as they arrive.

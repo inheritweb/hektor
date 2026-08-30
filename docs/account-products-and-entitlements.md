@@ -18,7 +18,7 @@ non-committal about products that have not yet been designed.
 - Data records its owner, controlling context, and transfer rules explicitly.
   These rules must not be inferred from the user's current email domain.
 
-## Identity model required now
+## Identity foundation — done
 
 Supabase `auth.users` is the durable Hektor account and `auth.identities` holds
 its email and OAuth login methods. Supabase automatically links identities with
@@ -27,8 +27,8 @@ different emails.
 
 `User` is the dominant application entity and exists independently of any
 organisation. `OrganisationMembership` belongs to the organisation domain and
-associates an organisation with a user, including a pending unlinked state for
-provisioning before first login. The same association can be traversed from a
+associates an organisation with a user. A separate provision can remain pending
+and unlinked before first login. The same membership can be traversed from a
 platform user view or an organisation's people view.
 
 Personal access is a context, not a user subtype or container. The initial
@@ -53,7 +53,7 @@ moves institution. The new organisation creates an independent membership for
 the same user. SCIM only controls the membership and groups within the SCIM
 connection's organisation.
 
-## Access model required now
+## Access foundation — done
 
 Public sign-up creates a personal account. The initial free allowance is a
 product entitlement, provisionally allowing the user to explore three patient
@@ -109,14 +109,21 @@ The simulation-day planning ideas explored in Hascle may become another product.
 It should reuse users, organisations, cohorts, groups, identity, and entitlement
 foundations without forcing its workflow into the EHR model.
 
-## Delivery sequence
+## Delivery status
 
-1. Establish Supabase identity linking and multi-organisation membership.
-2. Allow ordinary passwordless email and Google sign-up while retaining
-   allowlisted Google platform-admin elevation.
-3. Surface the signed-in user and active context in the application shell.
-4. Implement verified account linking before institutional SAML is released.
-5. Define the first EHR capability, free allowance, and institutional grant.
-6. Add product and entitlement persistence from those concrete rules.
-7. Design ownership and transfer for the professional portfolio before storing
-   portfolio content.
+1. [x] Establish Supabase accounts and multi-organisation membership.
+2. [x] Add passwordless email and Google sign-in with bootstrap platform-admin
+       elevation.
+3. [x] Surface the signed-in user and active context in the application shell.
+4. [x] Add manual, CSV and SCIM provisioning, membership lifecycle, groups,
+       cohorts and learner-seat enforcement.
+5. [ ] Define the first EHR capabilities, including system patient-profile
+       discovery/cloning, the personal free allowance and institutional grants.
+6. [ ] Add product and entitlement persistence from those concrete rules.
+7. [ ] Implement institutional SSO and any exceptional identity reconciliation
+       required by the chosen provider.
+8. [ ] Design ownership and transfer for the professional portfolio before
+       storing portfolio content.
+
+Detailed completed and outstanding identity work is tracked in
+`docs/identity-and-organisation-management.md`.
