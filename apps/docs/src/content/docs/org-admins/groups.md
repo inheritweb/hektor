@@ -1,16 +1,46 @@
 ---
 title: Manage groups
-description: Create, edit and review groups within your organisation.
+description: Create groups and maintain connected and provisioned membership.
 sidebar:
-  order: 5
+  order: 10
 ---
 
-Select your organisation in the account switcher and choose **Groups** from the application menu. The directory shows whether each group is managed by Hektor or an external provisioning source.
+Groups organise users within an organisation and may belong to a cohort. Hektor presents one group concept whether locally or externally managed; the source determines which fields can be edited.
 
-Choose **Add group** to create a locally managed group. A group can optionally belong to a cohort.
+## Create a local group
 
-Select a group to review its linked users and unresolved provisioned users. Choose **Edit group** to change its name, cohort or lifecycle status. External source information is displayed separately and remains controlled by the provisioning system.
+1. Choose **Groups**.
+2. Choose **Add group**.
+3. Enter the group name.
+4. Optionally select an active cohort.
+5. Save the group.
 
-For an active group managed by Hektor, choose **Manage users** to add or remove users who are already connected to your organisation. This search never exposes accounts outside your organisation.
+## Add or remove connected users
 
-Choose **Manage provisions** to assign pending provisions belonging to your organisation. Membership of externally provisioned groups is controlled by its provisioning source and cannot be changed in Hektor.
+1. Open an active, Hektor-managed group.
+2. Choose **Manage users**.
+3. Search users already connected to this organisation.
+4. Tick users who should belong and clear users who should not.
+5. Save the selection.
+
+The search never exposes accounts outside the selected organisation.
+
+## Add or remove pending provisioned users
+
+1. Open the group.
+2. Choose **Manage provisioned users**.
+3. Search provisioned users belonging to this organisation.
+4. Select or clear the required records.
+5. Save the selection.
+
+When a provision links to a user, its group relationship follows it into the connected membership.
+
+## Edit or archive a group
+
+1. Open the group and choose **Edit group**.
+2. Change its name, cohort or status.
+3. Save the form.
+
+Archiving removes the group from normal active use without deleting historical relationships.
+
+Externally provisioned groups display source and synchronization state. Their name and membership are read-only in Hektor. Inbound SCIM Groups and their mapping screen are not available in the current release, so today's SCIM integration automates users only.

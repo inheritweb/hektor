@@ -177,7 +177,7 @@ export function AdminOrganisationDetailPage({
       >
         <div className="grid gap-px bg-border sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ['Total provisions', provisions.total],
+            ['Total provisioned users', provisions.total],
             ['Awaiting account linking', provisions.pending],
             ['Inactive', provisions.inactive],
             ['Failed', provisions.failed],

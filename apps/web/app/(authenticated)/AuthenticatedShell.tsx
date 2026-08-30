@@ -63,21 +63,33 @@ export function breadcrumbsForPath(
   }
   if (pathname === '/groups') return [home, { label: 'Groups' }];
   if (pathname === '/users/provisions') {
-    return [home, { label: 'Users', href: '/users' }, { label: 'Provisions' }];
+    return [
+      home,
+      { label: 'Users', href: '/users' },
+      { label: 'Provisioning' },
+    ];
   }
   if (pathname === '/users/provisions/new') {
     return [
       home,
       { label: 'Users', href: '/users' },
-      { label: 'Provisions', href: '/users/provisions' },
+      { label: 'Provisioning', href: '/users/provisions' },
       { label: 'Invite user' },
+    ];
+  }
+  if (pathname === '/users/provisions/scim') {
+    return [
+      home,
+      { label: 'Users', href: '/users' },
+      { label: 'Provisioning', href: '/users/provisions' },
+      { label: 'SCIM' },
     ];
   }
   if (pathname.match(/^\/users\/provisions\/[^/]+$/)) {
     return [
       home,
       { label: 'Users', href: '/users' },
-      { label: 'Provisions', href: '/users/provisions' },
+      { label: 'Provisioning', href: '/users/provisions' },
       { label: provisionName },
     ];
   }

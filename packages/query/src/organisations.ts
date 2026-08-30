@@ -14,6 +14,7 @@ import {
   commitTenantOrganisationProvisionImport,
   getOrganisation,
   getTenantOrganisationContext,
+  getTenantOrganisationScimConfiguration,
   getOrganisationContractPeriod,
   getOrganisationCohort,
   getOrganisationGroup,
@@ -30,6 +31,7 @@ import {
   getOrganisationUsers,
   getTenantOrganisationMembership,
   updateTenantOrganisationMembership,
+  updateTenantOrganisationScimConfiguration,
   getTenantOrganisationCohorts,
   getTenantOrganisationCohort,
   getTenantOrganisationGroup,
@@ -38,6 +40,8 @@ import {
   getTenantOrganisationUserProvision,
   listOrganisationMembershipCandidates,
   listOrganisations,
+  issueTenantOrganisationScimToken,
+  revokeTenantOrganisationScimToken,
   sendOrganisationProvisionInvitation,
   sendOrganisationProvisionInvitations,
   sendTenantOrganisationProvisionInvitation,
@@ -71,6 +75,26 @@ export const TENANT_ORGANISATION_QUERY_KEY = [
 export const useGetTenantOrganisationContext = makeQuery(
   getTenantOrganisationContext,
   TENANT_ORGANISATION_QUERY_KEY,
+);
+
+export const useGetOrganisationScimConfiguration = makeQuery(
+  getTenantOrganisationScimConfiguration,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'scim'],
+);
+
+export const useUpdateOrganisationScimConfiguration = makeMutation(
+  updateTenantOrganisationScimConfiguration,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'scim'],
+);
+
+export const useIssueOrganisationScimToken = makeMutation(
+  issueTenantOrganisationScimToken,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'scim'],
+);
+
+export const useRevokeOrganisationScimToken = makeMutation(
+  revokeTenantOrganisationScimToken,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'scim'],
 );
 
 export const useGetOrganisationUsers = makeQuery(getOrganisationUsers, [

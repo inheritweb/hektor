@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { OrganisationDashboardPage } from './OrganisationDashboardPage.component';
 
 describe('OrganisationDashboardPage', () => {
-  it('places provisions within user administration', () => {
+  it('groups access and organisation structure into two pod rows', () => {
     render(
       <OrganisationDashboardPage
         cohortCount={3}
@@ -17,10 +17,13 @@ describe('OrganisationDashboardPage', () => {
 
     expect(screen.getByText('Northbridge University')).toBeTruthy();
     expect(
-      screen
-        .getByRole('link', { name: 'Manage provisions' })
-        .getAttribute('href'),
+      screen.getByRole('link', { name: /Provisioning/ }).getAttribute('href'),
     ).toBe('/users/provisions');
-    expect(screen.getByText('Connected users')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: /Configure SCIM/ }).getAttribute('href'),
+    ).toBe('/users/provisions/scim');
+    expect(screen.getByRole('link', { name: /Users/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Groups/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Cohorts/ })).toBeTruthy();
   });
 });

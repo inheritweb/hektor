@@ -1,16 +1,36 @@
 ---
-title: Review organisation users
-description: View the users currently connected to your organisation.
+title: Administer connected users
+description: Review user access, roles, cohorts, groups, seats and status.
 sidebar:
-  order: 3
+  order: 8
 ---
 
-Select your organisation in the account switcher and choose **Users** from the application menu. The directory shows each connected user's name, email, organisation role and current status.
+## Find a connected user
 
-Only users connected to the selected organisation are returned. Changing the organisation in the account switcher changes both the visible workspace and the organisation scope applied to subsequent requests.
+1. Select the correct organisation in the account switcher.
+2. Choose **Users**.
+3. Search or page through the directory.
+4. Review both **Platform status** and **Organisation seat status**.
+5. Select a row to open the membership detail.
 
-Select a user to review their cohort, groups, provisioning status and seat allocation. Choose **Edit membership** to change their role, cohort or status.
+Only users connected to the selected organisation are returned. Organisation administrators cannot search the platform-wide directory.
 
-Choose **Manage provisions** to invite people who are not yet connected and to manage outstanding invitations. Provisions belong to user administration; they are not a separate organisation area.
+## Review access
 
-Hektor prevents you from suspending or demoting your own administrator membership. It also protects the final active administrator in an organisation. A platform administrator can recover administrator access through the platform administration area when necessary.
+The detail page shows organisation role, cohort, groups, provisioning source, platform status and seat status. A platform account and an organisation membership are different: changing organisation access does not delete the personal account.
+
+## Change a membership
+
+1. Open the user and choose **Edit membership**.
+2. Change the role, cohort or membership status.
+3. Save the form.
+
+Hektor detects concurrent updates and refuses to overwrite a newer change. Reload, review the current values and apply the change again.
+
+Externally managed role or cohort values must be changed at their source. Hektor also prevents you from suspending or demoting yourself and protects the final active organisation administrator.
+
+## Suspend or restore access
+
+Set the membership to **Suspended** to prevent organisation login and revoke active sessions. Existing work remains associated with the organisation and becomes effectively read-only. Restore **Active** to permit access again, subject to seat availability.
+
+For someone not yet connected, choose **Manage provisioning** and follow [manual provisioning](./provisions/) or [SCIM configuration](./scim/).

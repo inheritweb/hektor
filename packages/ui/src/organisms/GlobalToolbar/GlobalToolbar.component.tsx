@@ -14,6 +14,8 @@ export interface GlobalToolbarProps {
 }
 
 export function GlobalToolbar({ breadcrumbs, tools }: GlobalToolbarProps) {
+  if (breadcrumbs.length === 0 && !tools) return null;
+
   return (
     <div className="flex min-h-11 items-center justify-between gap-4 border-b border-border/40 px-3 py-2 md:px-4">
       <nav aria-label="Breadcrumb">

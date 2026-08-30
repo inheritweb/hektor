@@ -9,6 +9,11 @@ describe('breadcrumbsForPath', () => {
       { label: 'Home', href: '/' },
       { label: 'Profile' },
     ]);
+    expect(breadcrumbsForPath('/users/provisions')).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Users', href: '/users' },
+      { label: 'Provisioning' },
+    ]);
     expect(
       breadcrumbsForPath('/admin/users/ab720a62-06df-408d-9e8c-0201ac69269a'),
     ).toEqual([

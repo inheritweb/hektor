@@ -259,6 +259,171 @@ export type Database = {
           },
         ];
       };
+      organisation_scim_configurations: {
+        Row: {
+          created_at: string;
+          default_role: Database['public']['Enums']['organisation_role'];
+          organisation_id: string;
+          token_created_at: string | null;
+          token_hash: string | null;
+          token_revoked_at: string | null;
+          token_suffix: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          default_role?: Database['public']['Enums']['organisation_role'];
+          organisation_id: string;
+          token_created_at?: string | null;
+          token_hash?: string | null;
+          token_revoked_at?: string | null;
+          token_suffix?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          default_role?: Database['public']['Enums']['organisation_role'];
+          organisation_id?: string;
+          token_created_at?: string | null;
+          token_hash?: string | null;
+          token_revoked_at?: string | null;
+          token_suffix?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organisation_scim_configurations_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: true;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      organisation_scim_group_mappings: {
+        Row: {
+          created_at: string;
+          display_name: string;
+          external_id: string;
+          id: string;
+          last_synchronized_at: string;
+          organisation_cohort_id: string | null;
+          organisation_group_id: string | null;
+          organisation_id: string;
+          source_deleted_at: string | null;
+          target_type:
+            Database['public']['Enums']['scim_group_target_type'] | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          display_name: string;
+          external_id: string;
+          id?: string;
+          last_synchronized_at?: string;
+          organisation_cohort_id?: string | null;
+          organisation_group_id?: string | null;
+          organisation_id: string;
+          source_deleted_at?: string | null;
+          target_type?:
+            Database['public']['Enums']['scim_group_target_type'] | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          display_name?: string;
+          external_id?: string;
+          id?: string;
+          last_synchronized_at?: string;
+          organisation_cohort_id?: string | null;
+          organisation_group_id?: string | null;
+          organisation_id?: string;
+          source_deleted_at?: string | null;
+          target_type?:
+            Database['public']['Enums']['scim_group_target_type'] | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organisation_scim_group_mappi_organisation_cohort_id_organ_fkey';
+            columns: ['organisation_cohort_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_cohorts';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_scim_group_mappi_organisation_group_id_organi_fkey';
+            columns: ['organisation_group_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_groups';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_scim_group_mappings_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      organisation_scim_users: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          current_provision_id: string | null;
+          display_name: string | null;
+          external_id: string | null;
+          family_name: string | null;
+          given_name: string | null;
+          id: string;
+          organisation_id: string;
+          updated_at: string;
+          user_name: string;
+        };
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          current_provision_id?: string | null;
+          display_name?: string | null;
+          external_id?: string | null;
+          family_name?: string | null;
+          given_name?: string | null;
+          id?: string;
+          organisation_id: string;
+          updated_at?: string;
+          user_name: string;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          current_provision_id?: string | null;
+          display_name?: string | null;
+          external_id?: string | null;
+          family_name?: string | null;
+          given_name?: string | null;
+          id?: string;
+          organisation_id?: string;
+          updated_at?: string;
+          user_name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organisation_scim_users_current_provision_id_organisation__fkey';
+            columns: ['current_provision_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_user_provisions';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_scim_users_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       organisation_seat_activations: {
         Row: {
           activated_at: string;
@@ -717,6 +882,37 @@ export type Database = {
           user_id: string;
         }[];
       };
+      synchronize_scim_user: {
+        Args: {
+          target_active: boolean;
+          target_display_name: string;
+          target_external_id: string;
+          target_family_name: string;
+          target_given_name: string;
+          target_organisation_id: string;
+          target_scim_user_id: string;
+          target_user_name: string;
+        };
+        Returns: {
+          active: boolean;
+          created_at: string;
+          current_provision_id: string | null;
+          display_name: string | null;
+          external_id: string | null;
+          family_name: string | null;
+          given_name: string | null;
+          id: string;
+          organisation_id: string;
+          updated_at: string;
+          user_name: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'organisation_scim_users';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       transition_organisation_user_provision: {
         Args: {
           expected_status: Database['public']['Enums']['provisioning_status'];
@@ -925,6 +1121,7 @@ export type Database = {
       provisioning_method: 'scim' | 'csv' | 'manual';
       provisioning_status:
         'pending' | 'linked' | 'inactive' | 'revoked' | 'failed';
+      scim_group_target_type: 'cohort' | 'group';
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -1067,6 +1264,7 @@ export const Constants = {
         'revoked',
         'failed',
       ],
+      scim_group_target_type: ['cohort', 'group'],
     },
   },
 } as const;

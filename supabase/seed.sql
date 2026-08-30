@@ -6,6 +6,19 @@ values
   ('f29e6891-351a-4445-b2dc-f30cadcf0416', 'Westmere College', 'westmere-college', 'active'),
   ('fc7225ca-ce67-412b-835f-5ec547b95aa5', 'Ashdown Institute', 'ashdown-institute', 'suspended');
 
+-- Local-only credential used by the separate simulator as a real SCIM client.
+-- Plaintext: hektor_scim_simulator_local_only_2026
+insert into public.organisation_scim_configurations (
+  organisation_id, token_hash, token_suffix, default_role, token_created_at
+)
+values (
+  'b3539fdd-e1aa-45a0-86ac-093b15212273',
+  '9ad27c65f2bdd654ed2ecf5064129eb91bcb44f807ca0dbfded1c2401055d7b9',
+  '2026',
+  'learner',
+  now()
+);
+
 insert into public.organisation_cohorts (
   id, organisation_id, name, starts_on, ends_on, status
 )

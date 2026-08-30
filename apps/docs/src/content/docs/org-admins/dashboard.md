@@ -1,12 +1,15 @@
 ---
 title: Use the dashboard
-description: Review summary totals and open an organisation management area.
+description: Review workspace totals and enter an organisation management area.
 sidebar:
-  order: 2
+  order: 5
 ---
 
-Select an organisation from the account switcher and choose **Home**. The dashboard shows summary totals for the selected organisation's connected users, cohorts and groups.
+1. Select an organisation in the account switcher.
+2. Choose **Home**.
+3. Review the user, cohort and group totals.
+4. Select a summary to open its management area.
 
-Select a summary to open that management area. Switching organisation refreshes the dashboard with statistics for the newly selected organisation.
+User provisioning is a child of **Users**, rather than a separate top-level area.
 
-Platform administrators see the same organisation dashboard while working within an organisation. In their personal context, they instead see platform-wide totals for users and organisations.
+Switching organisation refreshes every total for the new workspace. Platform administrators see this same organisation view while operating inside an organisation; in their personal context they instead see platform-wide totals.

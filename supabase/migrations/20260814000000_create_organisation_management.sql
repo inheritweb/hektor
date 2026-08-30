@@ -4,6 +4,7 @@ create type public.organisation_user_status as enum ('active', 'suspended');
 create type public.provisioning_method as enum ('scim', 'csv', 'manual');
 create type public.provisioning_status as enum ('pending', 'linked', 'inactive', 'revoked', 'failed');
 create type public.group_status as enum ('active', 'archived');
+create type public.scim_group_target_type as enum ('cohort', 'group');
 
 create function public.set_updated_at()
 returns trigger
@@ -26,6 +27,21 @@ create table public.organisations (
   status public.organisation_status not null default 'active',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table public.organisation_scim_configurations (
+  organisation_id uuid primary key references public.organisations (id) on delete restrict,
+  token_hash text unique check (token_hash is null or char_length(token_hash) = 64),
+  token_suffix text check (token_suffix is null or char_length(token_suffix) = 4),
+  default_role public.organisation_role not null default 'learner',
+  token_created_at timestamptz,
+  token_revoked_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (
+    (token_hash is null and token_suffix is null) or
+    (token_hash is not null and token_suffix is not null and token_created_at is not null)
+  )
 );
 
 create table public.organisation_cohorts (
@@ -107,6 +123,28 @@ where organisation_user_id is not null and status <> 'revoked';
 create index organisation_user_provisions_organisation_cohort_id_idx
 on public.organisation_user_provisions (organisation_cohort_id)
 where organisation_cohort_id is not null;
+
+create table public.organisation_scim_users (
+  id uuid primary key default gen_random_uuid(),
+  organisation_id uuid not null references public.organisations (id) on delete restrict,
+  current_provision_id uuid,
+  external_id text,
+  user_name text not null check (char_length(user_name) between 1 and 320),
+  given_name text,
+  family_name text,
+  display_name text,
+  active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  foreign key (current_provision_id, organisation_id)
+    references public.organisation_user_provisions (id, organisation_id) on delete restrict,
+  unique (id, organisation_id),
+  unique (organisation_id, user_name)
+);
+
+create unique index organisation_scim_users_external_id_unique
+on public.organisation_scim_users (organisation_id, external_id)
+where external_id is not null;
 
 create or replace function public.search_organisation_membership_candidates(
   target_organisation_id uuid,
@@ -217,6 +255,31 @@ create table public.organisation_provisioned_group_users (
     references public.organisation_groups (id, organisation_id) on delete cascade,
   foreign key (organisation_user_provision_id, organisation_id)
     references public.organisation_user_provisions (id, organisation_id) on delete cascade
+);
+
+create table public.organisation_scim_group_mappings (
+  id uuid primary key default gen_random_uuid(),
+  organisation_id uuid not null references public.organisations (id) on delete restrict,
+  external_id text not null,
+  display_name text not null check (char_length(display_name) between 1 and 255),
+  target_type public.scim_group_target_type,
+  organisation_cohort_id uuid,
+  organisation_group_id uuid,
+  last_synchronized_at timestamptz not null default now(),
+  source_deleted_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  foreign key (organisation_cohort_id, organisation_id)
+    references public.organisation_cohorts (id, organisation_id) on delete restrict,
+  foreign key (organisation_group_id, organisation_id)
+    references public.organisation_groups (id, organisation_id) on delete restrict,
+  unique (id, organisation_id),
+  unique (organisation_id, external_id),
+  check (
+    (target_type is null and organisation_cohort_id is null and organisation_group_id is null) or
+    (target_type = 'cohort' and organisation_cohort_id is not null and organisation_group_id is null) or
+    (target_type = 'group' and organisation_group_id is not null and organisation_cohort_id is null)
+  )
 );
 
 create table public.organisation_contract_periods (
@@ -1406,8 +1469,154 @@ begin
 end;
 $$;
 
+create function public.synchronize_scim_user(
+  target_organisation_id uuid,
+  target_scim_user_id uuid,
+  target_external_id text,
+  target_user_name text,
+  target_given_name text,
+  target_family_name text,
+  target_display_name text,
+  target_active boolean
+)
+returns public.organisation_scim_users
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  configuration public.organisation_scim_configurations;
+  scim_user public.organisation_scim_users;
+  provision public.organisation_user_provisions;
+  target_user_id uuid;
+begin
+  if not exists (
+    select 1 from public.organisations
+    where id = target_organisation_id and status = 'active'
+  ) then
+    raise exception using errcode = 'P0001', message = 'organisation_not_active';
+  end if;
+
+  select * into configuration
+  from public.organisation_scim_configurations
+  where organisation_id = target_organisation_id;
+
+  if not found or configuration.token_hash is null then
+    raise exception using errcode = 'P0001', message = 'scim_not_configured';
+  end if;
+
+  if target_scim_user_id is null or
+     target_scim_user_id = '00000000-0000-0000-0000-000000000000'::uuid then
+    insert into public.organisation_scim_users (
+      organisation_id, external_id, user_name, given_name, family_name,
+      display_name, active
+    ) values (
+      target_organisation_id, nullif(target_external_id, ''), lower(target_user_name),
+      nullif(target_given_name, ''), nullif(target_family_name, ''),
+      nullif(target_display_name, ''), target_active
+    ) returning * into scim_user;
+  else
+    select * into scim_user
+    from public.organisation_scim_users
+    where id = target_scim_user_id and organisation_id = target_organisation_id
+    for update;
+
+    if not found then
+      raise exception using errcode = 'P0002', message = 'scim_user_not_found';
+    end if;
+
+    update public.organisation_scim_users
+    set external_id = nullif(target_external_id, ''),
+        user_name = lower(target_user_name),
+        given_name = nullif(target_given_name, ''),
+        family_name = nullif(target_family_name, ''),
+        display_name = nullif(target_display_name, '')
+    where id = scim_user.id
+    returning * into scim_user;
+  end if;
+
+  if target_active then
+    if scim_user.current_provision_id is not null then
+      select * into provision
+      from public.organisation_user_provisions
+      where id = scim_user.current_provision_id
+      for update;
+    end if;
+
+    if provision.id is null or provision.status = 'revoked' then
+      insert into public.organisation_user_provisions (
+        organisation_id, provisioning_method, source_external_id,
+        provisioned_user_name, provisioned_display_name,
+        provisioned_given_name, provisioned_family_name, provisioned_role,
+        status, last_synchronized_at
+      ) values (
+        target_organisation_id, 'scim',
+        coalesce(nullif(target_external_id, ''), scim_user.id::text),
+        lower(target_user_name), nullif(target_display_name, ''),
+        nullif(target_given_name, ''), nullif(target_family_name, ''),
+        configuration.default_role, 'pending', now()
+      ) returning * into provision;
+
+      select id into target_user_id
+      from auth.users
+      where lower(email) = lower(target_user_name)
+      order by created_at
+      limit 1;
+
+      if target_user_id is not null then
+        perform public.accept_organisation_user_provision(
+          provision.id, provision.status, target_user_id
+        );
+      end if;
+    else
+      update public.organisation_user_provisions
+      set source_external_id = coalesce(nullif(target_external_id, ''), scim_user.id::text),
+          provisioned_user_name = lower(target_user_name),
+          provisioned_display_name = nullif(target_display_name, ''),
+          provisioned_given_name = nullif(target_given_name, ''),
+          provisioned_family_name = nullif(target_family_name, ''),
+          last_synchronized_at = now()
+      where id = provision.id;
+    end if;
+
+    update public.organisation_scim_users
+    set active = true, current_provision_id = provision.id
+    where id = scim_user.id
+    returning * into scim_user;
+  else
+    if scim_user.current_provision_id is not null then
+      select * into provision
+      from public.organisation_user_provisions
+      where id = scim_user.current_provision_id
+      for update;
+      if found and provision.status <> 'revoked' then
+        perform public.transition_organisation_user_provision(
+          provision.id, provision.status, 'revoke', null
+        );
+      end if;
+    end if;
+
+    update public.organisation_scim_users
+    set active = false
+    where id = scim_user.id
+    returning * into scim_user;
+  end if;
+
+  return scim_user;
+exception
+  when unique_violation then
+    raise exception using errcode = '23505', message = 'scim_user_conflict';
+end;
+$$;
+
 revoke all on function public.import_organisation_user_provisions(uuid, jsonb) from public;
 grant execute on function public.import_organisation_user_provisions(uuid, jsonb) to service_role;
+revoke all on function public.synchronize_scim_user(
+  uuid, uuid, text, text, text, text, text, boolean
+) from public;
+grant execute on function public.synchronize_scim_user(
+  uuid, uuid, text, text, text, text, text, boolean
+) to service_role;
 revoke all on function public.issue_organisation_provision_invitation(
   uuid, uuid, text, timestamptz, integer
 ) from public;
@@ -1460,6 +1669,7 @@ revoke all on function public.has_organisation_role(uuid, public.organisation_ro
 grant execute on function public.has_organisation_role(uuid, public.organisation_role[]) to authenticated;
 
 alter table public.organisations enable row level security;
+alter table public.organisation_scim_configurations enable row level security;
 alter table public.organisation_cohorts enable row level security;
 alter table public.organisation_users enable row level security;
 alter table public.organisation_user_provisions enable row level security;
@@ -1468,6 +1678,8 @@ alter table public.organisation_group_users enable row level security;
 alter table public.organisation_provisioned_group_users enable row level security;
 alter table public.organisation_contract_periods enable row level security;
 alter table public.organisation_seat_activations enable row level security;
+alter table public.organisation_scim_users enable row level security;
+alter table public.organisation_scim_group_mappings enable row level security;
 
 grant select, insert, update, delete on table public.organisations to authenticated;
 grant select, insert, update, delete on table public.organisation_cohorts to authenticated;
@@ -1480,6 +1692,7 @@ grant select, insert, update, delete on table public.organisation_contract_perio
 grant select, insert, update, delete on table public.organisation_seat_activations to authenticated;
 
 grant all on table public.organisations to service_role;
+grant all on table public.organisation_scim_configurations to service_role;
 grant all on table public.organisation_cohorts to service_role;
 grant all on table public.organisation_users to service_role;
 grant all on table public.organisation_user_provisions to service_role;
@@ -1488,6 +1701,8 @@ grant all on table public.organisation_group_users to service_role;
 grant all on table public.organisation_provisioned_group_users to service_role;
 grant all on table public.organisation_contract_periods to service_role;
 grant all on table public.organisation_seat_activations to service_role;
+grant all on table public.organisation_scim_users to service_role;
+grant all on table public.organisation_scim_group_mappings to service_role;
 
 create policy "Platform admins manage organisations"
 on public.organisations for all to authenticated
@@ -1524,6 +1739,8 @@ on public.organisation_seat_activations for all to authenticated using ((select 
 
 create trigger organisations_set_updated_at before update on public.organisations
 for each row execute function public.set_updated_at();
+create trigger organisation_scim_configurations_set_updated_at before update on public.organisation_scim_configurations
+for each row execute function public.set_updated_at();
 create trigger organisation_cohorts_set_updated_at before update on public.organisation_cohorts
 for each row execute function public.set_updated_at();
 create trigger organisation_users_set_updated_at before update on public.organisation_users
@@ -1533,6 +1750,10 @@ for each row execute function public.set_updated_at();
 create trigger organisation_groups_set_updated_at before update on public.organisation_groups
 for each row execute function public.set_updated_at();
 create trigger organisation_contract_periods_set_updated_at before update on public.organisation_contract_periods
+for each row execute function public.set_updated_at();
+create trigger organisation_scim_users_set_updated_at before update on public.organisation_scim_users
+for each row execute function public.set_updated_at();
+create trigger organisation_scim_group_mappings_set_updated_at before update on public.organisation_scim_group_mappings
 for each row execute function public.set_updated_at();
 
 create or replace function public.revoke_user_sessions(target_user_id uuid)

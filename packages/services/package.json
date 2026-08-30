@@ -28,6 +28,10 @@
     "./statistics": {
       "types": "./src/statistics/index.ts",
       "import": "./src/statistics/index.ts"
+    },
+    "./scim": {
+      "types": "./src/scim/index.ts",
+      "import": "./src/scim/index.ts"
     }
   },
   "scripts": {

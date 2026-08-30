@@ -18,6 +18,8 @@ import {
   type OrganisationProvisionInvitationResult,
   type OrganisationSummary,
   type TenantOrganisationContext,
+  type OrganisationScimConfiguration,
+  type OrganisationScimTokenResult,
   type OrganisationUserProvision,
   type OrganisationUserProvisionDetail,
   type OrganisationUserProvisionsSummary,
@@ -94,6 +96,54 @@ export const getTenantOrganisationContextContract = defineContract({
     ],
   },
   output: hektorResponseSchema(tenantOrganisationContextSchema),
+});
+
+export const organisationScimConfigurationSchema = z.object({
+  defaultRole: z.enum(OrganisationRole),
+  enabled: z.boolean(),
+  endpointPath: z.string().startsWith('/'),
+  tokenCreatedAt: z.iso.datetime().optional(),
+  tokenRevokedAt: z.iso.datetime().optional(),
+  tokenSuffix: z.string().length(4).optional(),
+  updatedAt: z.iso.datetime().optional(),
+}) satisfies z.ZodType<OrganisationScimConfiguration>;
+
+export const organisationScimTokenResultSchema =
+  organisationScimConfigurationSchema.extend({
+    token: z.string().min(32),
+  }) satisfies z.ZodType<OrganisationScimTokenResult>;
+
+export const getTenantOrganisationScimConfigurationContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/scim',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  output: hektorResponseSchema(organisationScimConfigurationSchema),
+});
+
+export const updateTenantOrganisationScimConfigurationContract = defineContract(
+  {
+    method: 'PATCH',
+    path: '/api/organisation/scim',
+    access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+    body: z.object({ defaultRole: z.enum(OrganisationRole) }),
+    output: hektorResponseSchema(organisationScimConfigurationSchema),
+  },
+);
+
+export const issueTenantOrganisationScimTokenContract = defineContract({
+  method: 'POST',
+  path: '/api/organisation/scim/token',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  body: emptyObjectSchema,
+  output: hektorResponseSchema(organisationScimTokenResultSchema),
+});
+
+export const revokeTenantOrganisationScimTokenContract = defineContract({
+  method: 'DELETE',
+  path: '/api/organisation/scim/token',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  body: emptyObjectSchema,
+  output: hektorResponseSchema(organisationScimConfigurationSchema),
 });
 
 export const organisationCohortSummarySchema = z.object({

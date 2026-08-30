@@ -1,7 +1,12 @@
 import type { IconType } from 'react-icons';
-import { LuGraduationCap, LuLayers3, LuUsers } from 'react-icons/lu';
+import {
+  LuGraduationCap,
+  LuLayers3,
+  LuSettings2,
+  LuUserRoundPlus,
+  LuUsers,
+} from 'react-icons/lu';
 
-import { buttonVariants } from '../../atoms';
 import { NavigationLink } from '../../context';
 
 interface OrganisationDashboardPageProps {
@@ -14,37 +19,44 @@ interface OrganisationDashboardPageProps {
   userCount: number;
 }
 
-function Section({
-  children,
-  description,
-  icon: Icon,
-  title,
-}: {
-  children: React.ReactNode;
+interface DashboardPodProps {
   description: string;
+  href: string;
   icon: IconType;
-  title: string;
-}) {
-  return (
-    <section className="border-t border-border pt-6 first:border-0 first:pt-0">
-      <header className="mb-5 flex items-start gap-3">
-        <Icon aria-hidden="true" className="mt-0.5 size-5 text-primary" />
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">{title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        </div>
-      </header>
-      {children}
-    </section>
-  );
+  label: string;
+  value?: number;
 }
 
-function Count({ label, value }: { label: string; value: number }) {
+function DashboardPod({
+  description,
+  href,
+  icon: Icon,
+  label,
+  value,
+}: DashboardPodProps) {
   return (
-    <div className="bg-paper px-4 py-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold">{value.toLocaleString('en-GB')}</p>
-    </div>
+    <NavigationLink
+      className="group flex min-h-40 flex-col bg-paper p-5 shadow-[0_0_18px_-10px_rgb(0_0_0/0.25)] transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      href={href}
+    >
+      <div className="flex items-center gap-2 text-primary">
+        <Icon aria-hidden="true" className="size-4" />
+        <h2 className="text-sm font-semibold">{label}</h2>
+      </div>
+      {value === undefined ? (
+        <LuSettings2
+          aria-hidden="true"
+          className="mt-4 size-9 text-foreground"
+        />
+      ) : (
+        <p className="mt-4 text-4xl font-bold tracking-tight">
+          {value.toLocaleString('en-GB')}
+        </p>
+      )}
+      <p className="mt-auto pt-4 text-sm text-muted-foreground">
+        {description}
+      </p>
+    </NavigationLink>
   );
 }
 
@@ -72,7 +84,7 @@ export function OrganisationDashboardPage({
     );
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <header>
         <p className="text-sm font-semibold text-primary">
           Organisation workspace
@@ -81,56 +93,48 @@ export function OrganisationDashboardPage({
           {organisationName}
         </h1>
       </header>
-      <Section
-        description="Connected users, reserved places and invitations."
-        icon={LuUsers}
-        title="Users"
-      >
-        <div className="grid gap-px bg-border sm:grid-cols-2">
-          <Count label="Connected users" value={userCount} />
-          <Count label="Provisions" value={provisionCount} />
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <NavigationLink
-            className={buttonVariants({ size: 'sm', variant: 'outline' })}
+
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          <DashboardPod
+            description="Review connected users and their organisation access."
             href="/users"
-          >
-            View users
-          </NavigationLink>
-          <NavigationLink
-            className={buttonVariants({ size: 'sm', variant: 'outline' })}
+            icon={LuUsers}
+            label="Users"
+            value={userCount}
+          />
+          <DashboardPod
+            description="Invite users and manage reserved places."
             href="/users/provisions"
-          >
-            Manage provisions
-          </NavigationLink>
+            icon={LuUserRoundPlus}
+            label="Provisioning"
+            value={provisionCount}
+          />
+          <DashboardPod
+            description="Connect and manage automated user provisioning."
+            href="/users/provisions/scim"
+            icon={LuSettings2}
+            label="Configure SCIM"
+          />
         </div>
-      </Section>
-      <Section
-        description="Programme intakes belonging to this organisation."
-        icon={LuGraduationCap}
-        title="Cohorts"
-      >
-        <Count label="Cohorts" value={cohortCount} />
-        <NavigationLink
-          className={`${buttonVariants({ size: 'sm', variant: 'outline' })} mt-5`}
-          href="/cohorts"
-        >
-          View cohorts
-        </NavigationLink>
-      </Section>
-      <Section
-        description="Local and externally provisioned teaching and study groups."
-        icon={LuLayers3}
-        title="Groups"
-      >
-        <Count label="Groups" value={groupCount} />
-        <NavigationLink
-          className={`${buttonVariants({ size: 'sm', variant: 'outline' })} mt-5`}
-          href="/groups"
-        >
-          View groups
-        </NavigationLink>
-      </Section>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <DashboardPod
+            description="Manage teaching and study groups."
+            href="/groups"
+            icon={LuLayers3}
+            label="Groups"
+            value={groupCount}
+          />
+          <DashboardPod
+            description="Manage programme intakes and their dates."
+            href="/cohorts"
+            icon={LuGraduationCap}
+            label="Cohorts"
+            value={cohortCount}
+          />
+        </div>
+      </div>
     </div>
   );
 }

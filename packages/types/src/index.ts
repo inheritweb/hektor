@@ -8,6 +8,8 @@ export * from './contracts/statistics';
 
 export * from './organisations';
 
+export * from './scim';
+
 export * from './system';
 
 export * from './statistics';

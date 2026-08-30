@@ -36,6 +36,8 @@ export * from './AdminOrganisationUserProvisionDetailPage';
 
 export * from './OrganisationUserProvisionFormPage';
 
+export * from './OrganisationScimConfigurationPage';
+
 export * from './AdminUserDetailPage';
 
 export * from './AdminUserFormPage';

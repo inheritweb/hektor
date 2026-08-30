@@ -109,7 +109,7 @@ export function AdminOrganisationUsersPage({
               className={buttonVariants({ variant: 'outline' })}
               href={provisionsHref}
             >
-              Manage provisions
+              Manage provisioning
             </NavigationLink>
           ) : null}
           {onAddUser ? (

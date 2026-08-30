@@ -16,6 +16,7 @@ export interface AdminOrganisationUserProvisionsPageProps {
   error?: string;
   loading?: boolean;
   onCreateProvision?: () => void;
+  onConfigureScim?: () => void;
   onImportUsers?: () => void;
   onManageInvitations?: () => void;
   onPageChange: (page: number) => void;
@@ -72,6 +73,7 @@ export function AdminOrganisationUserProvisionsPage({
   getProvisionHref,
   loading,
   onCreateProvision,
+  onConfigureScim,
   onImportUsers,
   onManageInvitations,
   onPageChange,
@@ -101,8 +103,16 @@ export function AdminOrganisationUserProvisionsPage({
 
   return (
     <div className="space-y-4">
-      {onCreateProvision || onImportUsers || onManageInvitations ? (
+      {onCreateProvision ||
+      onConfigureScim ||
+      onImportUsers ||
+      onManageInvitations ? (
         <div className="flex justify-end gap-2">
+          {onConfigureScim ? (
+            <Button onClick={onConfigureScim} variant="outline">
+              Configure SCIM
+            </Button>
+          ) : null}
           {onManageInvitations ? (
             <Button onClick={onManageInvitations} variant="outline">
               Manage invitations

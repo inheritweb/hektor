@@ -166,7 +166,8 @@ export function AdminOrganisationGroupDetailPage({
           <div>
             <h2 className="text-xl font-bold">Manage membership</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Add an organisation user or an unresolved provision to this group.
+              Add an organisation user or a pending provisioned user to this
+              group.
             </p>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -175,7 +176,7 @@ export function AdminOrganisationGroupDetailPage({
             ) : null}
             {onManageProvisions ? (
               <Button onClick={onManageProvisions} variant="outline">
-                Manage provisions
+                Manage provisioned users
               </Button>
             ) : null}
           </div>

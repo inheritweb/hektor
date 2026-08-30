@@ -1,14 +1,41 @@
 ---
 title: Manage cohorts
-description: Create, edit and review the cohorts in your organisation.
+description: Create, edit, archive and review dated learning populations.
 sidebar:
-  order: 4
+  order: 9
 ---
 
-Select your organisation in the account switcher and choose **Cohorts** from the application menu. The directory shows each cohort's dates and current status.
+A cohort is an organisation-owned, dated learning population. Groups may belong to a cohort, and learner memberships or pending provisioned users may be associated with it.
 
-Select a cohort to review its associated groups and learners. Learner rows distinguish organisation membership, platform account and organisation seat status.
+## Create a cohort
 
-Choose **Add cohort** to create one. A cohort needs a name, start date and end date; its end date must be after its start date.
+1. Choose **Cohorts**.
+2. Choose **Add cohort**.
+3. Enter a unique, recognisable name.
+4. Enter start and end dates. The end date must be later than the start date.
+5. Save the cohort.
 
-Choose **Edit cohort** from a cohort's detail page to change its name, dates or status. Changes made by another administrator while the form is open are detected, so you cannot accidentally overwrite their newer version.
+Create cohorts before importing a CSV that refers to them by name.
+
+## Review a cohort
+
+1. Choose **Cohorts** and select the cohort.
+2. Review its dates and status.
+3. Review its associated groups and learners.
+4. For learners, distinguish platform account status from organisation seat status.
+
+## Edit or archive a cohort
+
+1. Open the cohort and choose **Edit cohort**.
+2. Change its name, dates or status.
+3. Save the form.
+
+Archiving removes the cohort from normal active selection without deleting history. Hektor detects concurrent edits; reload and review if another administrator changed it while your form was open.
+
+## Assign users and groups
+
+- Assign a connected learner by editing their membership from **Users**.
+- Assign a provisioned learner when creating or importing the provision.
+- Assign a locally managed group by editing the group.
+
+Externally managed assignments must be changed at their source and synchronized again.

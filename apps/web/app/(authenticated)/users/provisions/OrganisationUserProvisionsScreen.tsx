@@ -79,6 +79,7 @@ export function OrganisationUserProvisionsScreen() {
         getProvisionHref={({ id }) => `/users/provisions/${id}`}
         loading={provisions.isPending || organisation.isPending}
         onCreateProvision={() => router.push('/users/provisions/new' as Route)}
+        onConfigureScim={() => router.push('/users/provisions/scim' as Route)}
         onImportUsers={() => {
           previewImport.reset();
           commitImport.reset();

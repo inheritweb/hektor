@@ -151,8 +151,8 @@ export function AdminOrganisationGroupDetailScreen({
         currentMemberIds={groupData.provisionedUsers.map(
           (provision) => provision.id,
         )}
-        description="Choose the unresolved provisions assigned to this group. Changes are staged until you save."
-        emptyMessage="No pending provisions match this search."
+        description="Choose the pending provisioned users assigned to this group. Changes are staged until you save."
+        emptyMessage="No pending provisioned users match this search."
         error={provisionMembership.error?.message ?? provisions.error?.message}
         items={(provisions.data?.data ?? []).map((provision) => ({
           detail: `${provision.provisionedRole.replaceAll('_', ' ')} · ${provision.provisioningMethod}`,
@@ -184,7 +184,7 @@ export function AdminOrganisationGroupDetailScreen({
         pageSize={PAGE_SIZE}
         pending={provisionMembership.isPending}
         search={provisionSearch}
-        title="Manage provisions"
+        title="Manage provisioned users"
         totalRecords={provisions.data?.context.totalRecords ?? 0}
       />
     </>

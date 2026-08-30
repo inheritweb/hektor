@@ -4,6 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { GlobalToolbar } from './GlobalToolbar.component';
 
 describe('GlobalToolbar', () => {
+  it('does not render an empty toolbar', () => {
+    const { container } = render(<GlobalToolbar breadcrumbs={[]} />);
+
+    expect(container.innerHTML).toBe('');
+  });
+
   it('renders linked ancestors and identifies the current page', () => {
     render(
       <GlobalToolbar

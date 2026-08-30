@@ -34,6 +34,36 @@ export enum ProvisioningMethod {
   Manual = 'manual',
 }
 
+export interface OrganisationScimConfiguration {
+  defaultRole: OrganisationRole;
+  enabled: boolean;
+  endpointPath: string;
+  tokenCreatedAt?: string;
+  tokenRevokedAt?: string;
+  tokenSuffix?: string;
+  updatedAt?: string;
+}
+
+export interface OrganisationScimTokenResult extends OrganisationScimConfiguration {
+  token: string;
+}
+
+export enum ScimGroupTargetType {
+  Cohort = 'cohort',
+  Group = 'group',
+}
+
+export interface OrganisationScimGroupMapping {
+  displayName: string;
+  externalId: string;
+  id: string;
+  lastSynchronizedAt: string;
+  sourceDeletedAt?: string;
+  target?:
+    | { id: string; name: string; type: ScimGroupTargetType.Cohort }
+    | { id: string; name: string; type: ScimGroupTargetType.Group };
+}
+
 export enum ProvisioningStatus {
   Pending = 'pending',
   Linked = 'linked',

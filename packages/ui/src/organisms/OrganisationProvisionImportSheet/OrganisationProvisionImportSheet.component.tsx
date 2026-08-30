@@ -78,7 +78,7 @@ export function OrganisationProvisionImportSheet(
           <SheetDescription className="mt-1">
             {props.privacyMode
               ? 'Preview a CSV before preparing organisation access.'
-              : 'Preview a CSV before creating provisions or connecting existing Hektor users.'}
+              : 'Preview a CSV before creating provisioned users or connecting existing Hektor users.'}
           </SheetDescription>
         </header>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
@@ -190,7 +190,7 @@ export function OrganisationProvisionImportSheet(
                 ) : (
                   <>
                     <Result
-                      label="Provisions created"
+                      label="Provisioned users created"
                       value={props.result.created}
                     />
                     <Result label="Users linked" value={props.result.linked} />
