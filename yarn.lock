@@ -1924,6 +1924,7 @@ __metadata:
   dependencies:
     "@hektor/eslint-config": "workspace:*"
     "@hektor/typescript-config": "workspace:*"
+    "@types/node": "npm:^24.0.0"
     eslint: "npm:^9.39.0"
     typescript: "npm:6.0.3"
     vitest: "npm:4.1.10"

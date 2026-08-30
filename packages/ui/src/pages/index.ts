@@ -51,3 +51,7 @@ export * from './ProvisionAcceptancePage';
 export * from './InstitutionalAccessUnavailablePage';
 
 export * from './InvitationUnavailablePage';
+
+export * from './PatientProfilesPage';
+
+export * from './PatientProfileDetailPage';

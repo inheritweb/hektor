@@ -4,7 +4,12 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { patientProfileDocumentV1Schema } from './patient-profiles';
+import { PlatformRole } from '../users';
+import {
+  getAdminPatientProfileContract,
+  listAdminPatientProfilesContract,
+  patientProfileDocumentV1Schema,
+} from './patient-profiles';
 
 const repositoryRoot = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -33,6 +38,16 @@ function readSeedProfile(slug: string) {
 }
 
 describe('patientProfileDocumentV1Schema', () => {
+  it('exposes patient profile reads only through the platform admin API', () => {
+    expect(listAdminPatientProfilesContract).toMatchObject({
+      path: '/api/admin/patient-profiles',
+      access: { type: 'platform', roles: [PlatformRole.Admin] },
+    });
+    expect(getAdminPatientProfileContract).toMatchObject({
+      path: '/api/admin/patient-profiles/:profileId',
+      access: { type: 'platform', roles: [PlatformRole.Admin] },
+    });
+  });
   it.each(seededProfiles)('validates the %s production profile', (slug) => {
     expect(() =>
       patientProfileDocumentV1Schema.parse(readSeedProfile(slug)),

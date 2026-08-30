@@ -6,6 +6,7 @@ import {
   LuGraduationCap,
   LuHouse,
   LuLayers3,
+  LuFileHeart,
   LuUsers,
 } from 'react-icons/lu';
 import { usePathname, useRouter } from 'next/navigation';
@@ -139,6 +140,19 @@ export function breadcrumbsForPath(
 
   if (pathname === '/admin/users') {
     return [home, { label: 'Admin' }, { label: 'Users' }];
+  }
+
+  if (pathname === '/admin/patient-profiles') {
+    return [home, { label: 'Admin' }, { label: 'Patient profiles' }];
+  }
+
+  if (pathname.match(/^\/admin\/patient-profiles\/[^/]+$/)) {
+    return [
+      home,
+      { label: 'Admin' },
+      { label: 'Patient profiles', href: '/admin/patient-profiles' },
+      { label: 'Patient profile' },
+    ];
   }
 
   if (pathname.startsWith('/admin/organisations')) {
@@ -499,7 +513,7 @@ export function AuthenticatedShell({
         { label: 'Home', icon: LuHouse, href: '/', active: pathname === '/' },
       ],
     },
-    ...(currentContextId === 'personal' && platformRole === PlatformRole.Admin
+    ...(platformRole === PlatformRole.Admin
       ? [
           {
             label: 'Admin',
@@ -515,6 +529,12 @@ export function AuthenticatedShell({
                 icon: LuBuilding2,
                 href: '/admin/organisations',
                 active: pathname.startsWith('/admin/organisations'),
+              },
+              {
+                label: 'Patient profiles',
+                icon: LuFileHeart,
+                href: '/admin/patient-profiles',
+                active: pathname.startsWith('/admin/patient-profiles'),
               },
             ],
           },

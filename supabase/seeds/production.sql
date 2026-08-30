@@ -6,15 +6,14 @@ begin;
 insert into public.patient_profiles (
   id, scope, slug, status, created_at, updated_at
 ) values (
-  '10000000-0000-4000-8000-000000000002', 'system', 'adam-marsden', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
-) on conflict (id) do nothing;
+  '0716cbfe-b94e-47fe-8cdf-a189fd965c6e', 'system', 'adam-marsden', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
+) on conflict (slug) where scope = 'system' do nothing;
 
 do $verify_profile_adam_marsden$
 begin
   if not exists (
     select 1 from public.patient_profiles
-    where id = '10000000-0000-4000-8000-000000000002'
-      and scope = 'system'
+    where scope = 'system'
       and slug = 'adam-marsden'
       and organisation_id is null
       and user_id is null
@@ -158,6 +157,11 @@ with content as (
   }
 }
 $patient_document_adam_marsden$::jsonb as document
+), profile as (
+  select id
+  from public.patient_profiles
+  where scope = 'system'
+    and slug = 'adam-marsden'
 )
 insert into public.patient_profile_versions (
   id,
@@ -174,8 +178,8 @@ insert into public.patient_profile_versions (
   updated_at
 )
 select
-  '20000000-0000-4000-8000-000000000002',
-  '10000000-0000-4000-8000-000000000002',
+  '14ed71d9-685a-4996-a60f-f02a5bf0586b',
+  profile.id,
   1,
   'draft',
   1,
@@ -187,7 +191,8 @@ select
   '2026-08-30T00:00:00.000Z',
   '2026-08-30T00:00:00.000Z'
 from content
-on conflict (id) do nothing;
+cross join profile
+on conflict (patient_profile_id, version_number) do nothing;
 
 do $verify_version_adam_marsden$
 declare
@@ -336,12 +341,14 @@ $patient_document_adam_marsden$::jsonb::text, 'UTF8')),
     content_hash,
     encode(sha256(convert_to(document::text, 'UTF8')), 'hex')
   into stored_hash, stored_document_hash
-  from public.patient_profile_versions
-  where id = '20000000-0000-4000-8000-000000000002'
-    and patient_profile_id = '10000000-0000-4000-8000-000000000002'
+  from public.patient_profile_versions version
+  join public.patient_profiles profile
+    on profile.id = version.patient_profile_id
+  where profile.scope = 'system'
+    and profile.slug = 'adam-marsden'
     and version_number = 1
-    and state = 'draft'
-    and schema_version = 1;
+    and version.state = 'draft'
+    and version.schema_version = 1;
 
   if stored_hash is null or
      stored_hash <> expected_hash or
@@ -354,15 +361,14 @@ $verify_version_adam_marsden$;
 insert into public.patient_profiles (
   id, scope, slug, status, created_at, updated_at
 ) values (
-  '10000000-0000-4000-8000-000000000001', 'system', 'adebayo-omolade', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
-) on conflict (id) do nothing;
+  '45d1b136-8a97-4628-873a-57971e411bad', 'system', 'adebayo-omolade', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
+) on conflict (slug) where scope = 'system' do nothing;
 
 do $verify_profile_adebayo_omolade$
 begin
   if not exists (
     select 1 from public.patient_profiles
-    where id = '10000000-0000-4000-8000-000000000001'
-      and scope = 'system'
+    where scope = 'system'
       and slug = 'adebayo-omolade'
       and organisation_id is null
       and user_id is null
@@ -527,6 +533,11 @@ with content as (
   }
 }
 $patient_document_adebayo_omolade$::jsonb as document
+), profile as (
+  select id
+  from public.patient_profiles
+  where scope = 'system'
+    and slug = 'adebayo-omolade'
 )
 insert into public.patient_profile_versions (
   id,
@@ -543,8 +554,8 @@ insert into public.patient_profile_versions (
   updated_at
 )
 select
-  '20000000-0000-4000-8000-000000000001',
-  '10000000-0000-4000-8000-000000000001',
+  '24ae934e-6425-4b5c-a4d2-da9cde9590e3',
+  profile.id,
   1,
   'draft',
   1,
@@ -556,7 +567,8 @@ select
   '2026-08-30T00:00:00.000Z',
   '2026-08-30T00:00:00.000Z'
 from content
-on conflict (id) do nothing;
+cross join profile
+on conflict (patient_profile_id, version_number) do nothing;
 
 do $verify_version_adebayo_omolade$
 declare
@@ -726,12 +738,14 @@ $patient_document_adebayo_omolade$::jsonb::text, 'UTF8')),
     content_hash,
     encode(sha256(convert_to(document::text, 'UTF8')), 'hex')
   into stored_hash, stored_document_hash
-  from public.patient_profile_versions
-  where id = '20000000-0000-4000-8000-000000000001'
-    and patient_profile_id = '10000000-0000-4000-8000-000000000001'
+  from public.patient_profile_versions version
+  join public.patient_profiles profile
+    on profile.id = version.patient_profile_id
+  where profile.scope = 'system'
+    and profile.slug = 'adebayo-omolade'
     and version_number = 1
-    and state = 'draft'
-    and schema_version = 1;
+    and version.state = 'draft'
+    and version.schema_version = 1;
 
   if stored_hash is null or
      stored_hash <> expected_hash or
@@ -744,15 +758,14 @@ $verify_version_adebayo_omolade$;
 insert into public.patient_profiles (
   id, scope, slug, status, created_at, updated_at
 ) values (
-  '10000000-0000-4000-8000-000000000004', 'system', 'amina-warsame', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
-) on conflict (id) do nothing;
+  '367c5198-6a4f-4a06-8652-502db44062cc', 'system', 'amina-warsame', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
+) on conflict (slug) where scope = 'system' do nothing;
 
 do $verify_profile_amina_warsame$
 begin
   if not exists (
     select 1 from public.patient_profiles
-    where id = '10000000-0000-4000-8000-000000000004'
-      and scope = 'system'
+    where scope = 'system'
       and slug = 'amina-warsame'
       and organisation_id is null
       and user_id is null
@@ -891,6 +904,11 @@ with content as (
   }
 }
 $patient_document_amina_warsame$::jsonb as document
+), profile as (
+  select id
+  from public.patient_profiles
+  where scope = 'system'
+    and slug = 'amina-warsame'
 )
 insert into public.patient_profile_versions (
   id,
@@ -907,8 +925,8 @@ insert into public.patient_profile_versions (
   updated_at
 )
 select
-  '20000000-0000-4000-8000-000000000004',
-  '10000000-0000-4000-8000-000000000004',
+  'a2681834-dd66-4930-bebb-f24d682f742d',
+  profile.id,
   1,
   'draft',
   1,
@@ -920,7 +938,8 @@ select
   '2026-08-30T00:00:00.000Z',
   '2026-08-30T00:00:00.000Z'
 from content
-on conflict (id) do nothing;
+cross join profile
+on conflict (patient_profile_id, version_number) do nothing;
 
 do $verify_version_amina_warsame$
 declare
@@ -1064,12 +1083,14 @@ $patient_document_amina_warsame$::jsonb::text, 'UTF8')),
     content_hash,
     encode(sha256(convert_to(document::text, 'UTF8')), 'hex')
   into stored_hash, stored_document_hash
-  from public.patient_profile_versions
-  where id = '20000000-0000-4000-8000-000000000004'
-    and patient_profile_id = '10000000-0000-4000-8000-000000000004'
+  from public.patient_profile_versions version
+  join public.patient_profiles profile
+    on profile.id = version.patient_profile_id
+  where profile.scope = 'system'
+    and profile.slug = 'amina-warsame'
     and version_number = 1
-    and state = 'draft'
-    and schema_version = 1;
+    and version.state = 'draft'
+    and version.schema_version = 1;
 
   if stored_hash is null or
      stored_hash <> expected_hash or
@@ -1082,15 +1103,14 @@ $verify_version_amina_warsame$;
 insert into public.patient_profiles (
   id, scope, slug, status, created_at, updated_at
 ) values (
-  '10000000-0000-4000-8000-000000000003', 'system', 'emma-barlow', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
-) on conflict (id) do nothing;
+  '2ebc8fdd-9ab8-4b2e-b314-ae895f58d23d', 'system', 'emma-barlow', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
+) on conflict (slug) where scope = 'system' do nothing;
 
 do $verify_profile_emma_barlow$
 begin
   if not exists (
     select 1 from public.patient_profiles
-    where id = '10000000-0000-4000-8000-000000000003'
-      and scope = 'system'
+    where scope = 'system'
       and slug = 'emma-barlow'
       and organisation_id is null
       and user_id is null
@@ -1217,6 +1237,11 @@ with content as (
   }
 }
 $patient_document_emma_barlow$::jsonb as document
+), profile as (
+  select id
+  from public.patient_profiles
+  where scope = 'system'
+    and slug = 'emma-barlow'
 )
 insert into public.patient_profile_versions (
   id,
@@ -1233,8 +1258,8 @@ insert into public.patient_profile_versions (
   updated_at
 )
 select
-  '20000000-0000-4000-8000-000000000003',
-  '10000000-0000-4000-8000-000000000003',
+  '25928245-5cc1-463d-a7d6-8a4ad7cfb394',
+  profile.id,
   1,
   'draft',
   1,
@@ -1246,7 +1271,8 @@ select
   '2026-08-30T00:00:00.000Z',
   '2026-08-30T00:00:00.000Z'
 from content
-on conflict (id) do nothing;
+cross join profile
+on conflict (patient_profile_id, version_number) do nothing;
 
 do $verify_version_emma_barlow$
 declare
@@ -1378,12 +1404,14 @@ $patient_document_emma_barlow$::jsonb::text, 'UTF8')),
     content_hash,
     encode(sha256(convert_to(document::text, 'UTF8')), 'hex')
   into stored_hash, stored_document_hash
-  from public.patient_profile_versions
-  where id = '20000000-0000-4000-8000-000000000003'
-    and patient_profile_id = '10000000-0000-4000-8000-000000000003'
+  from public.patient_profile_versions version
+  join public.patient_profiles profile
+    on profile.id = version.patient_profile_id
+  where profile.scope = 'system'
+    and profile.slug = 'emma-barlow'
     and version_number = 1
-    and state = 'draft'
-    and schema_version = 1;
+    and version.state = 'draft'
+    and version.schema_version = 1;
 
   if stored_hash is null or
      stored_hash <> expected_hash or
@@ -1396,15 +1424,14 @@ $verify_version_emma_barlow$;
 insert into public.patient_profiles (
   id, scope, slug, status, created_at, updated_at
 ) values (
-  '10000000-0000-4000-8000-000000000005', 'system', 'esther-jenkins', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
-) on conflict (id) do nothing;
+  '37ea1fbc-d47c-4b75-b918-19af6184bb3b', 'system', 'esther-jenkins', 'active', '2026-08-30T00:00:00.000Z', '2026-08-30T00:00:00.000Z'
+) on conflict (slug) where scope = 'system' do nothing;
 
 do $verify_profile_esther_jenkins$
 begin
   if not exists (
     select 1 from public.patient_profiles
-    where id = '10000000-0000-4000-8000-000000000005'
-      and scope = 'system'
+    where scope = 'system'
       and slug = 'esther-jenkins'
       and organisation_id is null
       and user_id is null
@@ -1578,6 +1605,11 @@ with content as (
   }
 }
 $patient_document_esther_jenkins$::jsonb as document
+), profile as (
+  select id
+  from public.patient_profiles
+  where scope = 'system'
+    and slug = 'esther-jenkins'
 )
 insert into public.patient_profile_versions (
   id,
@@ -1594,8 +1626,8 @@ insert into public.patient_profile_versions (
   updated_at
 )
 select
-  '20000000-0000-4000-8000-000000000005',
-  '10000000-0000-4000-8000-000000000005',
+  '016a3ade-5634-4773-9c08-5c7984af3cec',
+  profile.id,
   1,
   'draft',
   1,
@@ -1607,7 +1639,8 @@ select
   '2026-08-30T00:00:00.000Z',
   '2026-08-30T00:00:00.000Z'
 from content
-on conflict (id) do nothing;
+cross join profile
+on conflict (patient_profile_id, version_number) do nothing;
 
 do $verify_version_esther_jenkins$
 declare
@@ -1786,12 +1819,14 @@ $patient_document_esther_jenkins$::jsonb::text, 'UTF8')),
     content_hash,
     encode(sha256(convert_to(document::text, 'UTF8')), 'hex')
   into stored_hash, stored_document_hash
-  from public.patient_profile_versions
-  where id = '20000000-0000-4000-8000-000000000005'
-    and patient_profile_id = '10000000-0000-4000-8000-000000000005'
+  from public.patient_profile_versions version
+  join public.patient_profiles profile
+    on profile.id = version.patient_profile_id
+  where profile.scope = 'system'
+    and profile.slug = 'esther-jenkins'
     and version_number = 1
-    and state = 'draft'
-    and schema_version = 1;
+    and version.state = 'draft'
+    and version.schema_version = 1;
 
   if stored_hash is null or
      stored_hash <> expected_hash or

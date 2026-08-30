@@ -14,24 +14,24 @@ const sourceRevision = '03c7f12';
 
 const identities = {
   'adebayo-omolade': {
-    profileId: '10000000-0000-4000-8000-000000000001',
-    versionId: '20000000-0000-4000-8000-000000000001',
+    profileId: '45d1b136-8a97-4628-873a-57971e411bad',
+    versionId: '24ae934e-6425-4b5c-a4d2-da9cde9590e3',
   },
   'adam-marsden': {
-    profileId: '10000000-0000-4000-8000-000000000002',
-    versionId: '20000000-0000-4000-8000-000000000002',
+    profileId: '0716cbfe-b94e-47fe-8cdf-a189fd965c6e',
+    versionId: '14ed71d9-685a-4996-a60f-f02a5bf0586b',
   },
   'emma-barlow': {
-    profileId: '10000000-0000-4000-8000-000000000003',
-    versionId: '20000000-0000-4000-8000-000000000003',
+    profileId: '2ebc8fdd-9ab8-4b2e-b314-ae895f58d23d',
+    versionId: '25928245-5cc1-463d-a7d6-8a4ad7cfb394',
   },
   'amina-warsame': {
-    profileId: '10000000-0000-4000-8000-000000000004',
-    versionId: '20000000-0000-4000-8000-000000000004',
+    profileId: '367c5198-6a4f-4a06-8652-502db44062cc',
+    versionId: 'a2681834-dd66-4930-bebb-f24d682f742d',
   },
   'esther-jenkins': {
-    profileId: '10000000-0000-4000-8000-000000000005',
-    versionId: '20000000-0000-4000-8000-000000000005',
+    profileId: '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+    versionId: '016a3ade-5634-4773-9c08-5c7984af3cec',
   },
 };
 
@@ -54,14 +54,13 @@ const statements = files.map((file) => {
   id, scope, slug, status, created_at, updated_at
 ) values (
   '${identity.profileId}', 'system', '${slug}', 'active', '${generatedAt}', '${generatedAt}'
-) on conflict (id) do nothing;
+) on conflict (slug) where scope = 'system' do nothing;
 
 do $verify_profile_${slug.replaceAll('-', '_')}$
 begin
   if not exists (
     select 1 from public.patient_profiles
-    where id = '${identity.profileId}'
-      and scope = 'system'
+    where scope = 'system'
       and slug = '${slug}'
       and organisation_id is null
       and user_id is null
@@ -75,6 +74,11 @@ with content as (
   select $patient_document_${slug.replaceAll('-', '_')}$
 ${document}
 $patient_document_${slug.replaceAll('-', '_')}$::jsonb as document
+), profile as (
+  select id
+  from public.patient_profiles
+  where scope = 'system'
+    and slug = '${slug}'
 )
 insert into public.patient_profile_versions (
   id,
@@ -92,7 +96,7 @@ insert into public.patient_profile_versions (
 )
 select
   '${identity.versionId}',
-  '${identity.profileId}',
+  profile.id,
   1,
   'draft',
   1,
@@ -104,7 +108,8 @@ select
   '${generatedAt}',
   '${generatedAt}'
 from content
-on conflict (id) do nothing;
+cross join profile
+on conflict (patient_profile_id, version_number) do nothing;
 
 do $verify_version_${slug.replaceAll('-', '_')}$
 declare
@@ -123,12 +128,14 @@ $patient_document_${slug.replaceAll('-', '_')}$::jsonb::text, 'UTF8')),
     content_hash,
     encode(sha256(convert_to(document::text, 'UTF8')), 'hex')
   into stored_hash, stored_document_hash
-  from public.patient_profile_versions
-  where id = '${identity.versionId}'
-    and patient_profile_id = '${identity.profileId}'
+  from public.patient_profile_versions version
+  join public.patient_profiles profile
+    on profile.id = version.patient_profile_id
+  where profile.scope = 'system'
+    and profile.slug = '${slug}'
     and version_number = 1
-    and state = 'draft'
-    and schema_version = 1;
+    and version.state = 'draft'
+    and version.schema_version = 1;
 
   if stored_hash is null or
      stored_hash <> expected_hash or

@@ -9,6 +9,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { patientProfileDocumentV1Schema } from '@hektor/types';
 import type { Json } from '@hektor/types/database';
 
+import { createPatientProfilesService } from './patient-profiles.service';
+
 import {
   createIntegrationAuthClient,
   createIntegrationDatabaseClient,
@@ -128,6 +130,24 @@ describe('patient profile database foundation', () => {
     }
   });
 
+  it('provides the draft catalogue preview and profile detail to the admin API layer', async () => {
+    const service = createPatientProfilesService(adminClient);
+    const profiles = await service.listAdminPatientProfiles();
+
+    expect(profiles).toHaveLength(5);
+    expect(profiles.map(({ displayName }) => displayName)).toContain(
+      'Amina Warsame',
+    );
+    expect(profiles.every(({ versionState }) => versionState === 'draft')).toBe(
+      true,
+    );
+
+    const detail = await service.getAdminPatientProfile(profiles[0]!.id);
+    expect(detail.id).toBe(profiles[0]!.id);
+    expect(detail.document.synthetic).toBe(true);
+    expect(detail.versionState).toBe('draft');
+  });
+
   it('applies the production seed repeatedly without changing records', async () => {
     execFileSync(
       'docker',
@@ -157,13 +177,10 @@ describe('patient profile database foundation', () => {
     const versions = await adminClient
       .from('patient_profile_versions')
       .select('id', { count: 'exact' })
-      .in('patient_profile_id', [
-        '10000000-0000-4000-8000-000000000001',
-        '10000000-0000-4000-8000-000000000002',
-        '10000000-0000-4000-8000-000000000003',
-        '10000000-0000-4000-8000-000000000004',
-        '10000000-0000-4000-8000-000000000005',
-      ]);
+      .in(
+        'patient_profile_id',
+        (profiles.data ?? []).map(({ id }) => id),
+      );
 
     expect(profiles.error).toBeNull();
     expect(profiles.count).toBe(5);

@@ -13,6 +13,7 @@
   "scripts": {
     "build": "turbo run build",
     "ci": "yarn check && yarn test && yarn build && yarn storybook:build",
+    "qa:report": "bash scripts/qa-report.sh",
     "dev": "turbo run dev",
     "dev:app": "turbo run dev --filter=@hektor/web --filter=@hektor/simulator",
     "dev:web": "yarn workspace @hektor/web dev",

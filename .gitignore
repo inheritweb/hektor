@@ -15,6 +15,7 @@ apps/web/playwright-report/
 apps/web/test-results/
 packages/ui/storybook-static/
 coverage/
+artifacts/
 *.tsbuildinfo
 
 # Local environment files

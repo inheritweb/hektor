@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
   if (!provisionId || !token) return invitationError();
 
   const adminClient = createAdminSupabaseClient();
-  const sessionClient = await createServerSupabaseClient();
+  const sessionClient = await createServerSupabaseClient({
+    allowCookieWrites: true,
+  });
 
   try {
     await createOrganisationInvitationsService({

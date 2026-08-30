@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
   if (!code) return loginError('missing-code');
 
-  const client = await createServerSupabaseClient();
+  const client = await createServerSupabaseClient({ allowCookieWrites: true });
   const { error } = await client.auth.exchangeCodeForSession(code);
 
   if (error) return loginError('code-exchange-failed');

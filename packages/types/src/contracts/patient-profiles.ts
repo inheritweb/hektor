@@ -25,6 +25,7 @@ import {
   type PatientProblem,
   type PatientProfileDocumentV1,
   PatientProfileTag,
+  PatientProfileVersionState,
   PatientRelationshipRole,
   type PatientRelationship,
   PatientSexAtBirth,
@@ -33,6 +34,12 @@ import {
   type SimulationIdentifier,
   type SyntheticAddress,
 } from '../patient-profiles';
+import type {
+  PatientProfileCatalogueItem,
+  PatientProfileDetail,
+} from '../patient-profiles';
+import { PlatformRole } from '../users';
+import { defineContract, hektorResponseSchema } from './base';
 
 const plainText = (maximum: number) =>
   z
@@ -282,3 +289,47 @@ export const patientProfileDocumentV1Schema = z
     message: 'Patient profile document exceeds 100 KB',
   })
   .superRefine(uniqueIds) satisfies z.ZodType<PatientProfileDocumentV1>;
+
+export const patientProfileCatalogueItemSchema = z.object({
+  id: z.uuid(),
+  slug: z.string().min(1),
+  displayName: z.string().min(1),
+  dateOfBirth: z.iso.date(),
+  versionId: z.uuid(),
+  versionNumber: z.number().int().positive(),
+  versionState: z.enum(PatientProfileVersionState),
+  synopsis: z.string().min(1),
+  lifeStage: z.enum(PatientLifeStage),
+  careSettings: z.array(z.enum(PatientCareSetting)),
+  specialties: z.array(z.enum(PatientSpecialty)),
+  tags: z.array(z.enum(PatientProfileTag)),
+}) satisfies z.ZodType<PatientProfileCatalogueItem>;
+
+export const patientProfileDetailSchema =
+  patientProfileCatalogueItemSchema.extend({
+    document: patientProfileDocumentV1Schema,
+    changeSummary: z.string().min(1),
+    sourceReference: z.string().min(1).optional(),
+    sourceRevision: z.string().min(1).optional(),
+    updatedAt: z.iso.datetime(),
+  }) satisfies z.ZodType<PatientProfileDetail>;
+
+const adminPatientProfileAccess = {
+  type: 'platform',
+  roles: [PlatformRole.Admin],
+} as const;
+
+export const listAdminPatientProfilesContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/patient-profiles',
+  access: adminPatientProfileAccess,
+  output: hektorResponseSchema(z.array(patientProfileCatalogueItemSchema)),
+});
+
+export const getAdminPatientProfileContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/patient-profiles/:profileId',
+  access: adminPatientProfileAccess,
+  params: z.object({ profileId: z.uuid() }),
+  output: hektorResponseSchema(patientProfileDetailSchema),
+});

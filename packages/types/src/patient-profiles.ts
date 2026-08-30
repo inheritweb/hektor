@@ -314,3 +314,26 @@ export interface PatientCatalogueMetadata {
   specialties: PatientSpecialty[];
   tags: PatientProfileTag[];
 }
+
+export interface PatientProfileCatalogueItem {
+  id: string;
+  slug: string;
+  displayName: string;
+  dateOfBirth: string;
+  versionId: string;
+  versionNumber: number;
+  versionState: PatientProfileVersionState;
+  synopsis: string;
+  lifeStage: PatientLifeStage;
+  careSettings: PatientCareSetting[];
+  specialties: PatientSpecialty[];
+  tags: PatientProfileTag[];
+}
+
+export interface PatientProfileDetail extends PatientProfileCatalogueItem {
+  document: PatientProfileDocumentV1;
+  changeSummary: string;
+  sourceReference?: string;
+  sourceRevision?: string;
+  updatedAt: string;
+}

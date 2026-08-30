@@ -146,7 +146,7 @@ async function authenticate(
 async function createRouteSupabaseClient() {
   const { createServerSupabaseClient } = await import('@/lib/supabase/server');
 
-  return createServerSupabaseClient();
+  return createServerSupabaseClient({ allowCookieWrites: true });
 }
 
 async function authorize(

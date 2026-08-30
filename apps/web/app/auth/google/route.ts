@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   callback.searchParams.set('next', next);
 
-  const client = await createServerSupabaseClient();
+  const client = await createServerSupabaseClient({ allowCookieWrites: true });
   const { data, error } = await client.auth.signInWithOAuth({
     provider: googleIdentityConfig.provider,
     options: { redirectTo: callback.toString() },

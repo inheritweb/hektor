@@ -4,7 +4,9 @@ import { cookies } from 'next/headers';
 
 import { env } from '../../env';
 
-export async function createServerSupabaseClient() {
+export async function createServerSupabaseClient({
+  allowCookieWrites = false,
+}: { allowCookieWrites?: boolean } = {}) {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -14,13 +16,10 @@ export async function createServerSupabaseClient() {
       cookies: {
         getAll: () => cookieStore.getAll(),
         setAll: (cookiesToSet) => {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
-          } catch {
-            // Server Components cannot write cookies; the proxy refreshes them.
-          }
+          if (!allowCookieWrites) return;
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options),
+          );
         },
       },
     },

@@ -21,6 +21,10 @@
       "types": "./src/organisations/index.ts",
       "import": "./src/organisations/index.ts"
     },
+    "./patient-profiles": {
+      "types": "./src/patient-profiles/index.ts",
+      "import": "./src/patient-profiles/index.ts"
+    },
     "./simulator": {
       "types": "./src/simulator/index.ts",
       "import": "./src/simulator/index.ts"
