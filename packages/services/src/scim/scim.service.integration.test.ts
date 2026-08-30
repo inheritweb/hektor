@@ -83,6 +83,47 @@ describe('SCIM services', () => {
     await expect(scim.authenticate(token)).resolves.toEqual({ organisationId });
   });
 
+  it('isolates resources resolved through different organisation tokens', async () => {
+    const otherOrganisationId = randomUUID();
+    await client.from('organisations').insert({
+      id: otherOrganisationId,
+      name: 'Other SCIM University',
+      slug: `other-scim-${otherOrganisationId}`,
+    });
+    try {
+      const otherToken = (await configuration.issueToken(otherOrganisationId))
+        .data.token;
+      const ownerContext = await scim.authenticate(token);
+      const otherContext = await scim.authenticate(otherToken);
+      const ownerUser = await scim.synchronizeUser(
+        ownerContext,
+        {
+          active: true,
+          externalId: `isolated-${randomUUID()}`,
+          schemas: [SCIM_USER_SCHEMA],
+          userName: `isolated-${randomUUID()}@example.test`,
+        },
+        baseUrl,
+      );
+
+      await expect(
+        scim.getUser(otherContext, ownerUser.id, baseUrl),
+      ).rejects.toMatchObject({ code: HektorErrorCode.NotFound });
+      const otherUsers = await scim.listUsers(
+        otherContext,
+        { count: 100, startIndex: 1 },
+        baseUrl,
+      );
+      expect(otherUsers.Resources).toEqual([]);
+    } finally {
+      await client
+        .from('organisation_scim_configurations')
+        .delete()
+        .eq('organisation_id', otherOrganisationId);
+      await client.from('organisations').delete().eq('id', otherOrganisationId);
+    }
+  });
+
   it('stores only a hash and invalidates a revoked token', async () => {
     const stored = await client
       .from('organisation_scim_configurations')
@@ -366,5 +407,140 @@ describe('SCIM services', () => {
       .eq('organisation_id', organisationId)
       .eq('source_external_id', source.externalId ?? '');
     expect(groups.count).toBe(0);
+  });
+
+  it('treats repeated creates as synchronization retries', async () => {
+    const context = await scim.authenticate(token);
+    const userInput = {
+      active: true,
+      externalId: `retry-user-${randomUUID()}`,
+      schemas: [SCIM_USER_SCHEMA],
+      userName: `retry-user-${randomUUID()}@example.test`,
+    };
+    const firstUser = await scim.synchronizeUser(context, userInput, baseUrl);
+    const retriedUser = await scim.synchronizeUser(
+      context,
+      { ...userInput, displayName: 'Retried user' },
+      baseUrl,
+    );
+    expect(retriedUser.id).toBe(firstUser.id);
+    expect(retriedUser.displayName).toBe('Retried user');
+
+    const groupInput = {
+      displayName: 'Retry group',
+      externalId: `retry-group-${randomUUID()}`,
+      members: [{ value: firstUser.id }],
+      schemas: [SCIM_GROUP_SCHEMA],
+    };
+    const firstGroup = await scim.synchronizeGroup(
+      context,
+      groupInput,
+      baseUrl,
+    );
+    const retriedGroup = await scim.synchronizeGroup(
+      context,
+      { ...groupInput, displayName: 'Retried group' },
+      baseUrl,
+    );
+    expect(retriedGroup.id).toBe(firstGroup.id);
+    expect(retriedGroup.displayName).toBe('Retried group');
+  });
+
+  it('restores a deleted source group without losing its canonical mapping', async () => {
+    const context = await scim.authenticate(token);
+    const target = await client
+      .from('organisation_groups')
+      .insert({
+        name: `Restored target ${randomUUID()}`,
+        organisation_id: organisationId,
+      })
+      .select('id')
+      .single();
+    const input = {
+      displayName: 'Restored source',
+      externalId: `restored-${randomUUID()}`,
+      members: [],
+      schemas: [SCIM_GROUP_SCHEMA],
+    };
+    const source = await scim.synchronizeGroup(context, input, baseUrl);
+    await configuration.updateGroupMapping(organisationId, source.id, {
+      targetId: target.data!.id,
+      targetType: ScimGroupTargetType.Group,
+    });
+
+    await scim.deleteGroup(context, source.id);
+    const restored = await scim.synchronizeGroup(context, input, baseUrl);
+    const mapping = await client
+      .from('organisation_scim_group_mappings')
+      .select('organisation_group_id, source_deleted_at')
+      .eq('id', source.id)
+      .single();
+
+    expect(restored.id).toBe(source.id);
+    expect(mapping.data).toEqual({
+      organisation_group_id: target.data!.id,
+      source_deleted_at: null,
+    });
+  });
+
+  it('rejects overlapping SCIM groups that target different cohorts', async () => {
+    const context = await scim.authenticate(token);
+    const user = await scim.synchronizeUser(
+      context,
+      {
+        active: true,
+        schemas: [SCIM_USER_SCHEMA],
+        userName: `conflict-${randomUUID()}@example.test`,
+      },
+      baseUrl,
+    );
+    const cohorts = await client
+      .from('organisation_cohorts')
+      .insert([
+        {
+          ends_on: '2027-08-01',
+          name: `Conflict A ${randomUUID()}`,
+          organisation_id: organisationId,
+          starts_on: '2026-09-01',
+        },
+        {
+          ends_on: '2027-08-01',
+          name: `Conflict B ${randomUUID()}`,
+          organisation_id: organisationId,
+          starts_on: '2026-09-01',
+        },
+      ])
+      .select('id');
+    const first = await scim.synchronizeGroup(
+      context,
+      {
+        displayName: 'First cohort source',
+        externalId: `first-${randomUUID()}`,
+        members: [{ value: user.id }],
+        schemas: [SCIM_GROUP_SCHEMA],
+      },
+      baseUrl,
+    );
+    const second = await scim.synchronizeGroup(
+      context,
+      {
+        displayName: 'Second cohort source',
+        externalId: `second-${randomUUID()}`,
+        members: [{ value: user.id }],
+        schemas: [SCIM_GROUP_SCHEMA],
+      },
+      baseUrl,
+    );
+    await configuration.updateGroupMapping(organisationId, first.id, {
+      targetId: cohorts.data![0]!.id,
+      targetType: ScimGroupTargetType.Cohort,
+    });
+
+    await expect(
+      configuration.updateGroupMapping(organisationId, second.id, {
+        targetId: cohorts.data![1]!.id,
+        targetType: ScimGroupTargetType.Cohort,
+      }),
+    ).rejects.toMatchObject({ code: HektorErrorCode.Conflict });
   });
 });

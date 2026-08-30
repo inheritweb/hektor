@@ -17,7 +17,10 @@ interface RouteContext {
 const patchSchema = z.object({
   Operations: z.array(
     z.object({
-      op: z.enum(['add', 'replace', 'remove']),
+      op: z
+        .string()
+        .transform((value) => value.toLocaleLowerCase())
+        .pipe(z.enum(['add', 'replace', 'remove'])),
       path: z.string().optional(),
       value: z.unknown().optional(),
     }),

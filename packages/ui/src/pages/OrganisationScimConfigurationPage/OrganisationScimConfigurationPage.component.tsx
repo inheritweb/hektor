@@ -28,6 +28,12 @@ export interface OrganisationScimConfigurationPageProps {
   onRevokeToken: () => void;
   onSave: () => void;
   mappings?: readonly OrganisationScimGroupMapping[];
+  mappingPage?: number;
+  mappingPageSize?: number;
+  mappingSearch?: string;
+  mappingStatus?: 'all' | 'unmapped' | 'mapped' | 'deleted';
+  mappingTotalRecords?: number;
+  targetSearch?: string;
   cohorts?: readonly OrganisationCohortSummary[];
   groups?: readonly OrganisationGroupSummary[];
   onMappingChange?: (
@@ -37,6 +43,12 @@ export interface OrganisationScimConfigurationPageProps {
       | { targetId: string; targetType: ScimGroupTargetType.Group }
       | { targetId: null; targetType: null },
   ) => void;
+  onMappingPageChange?: (page: number) => void;
+  onMappingSearchChange?: (value: string) => void;
+  onMappingStatusChange?: (
+    value: 'all' | 'unmapped' | 'mapped' | 'deleted',
+  ) => void;
+  onTargetSearchChange?: (value: string) => void;
   pending?: boolean;
 }
 
@@ -152,6 +164,44 @@ export function OrganisationScimConfigurationPage(
           group. Unmapped groups remain integration records and do not appear in
           the normal group directory.
         </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_12rem]">
+          <Input
+            aria-label="Search incoming groups"
+            onChange={(event) =>
+              props.onMappingSearchChange?.(event.target.value)
+            }
+            placeholder="Search incoming groups"
+            type="search"
+            value={props.mappingSearch ?? ''}
+          />
+          <Select
+            onValueChange={(value) =>
+              value &&
+              props.onMappingStatusChange?.(
+                value as 'all' | 'unmapped' | 'mapped' | 'deleted',
+              )
+            }
+            value={props.mappingStatus ?? 'all'}
+          >
+            <SelectTrigger aria-label="Filter incoming groups">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All states</SelectItem>
+              <SelectItem value="unmapped">Unmapped</SelectItem>
+              <SelectItem value="mapped">Mapped</SelectItem>
+              <SelectItem value="deleted">Removed at source</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Input
+          aria-label="Search mapping targets"
+          className="mt-3"
+          onChange={(event) => props.onTargetSearchChange?.(event.target.value)}
+          placeholder="Search cohorts and groups"
+          type="search"
+          value={props.targetSearch ?? ''}
+        />
         <div className="mt-4 divide-y divide-border/60">
           {props.mappings?.length ? (
             props.mappings.map((mapping) => {
@@ -169,6 +219,10 @@ export function OrganisationScimConfigurationPage(
                       {mapping.memberCount}{' '}
                       {mapping.memberCount === 1 ? 'member' : 'members'}
                       {mapping.sourceDeletedAt ? ' · Removed at source' : ''}
+                      {' · '}
+                      {mapping.target ? 'Mapped' : 'Unmapped'}
+                      {' · Synchronized '}
+                      {new Date(mapping.lastSynchronizedAt).toLocaleString()}
                     </p>
                   </div>
                   <Select
@@ -235,6 +289,40 @@ export function OrganisationScimConfigurationPage(
             </p>
           )}
         </div>
+        {(props.mappingTotalRecords ?? 0) > (props.mappingPageSize ?? 20) ? (
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+            <p className="text-xs text-muted-foreground">
+              Page {props.mappingPage ?? 1} of{' '}
+              {Math.ceil(
+                (props.mappingTotalRecords ?? 0) /
+                  (props.mappingPageSize ?? 20),
+              )}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                disabled={(props.mappingPage ?? 1) <= 1}
+                onClick={() =>
+                  props.onMappingPageChange?.((props.mappingPage ?? 1) - 1)
+                }
+                variant="outline"
+              >
+                Previous
+              </Button>
+              <Button
+                disabled={
+                  (props.mappingPage ?? 1) * (props.mappingPageSize ?? 20) >=
+                  (props.mappingTotalRecords ?? 0)
+                }
+                onClick={() =>
+                  props.onMappingPageChange?.((props.mappingPage ?? 1) + 1)
+                }
+                variant="outline"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </section>
     </div>
   );

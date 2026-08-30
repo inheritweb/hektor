@@ -1,11 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { OrganisationRole, ScimGroupTargetType } from '@hektor/types';
 
 import { OrganisationScimConfigurationPage } from './OrganisationScimConfigurationPage.component';
 
 describe('OrganisationScimConfigurationPage', () => {
+  afterEach(cleanup);
+
   it('shows a newly issued token once and explains group target mapping', () => {
     render(
       <OrganisationScimConfigurationPage
@@ -44,7 +46,50 @@ describe('OrganisationScimConfigurationPage', () => {
     ).toBeTruthy();
     expect(screen.getByDisplayValue('hektor_scim_secret')).toBeTruthy();
     expect(screen.getByText('Year 1')).toBeTruthy();
-    expect(screen.getByText('12 members')).toBeTruthy();
+    expect(screen.getByText(/12 members/)).toBeTruthy();
     expect(screen.getByText('Cohort: September 2026')).toBeTruthy();
+  });
+
+  it('provides labelled search, filters and pagination for large directories', () => {
+    const onMappingPageChange = vi.fn();
+    const onMappingSearchChange = vi.fn();
+    const onTargetSearchChange = vi.fn();
+    render(
+      <OrganisationScimConfigurationPage
+        defaultRole={OrganisationRole.Learner}
+        endpoint="https://hektor.example/api/scim/v2"
+        mappingPage={1}
+        mappingPageSize={20}
+        mappingTotalRecords={21}
+        onDefaultRoleChange={vi.fn()}
+        onIssueToken={vi.fn()}
+        onMappingPageChange={onMappingPageChange}
+        onMappingSearchChange={onMappingSearchChange}
+        onRevokeToken={vi.fn()}
+        onSave={vi.fn()}
+        onTargetSearchChange={onTargetSearchChange}
+      />,
+    );
+
+    fireEvent.change(
+      screen.getByRole('searchbox', { name: 'Search incoming groups' }),
+      {
+        target: { value: 'clinical' },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole('searchbox', { name: 'Search mapping targets' }),
+      {
+        target: { value: 'September' },
+      },
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+
+    expect(onMappingSearchChange).toHaveBeenCalledWith('clinical');
+    expect(onTargetSearchChange).toHaveBeenCalledWith('September');
+    expect(onMappingPageChange).toHaveBeenCalledWith(2);
+    expect(
+      screen.getByRole('combobox', { name: 'Filter incoming groups' }),
+    ).toBeTruthy();
   });
 });

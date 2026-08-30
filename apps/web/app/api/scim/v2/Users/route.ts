@@ -21,6 +21,7 @@ function userNameFilter(filter?: string) {
   if (!match?.[1]) {
     throw createServiceError(HektorErrorCode.BadRequest, {
       message: 'Only userName eq filters are supported',
+      data: { scimType: 'invalidFilter' },
     });
   }
   return match[1].trim().toLocaleLowerCase();

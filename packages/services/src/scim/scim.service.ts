@@ -2,6 +2,7 @@ import {
   SCIM_GROUP_SCHEMA,
   SCIM_LIST_RESPONSE_SCHEMA,
   SCIM_USER_SCHEMA,
+  ScimGroupTargetType,
   type ScimListResponse,
   type ScimGroup,
   type ScimGroupInput,
@@ -14,6 +15,7 @@ import type { DatabaseClient } from '../database';
 import { createServiceError } from '../errors';
 
 import { createScimTokenHash } from './scim-configuration.service';
+import { assertNoScimCohortConflict } from './scim-cohort-conflicts';
 
 interface ScimContext {
   organisationId: string;
@@ -187,6 +189,43 @@ export function createScimService(client: DatabaseClient) {
     baseUrl: string,
     userId?: string,
   ): Promise<ScimUser> {
+    let synchronizedUserId = userId;
+    if (!synchronizedUserId) {
+      const existingByExternalId = input.externalId
+        ? await client
+            .from('organisation_scim_users')
+            .select('id')
+            .eq('organisation_id', context.organisationId)
+            .eq('external_id', input.externalId)
+            .maybeSingle()
+        : undefined;
+      if (existingByExternalId?.error)
+        throw createServiceError(HektorErrorCode.UnprocessableEntity, {
+          message: 'Unable to resolve the existing SCIM user',
+          internalMessage: existingByExternalId.error.message,
+        });
+      const existingByUserName = await client
+        .from('organisation_scim_users')
+        .select('id')
+        .eq('organisation_id', context.organisationId)
+        .eq('user_name', input.userName.trim().toLocaleLowerCase())
+        .maybeSingle();
+      if (existingByUserName.error)
+        throw createServiceError(HektorErrorCode.UnprocessableEntity, {
+          message: 'Unable to resolve the existing SCIM user',
+          internalMessage: existingByUserName.error.message,
+        });
+      if (
+        existingByExternalId?.data &&
+        existingByUserName.data &&
+        existingByExternalId.data.id !== existingByUserName.data.id
+      )
+        throw createServiceError(HektorErrorCode.Conflict, {
+          message: 'The externalId and userName identify different SCIM users',
+        });
+      synchronizedUserId =
+        existingByExternalId?.data?.id ?? existingByUserName.data?.id;
+    }
     const { data, error } = await client.rpc('synchronize_scim_user', {
       target_active: input.active ?? true,
       target_display_name: input.displayName ?? '',
@@ -194,7 +233,8 @@ export function createScimService(client: DatabaseClient) {
       target_family_name: input.name?.familyName ?? '',
       target_given_name: input.name?.givenName ?? '',
       target_organisation_id: context.organisationId,
-      target_scim_user_id: userId ?? '00000000-0000-0000-0000-000000000000',
+      target_scim_user_id:
+        synchronizedUserId ?? '00000000-0000-0000-0000-000000000000',
       target_user_name: input.userName.trim().toLocaleLowerCase(),
     });
 
@@ -289,6 +329,21 @@ export function createScimService(client: DatabaseClient) {
     baseUrl: string,
     groupId?: string,
   ): Promise<ScimGroup> {
+    let synchronizedGroupId = groupId;
+    if (!synchronizedGroupId && input.externalId) {
+      const existing = await client
+        .from('organisation_scim_group_mappings')
+        .select('id')
+        .eq('organisation_id', context.organisationId)
+        .eq('external_id', input.externalId)
+        .maybeSingle();
+      if (existing.error)
+        throw createServiceError(HektorErrorCode.UnprocessableEntity, {
+          message: 'Unable to resolve the existing SCIM group',
+          internalMessage: existing.error.message,
+        });
+      synchronizedGroupId = existing.data?.id;
+    }
     const memberIds = [
       ...new Set((input.members ?? []).map(({ value }) => value)),
     ];
@@ -311,12 +366,37 @@ export function createScimService(client: DatabaseClient) {
       organisation_id: context.organisationId,
       source_deleted_at: null,
     };
-    const result = groupId
+    const existingMapping = synchronizedGroupId
+      ? await client
+          .from('organisation_scim_group_mappings')
+          .select('organisation_cohort_id, target_type')
+          .eq('organisation_id', context.organisationId)
+          .eq('id', synchronizedGroupId)
+          .maybeSingle()
+      : undefined;
+    if (existingMapping?.error)
+      throw createServiceError(HektorErrorCode.UnprocessableEntity, {
+        message: 'Unable to resolve the existing SCIM group mapping',
+        internalMessage: existingMapping.error.message,
+      });
+    if (
+      synchronizedGroupId &&
+      existingMapping?.data?.target_type === ScimGroupTargetType.Cohort &&
+      existingMapping.data.organisation_cohort_id
+    )
+      await assertNoScimCohortConflict(
+        client,
+        context.organisationId,
+        synchronizedGroupId,
+        existingMapping.data.organisation_cohort_id,
+        memberIds,
+      );
+    const result = synchronizedGroupId
       ? await client
           .from('organisation_scim_group_mappings')
           .update(values)
           .eq('organisation_id', context.organisationId)
-          .eq('id', groupId)
+          .eq('id', synchronizedGroupId)
           .select('id')
           .maybeSingle()
       : await client
@@ -326,14 +406,14 @@ export function createScimService(client: DatabaseClient) {
           .single();
     if (result.error || !result.data)
       throw createServiceError(
-        groupId && !result.data
+        synchronizedGroupId && !result.data
           ? HektorErrorCode.NotFound
           : result.error?.code === '23505'
             ? HektorErrorCode.Conflict
             : HektorErrorCode.UnprocessableEntity,
         { message: result.error?.message ?? 'SCIM group not found' },
       );
-    const synchronizedGroupId = result.data.id;
+    synchronizedGroupId = result.data.id;
 
     await client
       .from('organisation_scim_group_members')

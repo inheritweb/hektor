@@ -17,14 +17,30 @@ import { SortDirection } from '@hektor/types/contracts';
 import { OrganisationScimConfigurationPage } from '@hektor/ui/pages';
 
 export function OrganisationScimConfigurationScreen() {
+  const [mappingPage, setMappingPage] = useState(1);
+  const [mappingSearch, setMappingSearch] = useState('');
+  const [targetSearch, setTargetSearch] = useState('');
+  const [mappingStatus, setMappingStatus] = useState<
+    'all' | 'unmapped' | 'mapped' | 'deleted'
+  >('all');
   const configuration = useGetOrganisationScimConfiguration();
-  const mappings = useGetOrganisationScimGroupMappings();
+  const mappings = useGetOrganisationScimGroupMappings({
+    query: {
+      dir: SortDirection.Ascending,
+      order: 'displayName',
+      page: mappingPage,
+      pageSize: 20,
+      search: mappingSearch || undefined,
+      status: mappingStatus,
+    },
+  });
   const cohorts = useGetOrganisationCohorts({
     query: {
       dir: SortDirection.Ascending,
       order: 'name',
       page: 1,
       pageSize: 100,
+      search: targetSearch || undefined,
     },
   });
   const groups = useGetOrganisationGroups({
@@ -33,6 +49,7 @@ export function OrganisationScimConfigurationScreen() {
       order: 'name',
       page: 1,
       pageSize: 100,
+      search: targetSearch || undefined,
     },
   });
   const [defaultRoleOverride, setDefaultRoleOverride] =
@@ -79,11 +96,27 @@ export function OrganisationScimConfigurationScreen() {
       issuedToken={issuedToken}
       loading={configuration.isPending || mappings.isPending}
       mappings={mappings.data?.data ?? []}
+      mappingPage={mappingPage}
+      mappingPageSize={20}
+      mappingSearch={mappingSearch}
+      mappingStatus={mappingStatus}
+      mappingTotalRecords={mappings.data?.context.totalRecords ?? 0}
+      targetSearch={targetSearch}
       onDefaultRoleChange={setDefaultRoleOverride}
       onIssueToken={() => issue.mutate({ body: {} })}
       onMappingChange={(mappingId, body) =>
         updateMapping.mutate({ body, params: { mappingId } })
       }
+      onMappingPageChange={setMappingPage}
+      onMappingSearchChange={(value) => {
+        setMappingPage(1);
+        setMappingSearch(value);
+      }}
+      onMappingStatusChange={(value) => {
+        setMappingPage(1);
+        setMappingStatus(value);
+      }}
+      onTargetSearchChange={setTargetSearch}
       onRevokeToken={() => revoke.mutate({ body: {} })}
       onSave={() => update.mutate({ body: { defaultRole } })}
       pending={

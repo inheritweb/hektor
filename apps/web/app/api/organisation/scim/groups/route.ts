@@ -6,8 +6,8 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 
 export const GET = registerEndpoint(
   listTenantOrganisationScimGroupMappingsContract,
-  async (_input, { tenant }) =>
+  async ({ query }, { tenant }) =>
     createScimConfigurationService(
       createAdminSupabaseClient(),
-    ).listGroupMappings(tenant.organisationId),
+    ).listGroupMappings(tenant.organisationId, query),
 );

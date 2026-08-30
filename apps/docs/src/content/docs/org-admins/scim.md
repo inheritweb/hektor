@@ -49,7 +49,7 @@ Enable create, update and deactivate operations. Run a small assigned test popul
 5. If it has no connected membership, have the person use institutional sign-in or send an invitation from the provision detail.
 6. Once accepted or privately reconciled, confirm the person appears in **Users** with the expected seat and platform statuses.
 
-Creating the same SCIM user again is idempotent: Hektor updates its stable SCIM record rather than creating duplicates. If a current membership already exists, Hektor links the provision to it.
+Retrying creation with the same `externalId` or user name is idempotent: Hektor updates the stable SCIM record rather than creating a duplicate. If those identifiers refer to different existing records, Hektor rejects the request as a uniqueness conflict. If a current membership already exists, Hektor links the provision to it.
 
 ## Deactivate and restore access
 
@@ -68,6 +68,8 @@ Make SCIM-managed name, email, role and lifecycle corrections in the source dire
 
 An unmapped directory group remains visible only in SCIM configuration. It does not create a redundant Hektor group. Name matches may help you choose a target, but only the explicit mapping controls synchronization.
 
+Use the incoming-group search and state filter when the directory contains many groups. **Unmapped**, **Mapped** and **Removed at source** identify the current integration state, while the synchronization timestamp shows when Hektor last received that source group. Search mapping targets separately to find cohorts and groups beyond the first results.
+
 Mapping to a cohort applies membership directly to the cohort. Mapping to a group applies it to the canonical Hektor group. If a provision later becomes a connected user, the assignment follows it.
 
 ## Change or remove a mapping
@@ -75,6 +77,12 @@ Mapping to a cohort applies membership directly to the cohort. Mapping to a grou
 Select another target to move SCIM-owned assignments, or choose **Unmapped** to stop projecting the source group. Hektor removes only the ownership established by that SCIM mapping. A relationship also assigned manually, or by another SCIM mapping, remains in place.
 
 Deleting a group at the identity provider marks the integration record as removed and withdraws its SCIM-owned assignments. It never deletes the mapped Hektor cohort or group.
+
+If the provider later recreates the same group with its stable external identifier, Hektor restores the retained integration record and its explicit mapping. Historical work and the canonical cohort or group remain unchanged.
+
+Hektor permits multiple source groups to own the same canonical group relationship or the same cohort assignment. It rejects a synchronization or mapping change when the same person would be assigned to different cohorts by different SCIM groups. Resolve that conflict in the identity provider or map both source groups to the same cohort.
+
+Manual ownership is independent from SCIM ownership. Removing or remapping a source group cannot remove a relationship that an administrator also assigned manually.
 
 ## Rotate or revoke the token
 
@@ -95,3 +103,4 @@ To stop synchronization, choose **Revoke token**. Revocation rejects future SCIM
 - **Names or email are wrong:** correct the source identity and synchronize again.
 - **A group is visible but has no effect:** map it explicitly to a Hektor cohort or group.
 - **A member remains after source removal:** check whether an administrator or another source also owns the assignment.
+- **A cohort mapping reports a conflict:** the same person belongs to source groups mapped to different cohorts. Align the source memberships or mapping targets, then synchronize again.

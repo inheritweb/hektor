@@ -7,10 +7,12 @@ import {
   type OrganisationScimTokenResult,
   ScimGroupTargetType,
 } from '@hektor/types';
-import { HektorErrorCode } from '@hektor/types/contracts';
+import { HektorErrorCode, SortDirection } from '@hektor/types/contracts';
 
 import type { DatabaseClient } from '../database';
 import { createServiceError } from '../errors';
+
+import { assertNoScimCohortConflict } from './scim-cohort-conflicts';
 
 const endpointPath = '/api/scim/v2';
 
@@ -48,25 +50,59 @@ function mapConfiguration(
 }
 
 export function createScimConfigurationService(client: DatabaseClient) {
-  async function listGroupMappings(organisationId: string): Promise<{
-    data: OrganisationScimGroupMapping[];
-  }> {
-    const mappings = await client
+  async function listGroupMappings(
+    organisationId: string,
+    options: {
+      dir?: SortDirection;
+      mappingId?: string;
+      page?: number;
+      pageSize?: number;
+      search?: string;
+      status?: 'all' | 'unmapped' | 'mapped' | 'deleted';
+    } = {},
+  ) {
+    const page = options.page ?? 1;
+    const pageSize = options.pageSize ?? 20;
+    let mappingsQuery = client
       .from('organisation_scim_group_mappings')
       .select(
         'display_name, external_id, id, last_synchronized_at, organisation_cohort_id, organisation_group_id, source_deleted_at, target_type',
+        { count: 'exact' },
       )
       .eq('organisation_id', organisationId)
-      .order('display_name');
+      .order('display_name', {
+        ascending: options.dir !== SortDirection.Descending,
+      })
+      .range((page - 1) * pageSize, page * pageSize - 1);
+    if (options.search) {
+      const search = options.search.replaceAll(/[,%()]/g, '');
+      mappingsQuery = mappingsQuery.or(
+        `display_name.ilike.%${search}%,external_id.ilike.%${search}%`,
+      );
+    }
+    if (options.mappingId)
+      mappingsQuery = mappingsQuery.eq('id', options.mappingId);
+    if (options.status === 'mapped')
+      mappingsQuery = mappingsQuery.not('target_type', 'is', null);
+    else if (options.status === 'unmapped')
+      mappingsQuery = mappingsQuery
+        .is('target_type', null)
+        .is('source_deleted_at', null);
+    else if (options.status === 'deleted')
+      mappingsQuery = mappingsQuery.not('source_deleted_at', 'is', null);
+    const mappings = await mappingsQuery;
     if (mappings.error)
       throw createServiceError(HektorErrorCode.InternalServerError, {
         message: 'Unable to load SCIM groups',
         internalMessage: mappings.error.message,
       });
-    const members = await client
-      .from('organisation_scim_group_members')
-      .select('organisation_scim_group_mapping_id')
-      .eq('organisation_id', organisationId);
+    const mappingIds = mappings.data.map(({ id }) => id);
+    const members = mappingIds.length
+      ? await client
+          .from('organisation_scim_group_members')
+          .select('organisation_scim_group_mapping_id')
+          .in('organisation_scim_group_mapping_id', mappingIds)
+      : { data: [], error: null };
     const cohorts = await client
       .from('organisation_cohorts')
       .select('id, name')
@@ -128,7 +164,18 @@ export function createScimConfigurationService(client: DatabaseClient) {
         ...(target ? { target } : {}),
       };
     });
-    return { data };
+    return {
+      context: {
+        page,
+        pageSize,
+        sort: {
+          dir: options.dir ?? SortDirection.Ascending,
+          order: 'displayName',
+        },
+        totalRecords: mappings.count ?? 0,
+      },
+      data,
+    };
   }
 
   async function updateGroupMapping(
@@ -153,6 +200,13 @@ export function createScimConfigurationService(client: DatabaseClient) {
           message:
             'The selected mapping target is not active in this organisation',
         });
+      if (target.targetType === ScimGroupTargetType.Cohort)
+        await assertNoScimCohortConflict(
+          client,
+          organisationId,
+          mappingId,
+          target.targetId,
+        );
     }
     const result = await client
       .from('organisation_scim_group_mappings')
@@ -191,7 +245,10 @@ export function createScimConfigurationService(client: DatabaseClient) {
         message: 'Unable to apply SCIM group mapping',
         internalMessage: applied.error.message,
       });
-    const mappings = await listGroupMappings(organisationId);
+    const mappings = await listGroupMappings(organisationId, {
+      mappingId,
+      pageSize: 1,
+    });
     return { data: mappings.data.find(({ id }) => id === mappingId)! };
   }
 

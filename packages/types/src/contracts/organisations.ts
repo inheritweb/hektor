@@ -175,7 +175,14 @@ export const listTenantOrganisationScimGroupMappingsContract = defineContract({
   method: 'GET',
   path: '/api/organisation/scim/groups',
   access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
-  output: hektorResponseSchema(z.array(organisationScimGroupMappingSchema)),
+  query: paginationQuerySchema.extend({
+    order: z.literal('displayName').default('displayName'),
+    search: z.string().trim().max(255).optional(),
+    status: z.enum(['all', 'unmapped', 'mapped', 'deleted']).default('all'),
+  }),
+  output: hektorCollectionResponseSchema(
+    z.array(organisationScimGroupMappingSchema),
+  ),
 });
 
 export const updateTenantOrganisationScimGroupMappingContract = defineContract({
@@ -468,6 +475,7 @@ export const listOrganisationCohortsContract = defineContract({
   params: z.object({ organisationId: z.uuid() }),
   query: paginationQuerySchema.extend({
     order: z.enum(['name', 'startsOn', 'endsOn']).default('startsOn'),
+    search: z.string().trim().max(255).optional(),
     status: z.enum(GroupStatus).optional(),
   }),
   output: hektorCollectionResponseSchema(
@@ -527,6 +535,7 @@ export const listOrganisationGroupsContract = defineContract({
   params: z.object({ organisationId: z.uuid() }),
   query: paginationQuerySchema.extend({
     order: z.enum(['name', 'createdAt']).default('name'),
+    search: z.string().trim().max(255).optional(),
     status: z.enum(GroupStatus).optional(),
     provisioningMethod: z.enum(ProvisioningMethod).optional(),
   }),

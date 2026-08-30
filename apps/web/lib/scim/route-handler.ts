@@ -53,7 +53,11 @@ function scimErrorResponse(error: unknown) {
   const body: ScimError = {
     detail: normalized.message,
     schemas: [SCIM_ERROR_SCHEMA],
-    ...(status === HektorErrorCode.Conflict ? { scimType: 'uniqueness' } : {}),
+    ...(normalized.data?.scimType
+      ? { scimType: normalized.data.scimType }
+      : status === HektorErrorCode.Conflict
+        ? { scimType: 'uniqueness' }
+        : {}),
     status: String(status),
   };
   return scimResponse(body, {
@@ -94,6 +98,17 @@ export async function withScim(
       service,
     });
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return scimResponse(
+        {
+          detail: 'Request body must be valid JSON',
+          schemas: [SCIM_ERROR_SCHEMA],
+          scimType: 'invalidSyntax',
+          status: '400',
+        } satisfies ScimError,
+        { status: 400 },
+      );
+    }
     if (error instanceof z.ZodError) {
       return scimResponse(
         {

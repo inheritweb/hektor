@@ -21,6 +21,7 @@ function displayNameFilter(filter?: string) {
   if (!match?.[1])
     throw createServiceError(HektorErrorCode.BadRequest, {
       message: 'Only displayName eq filters are supported',
+      data: { scimType: 'invalidFilter' },
     });
   return match[1].trim();
 }

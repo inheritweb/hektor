@@ -199,6 +199,7 @@ export function buildOrganisationCohortsQuery(
     pageSize: number;
     order: 'name' | 'startsOn' | 'endsOn';
     dir: 'asc' | 'desc';
+    search?: string;
     status?: GroupStatus;
   },
 ) {
@@ -217,6 +218,7 @@ export function buildOrganisationCohortsQuery(
     .range(first, first + options.pageSize - 1);
 
   if (options.status) query = query.eq('status', options.status);
+  if (options.search) query = query.ilike('name', `%${options.search}%`);
   return query;
 }
 
@@ -301,6 +303,7 @@ export function buildOrganisationGroupsQuery(
     pageSize: number;
     order: 'name' | 'createdAt';
     dir: 'asc' | 'desc';
+    search?: string;
     status?: GroupStatus;
     provisioningMethod?: ProvisioningMethod;
   },
@@ -317,6 +320,7 @@ export function buildOrganisationGroupsQuery(
     .range(first, first + options.pageSize - 1);
 
   if (options.status) query = query.eq('status', options.status);
+  if (options.search) query = query.ilike('name', `%${options.search}%`);
   if (options.provisioningMethod) {
     query = query.eq('provisioning_method', options.provisioningMethod);
   }
