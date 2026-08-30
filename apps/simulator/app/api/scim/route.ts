@@ -21,6 +21,15 @@ export async function POST(request: NextRequest) {
     } else if (action === 'deactivate') {
       await service.deactivateUser();
       simulatorUrl.searchParams.set('notice', 'scim-user-deactivated');
+    } else if (action === 'provision-group') {
+      await service.synchronizeGroup(true);
+      simulatorUrl.searchParams.set('notice', 'scim-group-provisioned');
+    } else if (action === 'empty-group') {
+      await service.synchronizeGroup(false);
+      simulatorUrl.searchParams.set('notice', 'scim-group-emptied');
+    } else if (action === 'delete-group') {
+      await service.deleteGroup();
+      simulatorUrl.searchParams.set('notice', 'scim-group-deleted');
     } else {
       simulatorUrl.searchParams.set('error', 'invalid-scim-action');
     }

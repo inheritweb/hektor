@@ -5,7 +5,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   OrganisationRole,
   ProvisioningStatus,
+  SCIM_GROUP_SCHEMA,
   SCIM_USER_SCHEMA,
+  ScimGroupTargetType,
 } from '@hektor/types';
 import { HektorErrorCode } from '@hektor/types/contracts';
 
@@ -44,6 +46,14 @@ describe('SCIM services', () => {
   afterAll(async () => {
     await client
       .from('organisation_scim_group_mappings')
+      .delete()
+      .eq('organisation_id', organisationId);
+    await client
+      .from('organisation_groups')
+      .delete()
+      .eq('organisation_id', organisationId);
+    await client
+      .from('organisation_cohorts')
       .delete()
       .eq('organisation_id', organisationId);
     await client
@@ -210,5 +220,151 @@ describe('SCIM services', () => {
       ProvisioningStatus.Linked,
       ProvisioningStatus.Revoked,
     ]);
+  });
+
+  it('removes only SCIM ownership when a source group member is removed', async () => {
+    const context = await scim.authenticate(token);
+    const scimUser = await scim.synchronizeUser(
+      context,
+      {
+        active: true,
+        externalId: `group-user-${randomUUID()}`,
+        schemas: [SCIM_USER_SCHEMA],
+        userName: `group-user-${randomUUID()}@example.test`,
+      },
+      baseUrl,
+    );
+    const target = await client
+      .from('organisation_groups')
+      .insert({
+        name: `Target ${randomUUID()}`,
+        organisation_id: organisationId,
+      })
+      .select('id')
+      .single();
+    const source = await scim.synchronizeGroup(
+      context,
+      {
+        displayName: 'Directory tutorial group',
+        externalId: `group-${randomUUID()}`,
+        members: [{ type: 'User', value: scimUser.id }],
+        schemas: [SCIM_GROUP_SCHEMA],
+      },
+      baseUrl,
+    );
+    await configuration.updateGroupMapping(organisationId, source.id, {
+      targetId: target.data!.id,
+      targetType: ScimGroupTargetType.Group,
+    });
+    const scimRecord = await client
+      .from('organisation_scim_users')
+      .select('current_provision_id')
+      .eq('id', scimUser.id)
+      .single();
+    const assigned = await client
+      .from('organisation_provisioned_group_users')
+      .select('manually_assigned, scim_group_mapping_ids')
+      .eq('organisation_group_id', target.data!.id)
+      .eq(
+        'organisation_user_provision_id',
+        scimRecord.data!.current_provision_id!,
+      )
+      .single();
+    expect(assigned.data).toEqual({
+      manually_assigned: false,
+      scim_group_mapping_ids: [source.id],
+    });
+
+    await client
+      .from('organisation_provisioned_group_users')
+      .update({ manually_assigned: true })
+      .eq('organisation_group_id', target.data!.id)
+      .eq(
+        'organisation_user_provision_id',
+        scimRecord.data!.current_provision_id!,
+      );
+    await scim.synchronizeGroup(
+      context,
+      {
+        displayName: source.displayName,
+        externalId: source.externalId,
+        members: [],
+        schemas: [SCIM_GROUP_SCHEMA],
+      },
+      baseUrl,
+      source.id,
+    );
+    const retained = await client
+      .from('organisation_provisioned_group_users')
+      .select('manually_assigned, scim_group_mapping_ids')
+      .eq('organisation_group_id', target.data!.id)
+      .eq(
+        'organisation_user_provision_id',
+        scimRecord.data!.current_provision_id!,
+      )
+      .single();
+    expect(retained.data).toEqual({
+      manually_assigned: true,
+      scim_group_mapping_ids: [],
+    });
+  });
+
+  it('maps source membership directly to a cohort without creating a group', async () => {
+    const context = await scim.authenticate(token);
+    const scimUser = await scim.synchronizeUser(
+      context,
+      {
+        active: true,
+        schemas: [SCIM_USER_SCHEMA],
+        userName: `cohort-user-${randomUUID()}@example.test`,
+      },
+      baseUrl,
+    );
+    const cohort = await client
+      .from('organisation_cohorts')
+      .insert({
+        ends_on: '2027-08-01',
+        name: `Cohort ${randomUUID()}`,
+        organisation_id: organisationId,
+        starts_on: '2026-09-01',
+      })
+      .select('id')
+      .single();
+    const source = await scim.synchronizeGroup(
+      context,
+      {
+        displayName: 'Directory cohort',
+        members: [{ value: scimUser.id }],
+        schemas: [SCIM_GROUP_SCHEMA],
+      },
+      baseUrl,
+    );
+    await configuration.updateGroupMapping(organisationId, source.id, {
+      targetId: cohort.data!.id,
+      targetType: ScimGroupTargetType.Cohort,
+    });
+    const scimRecord = await client
+      .from('organisation_scim_users')
+      .select('current_provision_id')
+      .eq('id', scimUser.id)
+      .single();
+    const provision = await client
+      .from('organisation_user_provisions')
+      .select(
+        'cohort_manually_assigned, organisation_cohort_id, scim_cohort_mapping_ids',
+      )
+      .eq('id', scimRecord.data!.current_provision_id!)
+      .single();
+    expect(provision.data).toEqual({
+      cohort_manually_assigned: false,
+      organisation_cohort_id: cohort.data!.id,
+      scim_cohort_mapping_ids: [source.id],
+    });
+    const groups = await client
+      .from('organisation_groups')
+      .select('id', { count: 'exact', head: true })
+      .eq('organisation_id', organisationId)
+      .eq('source_external_id', source.externalId ?? '');
+    expect(groups.count).toBe(0);
   });
 });

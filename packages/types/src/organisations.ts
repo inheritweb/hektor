@@ -55,9 +55,10 @@ export enum ScimGroupTargetType {
 
 export interface OrganisationScimGroupMapping {
   displayName: string;
-  externalId: string;
+  externalId?: string;
   id: string;
   lastSynchronizedAt: string;
+  memberCount: number;
   sourceDeletedAt?: string;
   target?:
     | { id: string; name: string; type: ScimGroupTargetType.Cohort }

@@ -91,7 +91,7 @@ describe('HomePage', () => {
     expect(screen.getByText('3')).toBeTruthy();
     expect(screen.getByText('7')).toBeTruthy();
     expect(
-      screen.getByRole('link', { name: /View groups/i }).getAttribute('href'),
+      screen.getByRole('link', { name: /Groups 7/i }).getAttribute('href'),
     ).toBe('/groups');
   });
 });

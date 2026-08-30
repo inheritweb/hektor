@@ -116,21 +116,27 @@ export type Database = {
       organisation_group_users: {
         Row: {
           created_at: string;
+          manually_assigned: boolean;
           organisation_group_id: string;
           organisation_id: string;
           organisation_user_id: string;
+          scim_group_mapping_ids: string[];
         };
         Insert: {
           created_at?: string;
+          manually_assigned?: boolean;
           organisation_group_id: string;
           organisation_id: string;
           organisation_user_id: string;
+          scim_group_mapping_ids?: string[];
         };
         Update: {
           created_at?: string;
+          manually_assigned?: boolean;
           organisation_group_id?: string;
           organisation_id?: string;
           organisation_user_id?: string;
+          scim_group_mapping_ids?: string[];
         };
         Relationships: [
           {
@@ -219,21 +225,27 @@ export type Database = {
       organisation_provisioned_group_users: {
         Row: {
           created_at: string;
+          manually_assigned: boolean;
           organisation_group_id: string;
           organisation_id: string;
           organisation_user_provision_id: string;
+          scim_group_mapping_ids: string[];
         };
         Insert: {
           created_at?: string;
+          manually_assigned?: boolean;
           organisation_group_id: string;
           organisation_id: string;
           organisation_user_provision_id: string;
+          scim_group_mapping_ids?: string[];
         };
         Update: {
           created_at?: string;
+          manually_assigned?: boolean;
           organisation_group_id?: string;
           organisation_id?: string;
           organisation_user_provision_id?: string;
+          scim_group_mapping_ids?: string[];
         };
         Relationships: [
           {
@@ -304,7 +316,7 @@ export type Database = {
         Row: {
           created_at: string;
           display_name: string;
-          external_id: string;
+          external_id: string | null;
           id: string;
           last_synchronized_at: string;
           organisation_cohort_id: string | null;
@@ -318,7 +330,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           display_name: string;
-          external_id: string;
+          external_id?: string | null;
           id?: string;
           last_synchronized_at?: string;
           organisation_cohort_id?: string | null;
@@ -332,7 +344,7 @@ export type Database = {
         Update: {
           created_at?: string;
           display_name?: string;
-          external_id?: string;
+          external_id?: string | null;
           id?: string;
           last_synchronized_at?: string;
           organisation_cohort_id?: string | null;
@@ -360,6 +372,49 @@ export type Database = {
           },
           {
             foreignKeyName: 'organisation_scim_group_mappings_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      organisation_scim_group_members: {
+        Row: {
+          created_at: string;
+          organisation_id: string;
+          organisation_scim_group_mapping_id: string;
+          organisation_scim_user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          organisation_id: string;
+          organisation_scim_group_mapping_id: string;
+          organisation_scim_user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          organisation_id?: string;
+          organisation_scim_group_mapping_id?: string;
+          organisation_scim_user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organisation_scim_group_membe_organisation_scim_group_mapp_fkey';
+            columns: ['organisation_scim_group_mapping_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_scim_group_mappings';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_scim_group_membe_organisation_scim_user_id_or_fkey';
+            columns: ['organisation_scim_user_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation_scim_users';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'organisation_scim_group_members_organisation_id_fkey';
             columns: ['organisation_id'];
             isOneToOne: false;
             referencedRelation: 'organisations';
@@ -472,6 +527,7 @@ export type Database = {
       };
       organisation_user_provisions: {
         Row: {
+          cohort_manually_assigned: boolean;
           created_at: string;
           id: string;
           invitation_consumed_at: string | null;
@@ -491,11 +547,13 @@ export type Database = {
           provisioned_user_name: string;
           provisioning_method: Database['public']['Enums']['provisioning_method'];
           revoked_at: string | null;
+          scim_cohort_mapping_ids: string[];
           source_external_id: string | null;
           status: Database['public']['Enums']['provisioning_status'];
           updated_at: string;
         };
         Insert: {
+          cohort_manually_assigned?: boolean;
           created_at?: string;
           id?: string;
           invitation_consumed_at?: string | null;
@@ -515,11 +573,13 @@ export type Database = {
           provisioned_user_name: string;
           provisioning_method: Database['public']['Enums']['provisioning_method'];
           revoked_at?: string | null;
+          scim_cohort_mapping_ids?: string[];
           source_external_id?: string | null;
           status?: Database['public']['Enums']['provisioning_status'];
           updated_at?: string;
         };
         Update: {
+          cohort_manually_assigned?: boolean;
           created_at?: string;
           id?: string;
           invitation_consumed_at?: string | null;
@@ -539,6 +599,7 @@ export type Database = {
           provisioned_user_name?: string;
           provisioning_method?: Database['public']['Enums']['provisioning_method'];
           revoked_at?: string | null;
+          scim_cohort_mapping_ids?: string[];
           source_external_id?: string | null;
           status?: Database['public']['Enums']['provisioning_status'];
           updated_at?: string;
@@ -569,31 +630,37 @@ export type Database = {
       };
       organisation_users: {
         Row: {
+          cohort_manually_assigned: boolean;
           created_at: string;
           id: string;
           organisation_cohort_id: string | null;
           organisation_id: string;
           role: Database['public']['Enums']['organisation_role'];
+          scim_cohort_mapping_ids: string[];
           status: Database['public']['Enums']['organisation_user_status'];
           updated_at: string;
           user_id: string;
         };
         Insert: {
+          cohort_manually_assigned?: boolean;
           created_at?: string;
           id?: string;
           organisation_cohort_id?: string | null;
           organisation_id: string;
           role: Database['public']['Enums']['organisation_role'];
+          scim_cohort_mapping_ids?: string[];
           status?: Database['public']['Enums']['organisation_user_status'];
           updated_at?: string;
           user_id: string;
         };
         Update: {
+          cohort_manually_assigned?: boolean;
           created_at?: string;
           id?: string;
           organisation_cohort_id?: string | null;
           organisation_id?: string;
           role?: Database['public']['Enums']['organisation_role'];
+          scim_cohort_mapping_ids?: string[];
           status?: Database['public']['Enums']['organisation_user_status'];
           updated_at?: string;
           user_id?: string;
@@ -654,6 +721,7 @@ export type Database = {
           target_user_id: string;
         };
         Returns: {
+          cohort_manually_assigned: boolean;
           created_at: string;
           id: string;
           invitation_consumed_at: string | null;
@@ -673,6 +741,7 @@ export type Database = {
           provisioned_user_name: string;
           provisioning_method: Database['public']['Enums']['provisioning_method'];
           revoked_at: string | null;
+          scim_cohort_mapping_ids: string[];
           source_external_id: string | null;
           status: Database['public']['Enums']['provisioning_status'];
           updated_at: string;
@@ -684,6 +753,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      apply_scim_group_mapping: {
+        Args: { target_mapping_id: string; target_organisation_id: string };
+        Returns: undefined;
+      };
       clear_organisation_provision_invitation: {
         Args: { expected_token_hash: string; target_provision_id: string };
         Returns: undefined;
@@ -691,6 +764,7 @@ export type Database = {
       consume_organisation_provision_invitation: {
         Args: { expected_token_hash: string; target_provision_id: string };
         Returns: {
+          cohort_manually_assigned: boolean;
           created_at: string;
           id: string;
           invitation_consumed_at: string | null;
@@ -710,6 +784,7 @@ export type Database = {
           provisioned_user_name: string;
           provisioning_method: Database['public']['Enums']['provisioning_method'];
           revoked_at: string | null;
+          scim_cohort_mapping_ids: string[];
           source_external_id: string | null;
           status: Database['public']['Enums']['provisioning_status'];
           updated_at: string;
@@ -832,6 +907,7 @@ export type Database = {
           target_token_hash: string;
         };
         Returns: {
+          cohort_manually_assigned: boolean;
           created_at: string;
           id: string;
           invitation_consumed_at: string | null;
@@ -851,6 +927,7 @@ export type Database = {
           provisioned_user_name: string;
           provisioning_method: Database['public']['Enums']['provisioning_method'];
           revoked_at: string | null;
+          scim_cohort_mapping_ids: string[];
           source_external_id: string | null;
           status: Database['public']['Enums']['provisioning_status'];
           updated_at: string;
@@ -921,6 +998,7 @@ export type Database = {
           target_provision_id: string;
         };
         Returns: {
+          cohort_manually_assigned: boolean;
           created_at: string;
           id: string;
           invitation_consumed_at: string | null;
@@ -940,6 +1018,7 @@ export type Database = {
           provisioned_user_name: string;
           provisioning_method: Database['public']['Enums']['provisioning_method'];
           revoked_at: string | null;
+          scim_cohort_mapping_ids: string[];
           source_external_id: string | null;
           status: Database['public']['Enums']['provisioning_status'];
           updated_at: string;
@@ -1096,11 +1175,13 @@ export type Database = {
           target_status: Database['public']['Enums']['organisation_user_status'];
         };
         Returns: {
+          cohort_manually_assigned: boolean;
           created_at: string;
           id: string;
           organisation_cohort_id: string | null;
           organisation_id: string;
           role: Database['public']['Enums']['organisation_role'];
+          scim_cohort_mapping_ids: string[];
           status: Database['public']['Enums']['organisation_user_status'];
           updated_at: string;
           user_id: string;

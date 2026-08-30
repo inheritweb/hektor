@@ -1,5 +1,7 @@
 import {
   SCIM_USER_SCHEMA,
+  SCIM_GROUP_SCHEMA,
+  type ScimGroup,
   type ScimListResponse,
   type ScimUser,
 } from '@hektor/types';
@@ -10,6 +12,11 @@ export const simulatorScimUser = {
   externalId: 'simulator-scim-learner',
   familyName: 'Learner',
   givenName: 'Simulated SCIM',
+} as const;
+
+export const simulatorScimGroup = {
+  displayName: 'Simulated SCIM Cohort',
+  externalId: 'simulator-scim-cohort',
 } as const;
 
 const localSimulatorToken = 'hektor_scim_simulator_local_only_2026';
@@ -40,6 +47,7 @@ export function createScimSimulatorService({
         body?.detail ?? `SCIM request failed (${response.status})`,
       );
     }
+    if (response.status === 204) return undefined as T;
     return (await response.json()) as T;
   }
 
@@ -49,6 +57,16 @@ export function createScimSimulatorService({
     );
     const result = await request<ScimListResponse<ScimUser>>(
       `/Users?filter=${filter}`,
+    );
+    return result.Resources[0];
+  }
+
+  async function getGroup(): Promise<ScimGroup | undefined> {
+    const filter = encodeURIComponent(
+      `displayName eq "${simulatorScimGroup.displayName}"`,
+    );
+    const result = await request<ScimListResponse<ScimGroup>>(
+      `/Groups?filter=${filter}`,
     );
     return result.Resources[0];
   }
@@ -85,5 +103,36 @@ export function createScimSimulatorService({
     });
   }
 
-  return { deactivateUser, getUser, provisionUser };
+  async function synchronizeGroup(includeUser: boolean) {
+    const user = await provisionUser();
+    const current = await getGroup();
+    const input = {
+      displayName: simulatorScimGroup.displayName,
+      externalId: simulatorScimGroup.externalId,
+      members: includeUser
+        ? [{ display: user.displayName, type: 'User', value: user.id }]
+        : [],
+      schemas: [SCIM_GROUP_SCHEMA],
+    };
+    return request<ScimGroup>(current ? `/Groups/${current.id}` : '/Groups', {
+      body: JSON.stringify(input),
+      method: current ? 'PUT' : 'POST',
+    });
+  }
+
+  async function deleteGroup() {
+    const current = await getGroup();
+    if (!current)
+      throw new Error('The simulated SCIM group has not been provisioned');
+    await request<void>(`/Groups/${current.id}`, { method: 'DELETE' });
+  }
+
+  return {
+    deactivateUser,
+    deleteGroup,
+    getGroup,
+    getUser,
+    provisionUser,
+    synchronizeGroup,
+  };
 }

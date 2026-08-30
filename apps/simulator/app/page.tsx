@@ -4,6 +4,7 @@ import {
   createScimSimulatorService,
   createSimulatorService,
   simulatorScimUser,
+  simulatorScimGroup,
   simulatorSessionScenarios,
 } from '@hektor/services/simulator';
 import { Button } from '@hektor/ui/atoms';
@@ -29,11 +30,16 @@ export default async function SimulatorPage({
   });
   const scenarios = await service.listScenarios();
   let scimUser;
+  let scimGroup;
   let scimStatusError: string | undefined;
   try {
-    scimUser = await createScimSimulatorService({
+    const scimService = createScimSimulatorService({
       webBaseUrl: env.PUBLIC_BASE_URL,
-    }).getUser();
+    });
+    [scimUser, scimGroup] = await Promise.all([
+      scimService.getUser(),
+      scimService.getGroup(),
+    ]);
   } catch (statusError) {
     scimStatusError =
       statusError instanceof Error ? statusError.message : 'SCIM unavailable';
@@ -67,7 +73,13 @@ export default async function SimulatorPage({
           <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm text-foreground">
             {notice === 'scim-user-provisioned'
               ? 'The simulated identity provider provisioned or reactivated its learner through SCIM.'
-              : 'The simulated identity provider deactivated its learner through SCIM.'}
+              : notice === 'scim-user-deactivated'
+                ? 'The simulated identity provider deactivated its learner through SCIM.'
+                : notice === 'scim-group-provisioned'
+                  ? 'The provider synchronized a group containing the simulated learner.'
+                  : notice === 'scim-group-emptied'
+                    ? 'The provider removed the simulated learner from its group.'
+                    : 'The provider deleted its simulated group.'}
           </p>
         ) : null}
 
@@ -121,6 +133,42 @@ export default async function SimulatorPage({
               </article>
             ),
           )}
+        </section>
+
+        <section className="rounded-xl bg-card p-6 shadow-[0_0_24px_-12px_rgb(0_0_0/0.18)]">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h3 className="font-semibold">
+                {simulatorScimGroup.displayName}
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Incoming directory group · {scimGroup?.members.length ?? 0}{' '}
+                synchronized members
+              </p>
+              <p className="mt-4 max-w-xl text-sm text-muted-foreground">
+                Synchronize this group, map it in Hektor, then remove its member
+                to verify that only the SCIM-owned assignment is removed.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <form action="/api/scim" method="post">
+                <input name="action" type="hidden" value="provision-group" />
+                <Button type="submit">Synchronize group and member</Button>
+              </form>
+              <form action="/api/scim" method="post">
+                <input name="action" type="hidden" value="empty-group" />
+                <Button disabled={!scimGroup} type="submit" variant="outline">
+                  Remove member at source
+                </Button>
+              </form>
+              <form action="/api/scim" method="post">
+                <input name="action" type="hidden" value="delete-group" />
+                <Button disabled={!scimGroup} type="submit" variant="outline">
+                  Delete group at source
+                </Button>
+              </form>
+            </div>
+          </div>
         </section>
 
         <header>

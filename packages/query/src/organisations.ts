@@ -15,6 +15,7 @@ import {
   getOrganisation,
   getTenantOrganisationContext,
   getTenantOrganisationScimConfiguration,
+  getTenantOrganisationScimGroupMappings,
   getOrganisationContractPeriod,
   getOrganisationCohort,
   getOrganisationGroup,
@@ -32,6 +33,7 @@ import {
   getTenantOrganisationMembership,
   updateTenantOrganisationMembership,
   updateTenantOrganisationScimConfiguration,
+  updateTenantOrganisationScimGroupMapping,
   getTenantOrganisationCohorts,
   getTenantOrganisationCohort,
   getTenantOrganisationGroup,
@@ -80,6 +82,16 @@ export const useGetTenantOrganisationContext = makeQuery(
 export const useGetOrganisationScimConfiguration = makeQuery(
   getTenantOrganisationScimConfiguration,
   [...TENANT_ORGANISATION_QUERY_KEY, 'scim'],
+);
+
+export const useGetOrganisationScimGroupMappings = makeQuery(
+  getTenantOrganisationScimGroupMappings,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'scim', 'groups'],
+);
+
+export const useUpdateOrganisationScimGroupMapping = makeMutation(
+  updateTenantOrganisationScimGroupMapping,
+  [...TENANT_ORGANISATION_QUERY_KEY, 'scim', 'groups'],
 );
 
 export const useUpdateOrganisationScimConfiguration = makeMutation(

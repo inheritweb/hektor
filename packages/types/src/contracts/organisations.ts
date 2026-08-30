@@ -19,6 +19,7 @@ import {
   type OrganisationSummary,
   type TenantOrganisationContext,
   type OrganisationScimConfiguration,
+  type OrganisationScimGroupMapping,
   type OrganisationScimTokenResult,
   type OrganisationUserProvision,
   type OrganisationUserProvisionDetail,
@@ -56,6 +57,7 @@ import {
   ProvisioningAutoLinkOutcome,
   ProvisioningLifecycleAction,
   ProvisioningStatus,
+  ScimGroupTargetType,
 } from '../organisations';
 import { PlatformRole, UserStatus } from '../users';
 import { userSummarySchema } from './users';
@@ -144,6 +146,55 @@ export const revokeTenantOrganisationScimTokenContract = defineContract({
   access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
   body: emptyObjectSchema,
   output: hektorResponseSchema(organisationScimConfigurationSchema),
+});
+
+export const organisationScimGroupMappingSchema = z.object({
+  displayName: z.string().min(1),
+  externalId: z.string().min(1).optional(),
+  id: z.uuid(),
+  lastSynchronizedAt: z.iso.datetime(),
+  memberCount: z.number().int().nonnegative(),
+  sourceDeletedAt: z.iso.datetime().optional(),
+  target: z
+    .discriminatedUnion('type', [
+      z.object({
+        id: z.uuid(),
+        name: z.string().min(1),
+        type: z.literal(ScimGroupTargetType.Cohort),
+      }),
+      z.object({
+        id: z.uuid(),
+        name: z.string().min(1),
+        type: z.literal(ScimGroupTargetType.Group),
+      }),
+    ])
+    .optional(),
+}) satisfies z.ZodType<OrganisationScimGroupMapping>;
+
+export const listTenantOrganisationScimGroupMappingsContract = defineContract({
+  method: 'GET',
+  path: '/api/organisation/scim/groups',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  output: hektorResponseSchema(z.array(organisationScimGroupMappingSchema)),
+});
+
+export const updateTenantOrganisationScimGroupMappingContract = defineContract({
+  method: 'PATCH',
+  path: '/api/organisation/scim/groups/:mappingId',
+  access: { type: 'tenant', roles: [OrganisationRole.OrganisationAdmin] },
+  params: z.object({ mappingId: z.uuid() }),
+  body: z.discriminatedUnion('targetType', [
+    z.object({
+      targetType: z.literal(ScimGroupTargetType.Cohort),
+      targetId: z.uuid(),
+    }),
+    z.object({
+      targetType: z.literal(ScimGroupTargetType.Group),
+      targetId: z.uuid(),
+    }),
+    z.object({ targetType: z.null(), targetId: z.null() }),
+  ]),
+  output: hektorResponseSchema(organisationScimGroupMappingSchema),
 });
 
 export const organisationCohortSummarySchema = z.object({

@@ -1,6 +1,10 @@
 import {
   OrganisationRole,
+  ScimGroupTargetType,
   type OrganisationScimConfiguration,
+  type OrganisationScimGroupMapping,
+  type OrganisationCohortSummary,
+  type OrganisationGroupSummary,
 } from '@hektor/types';
 
 import { Button, Input } from '../../atoms';
@@ -23,6 +27,16 @@ export interface OrganisationScimConfigurationPageProps {
   onIssueToken: () => void;
   onRevokeToken: () => void;
   onSave: () => void;
+  mappings?: readonly OrganisationScimGroupMapping[];
+  cohorts?: readonly OrganisationCohortSummary[];
+  groups?: readonly OrganisationGroupSummary[];
+  onMappingChange?: (
+    mappingId: string,
+    target:
+      | { targetId: string; targetType: ScimGroupTargetType.Cohort }
+      | { targetId: string; targetType: ScimGroupTargetType.Group }
+      | { targetId: null; targetType: null },
+  ) => void;
   pending?: boolean;
 }
 
@@ -134,10 +148,93 @@ export function OrganisationScimConfigurationPage(
       <section className="rounded-xl border border-border p-5">
         <h2 className="font-semibold">Groups and cohorts</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Incoming SCIM groups will be held as integration records. You will be
-          able to map each one directly to either a Hektor cohort or a Hektor
-          group without creating duplicate groups.
+          Map each incoming directory group directly to a Hektor cohort or
+          group. Unmapped groups remain integration records and do not appear in
+          the normal group directory.
         </p>
+        <div className="mt-4 divide-y divide-border/60">
+          {props.mappings?.length ? (
+            props.mappings.map((mapping) => {
+              const value = mapping.target
+                ? `${mapping.target.type}:${mapping.target.id}`
+                : 'unmapped';
+              return (
+                <div
+                  className="grid gap-3 py-4 sm:grid-cols-[1fr_16rem] sm:items-center"
+                  key={mapping.id}
+                >
+                  <div>
+                    <p className="font-medium">{mapping.displayName}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {mapping.memberCount}{' '}
+                      {mapping.memberCount === 1 ? 'member' : 'members'}
+                      {mapping.sourceDeletedAt ? ' · Removed at source' : ''}
+                    </p>
+                  </div>
+                  <Select
+                    disabled={props.pending || Boolean(mapping.sourceDeletedAt)}
+                    onValueChange={(nextValue) => {
+                      if (!nextValue || !props.onMappingChange) return;
+                      if (nextValue === 'unmapped') {
+                        props.onMappingChange(mapping.id, {
+                          targetId: null,
+                          targetType: null,
+                        });
+                        return;
+                      }
+                      const [type, targetId] = nextValue.split(':');
+                      if (!targetId) return;
+                      if (type === ScimGroupTargetType.Cohort)
+                        props.onMappingChange(mapping.id, {
+                          targetId,
+                          targetType: ScimGroupTargetType.Cohort,
+                        });
+                      else if (type === ScimGroupTargetType.Group)
+                        props.onMappingChange(mapping.id, {
+                          targetId,
+                          targetType: ScimGroupTargetType.Group,
+                        });
+                    }}
+                    value={value}
+                  >
+                    <SelectTrigger
+                      aria-label={`Mapping for ${mapping.displayName}`}
+                    >
+                      <SelectValue>
+                        {mapping.target
+                          ? `${mapping.target.type === ScimGroupTargetType.Cohort ? 'Cohort' : 'Group'}: ${mapping.target.name}`
+                          : 'Unmapped'}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unmapped">Unmapped</SelectItem>
+                      {(props.cohorts ?? []).map((cohort) => (
+                        <SelectItem
+                          key={cohort.id}
+                          value={`${ScimGroupTargetType.Cohort}:${cohort.id}`}
+                        >
+                          Cohort: {cohort.name}
+                        </SelectItem>
+                      ))}
+                      {(props.groups ?? []).map((group) => (
+                        <SelectItem
+                          key={group.id}
+                          value={`${ScimGroupTargetType.Group}:${group.id}`}
+                        >
+                          Group: {group.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            })
+          ) : (
+            <p className="py-4 text-sm text-muted-foreground">
+              No groups have been received from the identity provider.
+            </p>
+          )}
+        </div>
       </section>
     </div>
   );

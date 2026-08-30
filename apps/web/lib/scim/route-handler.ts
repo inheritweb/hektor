@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   SCIM_ERROR_SCHEMA,
   type ScimError,
+  type ScimGroupInput,
   type ScimUserInput,
 } from '@hektor/types';
 import { HektorErrorCode } from '@hektor/types/contracts';
@@ -24,6 +25,21 @@ export const scimUserInputSchema = z.object({
   schemas: z.array(z.string()).default([]),
   userName: z.email(),
 }) satisfies z.ZodType<ScimUserInput>;
+
+export const scimGroupInputSchema = z.object({
+  displayName: z.string().trim().min(1),
+  externalId: z.string().trim().min(1).optional(),
+  members: z
+    .array(
+      z.object({
+        display: z.string().optional(),
+        type: z.literal('User').optional(),
+        value: z.uuid(),
+      }),
+    )
+    .default([]),
+  schemas: z.array(z.string()).default([]),
+}) satisfies z.ZodType<ScimGroupInput>;
 
 export function scimResponse(body: unknown, init?: ResponseInit) {
   const headers = new Headers(init?.headers);

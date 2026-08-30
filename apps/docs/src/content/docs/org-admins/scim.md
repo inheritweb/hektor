@@ -5,7 +5,7 @@ sidebar:
   order: 6
 ---
 
-SCIM lets an identity provider create, update, deactivate and restore organisation access. Hektor currently implements SCIM 2.0 **Users**. SCIM Groups and cohort/group mapping are planned but are not available in this release.
+SCIM lets an identity provider create, update, deactivate and restore organisation access. Hektor implements SCIM 2.0 Users and Groups. Incoming groups remain integration records until an organisation administrator maps them to a Hektor cohort or group.
 
 ## Before you begin
 
@@ -57,6 +57,25 @@ When the provider sends `active: false`, Hektor deactivates the provision, suspe
 
 Make SCIM-managed name, email, role and lifecycle corrections in the source directory and synchronize again.
 
+## Map an incoming group
+
+1. Synchronize users and groups from the identity provider.
+2. Open **Users**, **Manage provisioning** and **Configure SCIM**.
+3. Find the directory group under **Groups and cohorts**.
+4. Select either **Cohort: _name_** or **Group: _name_**.
+5. Confirm that the synchronized member count is expected.
+6. Open the target cohort or group and verify its connected and pending provisioned users.
+
+An unmapped directory group remains visible only in SCIM configuration. It does not create a redundant Hektor group. Name matches may help you choose a target, but only the explicit mapping controls synchronization.
+
+Mapping to a cohort applies membership directly to the cohort. Mapping to a group applies it to the canonical Hektor group. If a provision later becomes a connected user, the assignment follows it.
+
+## Change or remove a mapping
+
+Select another target to move SCIM-owned assignments, or choose **Unmapped** to stop projecting the source group. Hektor removes only the ownership established by that SCIM mapping. A relationship also assigned manually, or by another SCIM mapping, remains in place.
+
+Deleting a group at the identity provider marks the integration record as removed and withdraws its SCIM-owned assignments. It never deletes the mapped Hektor cohort or group.
+
 ## Rotate or revoke the token
 
 To rotate a credential:
@@ -74,4 +93,5 @@ To stop synchronization, choose **Revoke token**. Revocation rejects future SCIM
 - **A user is not present:** confirm the person is assigned to the provider application and inspect its provisioning log.
 - **A user remains inactive:** confirm the provider sent `active: true` and that the organisation can allocate a seat.
 - **Names or email are wrong:** correct the source identity and synchronize again.
-- **Groups do not synchronize:** SCIM Groups are not supported in the current release; manage groups and cohorts in Hektor for now.
+- **A group is visible but has no effect:** map it explicitly to a Hektor cohort or group.
+- **A member remains after source removal:** check whether an administrator or another source also owns the assignment.

@@ -15,6 +15,7 @@ import {
   getOrganisationContract,
   getTenantOrganisationContextContract,
   getTenantOrganisationScimConfigurationContract,
+  listTenantOrganisationScimGroupMappingsContract,
   getTenantOrganisationCohortContract,
   getTenantOrganisationGroupContract,
   getOrganisationContractPeriodContract,
@@ -57,6 +58,7 @@ import {
   updateOrganisationMembershipContract,
   updateTenantOrganisationMembershipContract,
   updateTenantOrganisationScimConfigurationContract,
+  updateTenantOrganisationScimGroupMappingContract,
 } from '@hektor/types/contracts/organisations';
 
 import { registerApiMethod } from './api-method';
@@ -71,6 +73,14 @@ export const getTenantOrganisationContext = registerApiMethod(
 
 export const getTenantOrganisationScimConfiguration = registerApiMethod(
   getTenantOrganisationScimConfigurationContract,
+);
+
+export const getTenantOrganisationScimGroupMappings = registerApiMethod(
+  listTenantOrganisationScimGroupMappingsContract,
+);
+
+export const updateTenantOrganisationScimGroupMapping = registerApiMethod(
+  updateTenantOrganisationScimGroupMappingContract,
 );
 
 export const updateTenantOrganisationScimConfiguration = registerApiMethod(

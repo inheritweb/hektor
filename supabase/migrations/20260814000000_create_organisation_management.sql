@@ -63,6 +63,8 @@ create table public.organisation_users (
   organisation_id uuid not null references public.organisations (id) on delete restrict,
   user_id uuid not null references auth.users (id) on delete restrict,
   organisation_cohort_id uuid,
+  cohort_manually_assigned boolean not null default true,
+  scim_cohort_mapping_ids uuid[] not null default '{}',
   role public.organisation_role not null,
   status public.organisation_user_status not null default 'active',
   created_at timestamptz not null default now(),
@@ -84,6 +86,8 @@ create table public.organisation_user_provisions (
   organisation_id uuid not null references public.organisations (id) on delete restrict,
   organisation_user_id uuid,
   organisation_cohort_id uuid,
+  cohort_manually_assigned boolean not null default true,
+  scim_cohort_mapping_ids uuid[] not null default '{}',
   provisioning_method public.provisioning_method not null,
   source_external_id text,
   provisioned_user_name text not null check (char_length(provisioned_user_name) between 1 and 320),
@@ -237,6 +241,8 @@ create table public.organisation_group_users (
   organisation_id uuid not null references public.organisations (id) on delete restrict,
   organisation_group_id uuid not null,
   organisation_user_id uuid not null,
+  manually_assigned boolean not null default true,
+  scim_group_mapping_ids uuid[] not null default '{}',
   created_at timestamptz not null default now(),
   primary key (organisation_group_id, organisation_user_id),
   foreign key (organisation_group_id, organisation_id)
@@ -249,6 +255,8 @@ create table public.organisation_provisioned_group_users (
   organisation_id uuid not null references public.organisations (id) on delete restrict,
   organisation_group_id uuid not null,
   organisation_user_provision_id uuid not null,
+  manually_assigned boolean not null default true,
+  scim_group_mapping_ids uuid[] not null default '{}',
   created_at timestamptz not null default now(),
   primary key (organisation_group_id, organisation_user_provision_id),
   foreign key (organisation_group_id, organisation_id)
@@ -260,7 +268,7 @@ create table public.organisation_provisioned_group_users (
 create table public.organisation_scim_group_mappings (
   id uuid primary key default gen_random_uuid(),
   organisation_id uuid not null references public.organisations (id) on delete restrict,
-  external_id text not null,
+  external_id text,
   display_name text not null check (char_length(display_name) between 1 and 255),
   target_type public.scim_group_target_type,
   organisation_cohort_id uuid,
@@ -274,13 +282,161 @@ create table public.organisation_scim_group_mappings (
   foreign key (organisation_group_id, organisation_id)
     references public.organisation_groups (id, organisation_id) on delete restrict,
   unique (id, organisation_id),
-  unique (organisation_id, external_id),
   check (
     (target_type is null and organisation_cohort_id is null and organisation_group_id is null) or
     (target_type = 'cohort' and organisation_cohort_id is not null and organisation_group_id is null) or
     (target_type = 'group' and organisation_group_id is not null and organisation_cohort_id is null)
   )
 );
+
+create unique index organisation_scim_group_mappings_external_id_unique
+on public.organisation_scim_group_mappings (organisation_id, external_id)
+where external_id is not null;
+
+create table public.organisation_scim_group_members (
+  organisation_id uuid not null references public.organisations (id) on delete restrict,
+  organisation_scim_group_mapping_id uuid not null,
+  organisation_scim_user_id uuid not null,
+  created_at timestamptz not null default now(),
+  primary key (organisation_scim_group_mapping_id, organisation_scim_user_id),
+  foreign key (organisation_scim_group_mapping_id, organisation_id)
+    references public.organisation_scim_group_mappings (id, organisation_id) on delete cascade,
+  foreign key (organisation_scim_user_id, organisation_id)
+    references public.organisation_scim_users (id, organisation_id) on delete cascade
+);
+
+create function public.apply_scim_group_mapping(
+  target_organisation_id uuid,
+  target_mapping_id uuid
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  mapping public.organisation_scim_group_mappings;
+begin
+  select * into mapping
+  from public.organisation_scim_group_mappings
+  where id = target_mapping_id and organisation_id = target_organisation_id;
+  if mapping.id is null then raise exception 'scim_group_mapping_not_found'; end if;
+
+  update public.organisation_group_users
+  set scim_group_mapping_ids = array_remove(scim_group_mapping_ids, target_mapping_id)
+  where organisation_id = target_organisation_id
+    and scim_group_mapping_ids @> array[target_mapping_id];
+  delete from public.organisation_group_users
+  where organisation_id = target_organisation_id
+    and not manually_assigned and cardinality(scim_group_mapping_ids) = 0;
+
+  update public.organisation_provisioned_group_users
+  set scim_group_mapping_ids = array_remove(scim_group_mapping_ids, target_mapping_id)
+  where organisation_id = target_organisation_id
+    and scim_group_mapping_ids @> array[target_mapping_id];
+  delete from public.organisation_provisioned_group_users
+  where organisation_id = target_organisation_id
+    and not manually_assigned and cardinality(scim_group_mapping_ids) = 0;
+
+  update public.organisation_users
+  set
+    organisation_cohort_id = case
+      when not cohort_manually_assigned and cardinality(array_remove(scim_cohort_mapping_ids, target_mapping_id)) = 0
+        then null
+      else organisation_cohort_id
+    end,
+    scim_cohort_mapping_ids = array_remove(scim_cohort_mapping_ids, target_mapping_id)
+  where organisation_id = target_organisation_id
+    and scim_cohort_mapping_ids @> array[target_mapping_id];
+
+  update public.organisation_user_provisions
+  set
+    organisation_cohort_id = case
+      when not cohort_manually_assigned and cardinality(array_remove(scim_cohort_mapping_ids, target_mapping_id)) = 0
+        then null
+      else organisation_cohort_id
+    end,
+    scim_cohort_mapping_ids = array_remove(scim_cohort_mapping_ids, target_mapping_id)
+  where organisation_id = target_organisation_id
+    and scim_cohort_mapping_ids @> array[target_mapping_id];
+
+  if mapping.source_deleted_at is not null or mapping.target_type is null then return; end if;
+
+  if mapping.target_type = 'group' then
+    insert into public.organisation_provisioned_group_users (
+      organisation_id, organisation_group_id, organisation_user_provision_id,
+      manually_assigned, scim_group_mapping_ids
+    )
+    select target_organisation_id, mapping.organisation_group_id, scim_user.current_provision_id,
+      false, array[target_mapping_id]
+    from public.organisation_scim_group_members member
+    join public.organisation_scim_users scim_user
+      on scim_user.id = member.organisation_scim_user_id
+    where member.organisation_scim_group_mapping_id = target_mapping_id
+      and scim_user.active and scim_user.current_provision_id is not null
+    on conflict (organisation_group_id, organisation_user_provision_id) do update
+    set scim_group_mapping_ids = case
+      when excluded.scim_group_mapping_ids[1] = any(public.organisation_provisioned_group_users.scim_group_mapping_ids)
+        then public.organisation_provisioned_group_users.scim_group_mapping_ids
+      else array_append(public.organisation_provisioned_group_users.scim_group_mapping_ids, excluded.scim_group_mapping_ids[1])
+    end;
+
+    insert into public.organisation_group_users (
+      organisation_id, organisation_group_id, organisation_user_id,
+      manually_assigned, scim_group_mapping_ids
+    )
+    select target_organisation_id, mapping.organisation_group_id, provision.organisation_user_id,
+      false, array[target_mapping_id]
+    from public.organisation_scim_group_members member
+    join public.organisation_scim_users scim_user
+      on scim_user.id = member.organisation_scim_user_id
+    join public.organisation_user_provisions provision
+      on provision.id = scim_user.current_provision_id
+    where member.organisation_scim_group_mapping_id = target_mapping_id
+      and scim_user.active and provision.organisation_user_id is not null
+    on conflict (organisation_group_id, organisation_user_id) do update
+    set scim_group_mapping_ids = case
+      when excluded.scim_group_mapping_ids[1] = any(public.organisation_group_users.scim_group_mapping_ids)
+        then public.organisation_group_users.scim_group_mapping_ids
+      else array_append(public.organisation_group_users.scim_group_mapping_ids, excluded.scim_group_mapping_ids[1])
+    end;
+  elsif mapping.target_type = 'cohort' then
+    update public.organisation_user_provisions provision
+    set
+      organisation_cohort_id = mapping.organisation_cohort_id,
+      cohort_manually_assigned = false,
+      scim_cohort_mapping_ids = case
+        when target_mapping_id = any(provision.scim_cohort_mapping_ids) then provision.scim_cohort_mapping_ids
+        else array_append(provision.scim_cohort_mapping_ids, target_mapping_id)
+      end
+    from public.organisation_scim_group_members member
+    join public.organisation_scim_users scim_user
+      on scim_user.id = member.organisation_scim_user_id
+    where member.organisation_scim_group_mapping_id = target_mapping_id
+      and provision.id = scim_user.current_provision_id
+      and scim_user.active
+      and (provision.organisation_cohort_id is null or not provision.cohort_manually_assigned or provision.organisation_cohort_id = mapping.organisation_cohort_id);
+
+    update public.organisation_users organisation_user
+    set
+      organisation_cohort_id = mapping.organisation_cohort_id,
+      cohort_manually_assigned = false,
+      scim_cohort_mapping_ids = case
+        when target_mapping_id = any(organisation_user.scim_cohort_mapping_ids) then organisation_user.scim_cohort_mapping_ids
+        else array_append(organisation_user.scim_cohort_mapping_ids, target_mapping_id)
+      end
+    from public.organisation_scim_group_members member
+    join public.organisation_scim_users scim_user
+      on scim_user.id = member.organisation_scim_user_id
+    join public.organisation_user_provisions provision
+      on provision.id = scim_user.current_provision_id
+    where member.organisation_scim_group_mapping_id = target_mapping_id
+      and organisation_user.id = provision.organisation_user_id
+      and scim_user.active
+      and (organisation_user.organisation_cohort_id is null or not organisation_user.cohort_manually_assigned or organisation_user.organisation_cohort_id = mapping.organisation_cohort_id);
+  end if;
+end;
+$$;
 
 create table public.organisation_contract_periods (
   id uuid primary key default gen_random_uuid(),
@@ -401,6 +557,14 @@ begin
           provision.organisation_cohort_id,
           organisation_cohort_id
         ),
+        cohort_manually_assigned = case
+          when provision.organisation_cohort_id is not null then provision.cohort_manually_assigned
+          else cohort_manually_assigned
+        end,
+        scim_cohort_mapping_ids = case
+          when provision.organisation_cohort_id is not null then provision.scim_cohort_mapping_ids
+          else scim_cohort_mapping_ids
+        end,
         status = 'active'
     where id = membership.id;
 
@@ -415,15 +579,25 @@ begin
     insert into public.organisation_group_users (
       organisation_id,
       organisation_group_id,
-      organisation_user_id
+      organisation_user_id,
+      manually_assigned,
+      scim_group_mapping_ids
     )
     select
       provision.organisation_id,
       provision_group.organisation_group_id,
-      membership.id
+      membership.id,
+      provision_group.manually_assigned,
+      provision_group.scim_group_mapping_ids
     from public.organisation_provisioned_group_users provision_group
     where provision_group.organisation_user_provision_id = provision.id
-    on conflict (organisation_group_id, organisation_user_id) do nothing;
+    on conflict (organisation_group_id, organisation_user_id) do update
+    set
+      manually_assigned = public.organisation_group_users.manually_assigned or excluded.manually_assigned,
+      scim_group_mapping_ids = (
+        select array_agg(distinct source_id)
+        from unnest(public.organisation_group_users.scim_group_mapping_ids || excluded.scim_group_mapping_ids) source_id
+      );
   elsif lifecycle_action = 'deactivate' then
     if provision.status <> 'linked' or provision.organisation_user_id is null then
       raise exception using errcode = '22023', message = 'invalid_provision_transition';
@@ -670,7 +844,9 @@ begin
   update public.organisation_users
   set role = target_role,
       status = target_status,
-      organisation_cohort_id = target_cohort_id
+      organisation_cohort_id = target_cohort_id,
+      cohort_manually_assigned = true,
+      scim_cohort_mapping_ids = '{}'
   where id = membership.id
   returning * into membership;
 
@@ -1100,21 +1276,35 @@ begin
     raise exception using errcode = 'P0002', message = 'group_membership_not_found';
   end if;
 
-  delete from public.organisation_group_users
+  update public.organisation_group_users
+  set manually_assigned = false
   where organisation_group_id = target_group_id
     and organisation_user_id = any(remove_user_ids);
-  delete from public.organisation_provisioned_group_users
+  delete from public.organisation_group_users
+  where organisation_group_id = target_group_id
+    and organisation_user_id = any(remove_user_ids)
+    and cardinality(scim_group_mapping_ids) = 0;
+  update public.organisation_provisioned_group_users
+  set manually_assigned = false
   where organisation_group_id = target_group_id
     and organisation_user_provision_id = any(remove_provision_ids);
+  delete from public.organisation_provisioned_group_users
+  where organisation_group_id = target_group_id
+    and organisation_user_provision_id = any(remove_provision_ids)
+    and cardinality(scim_group_mapping_ids) = 0;
 
   insert into public.organisation_group_users (
     organisation_id, organisation_group_id, organisation_user_id
   ) select target_organisation_id, target_group_id, member_id
-  from unnest(add_user_ids) member_id;
+  from unnest(add_user_ids) member_id
+  on conflict (organisation_group_id, organisation_user_id) do update
+  set manually_assigned = true;
   insert into public.organisation_provisioned_group_users (
     organisation_id, organisation_group_id, organisation_user_provision_id
   ) select target_organisation_id, target_group_id, provision_id
-  from unnest(add_provision_ids) provision_id;
+  from unnest(add_provision_ids) provision_id
+  on conflict (organisation_group_id, organisation_user_provision_id) do update
+  set manually_assigned = true;
 
   return organisation_group;
 end;
@@ -1680,6 +1870,7 @@ alter table public.organisation_contract_periods enable row level security;
 alter table public.organisation_seat_activations enable row level security;
 alter table public.organisation_scim_users enable row level security;
 alter table public.organisation_scim_group_mappings enable row level security;
+alter table public.organisation_scim_group_members enable row level security;
 
 grant select, insert, update, delete on table public.organisations to authenticated;
 grant select, insert, update, delete on table public.organisation_cohorts to authenticated;
@@ -1703,6 +1894,7 @@ grant all on table public.organisation_contract_periods to service_role;
 grant all on table public.organisation_seat_activations to service_role;
 grant all on table public.organisation_scim_users to service_role;
 grant all on table public.organisation_scim_group_mappings to service_role;
+grant all on table public.organisation_scim_group_members to service_role;
 
 create policy "Platform admins manage organisations"
 on public.organisations for all to authenticated

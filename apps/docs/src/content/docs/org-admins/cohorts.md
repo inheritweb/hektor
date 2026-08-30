@@ -39,3 +39,5 @@ Archiving removes the cohort from normal active selection without deleting histo
 - Assign a locally managed group by editing the group.
 
 Externally managed assignments must be changed at their source and synchronized again.
+
+To drive cohort membership from a directory group, open **Users**, **Manage provisioning**, **Configure SCIM**, and map the incoming group directly to this cohort. Hektor does not create an intermediate group. Removing the mapping withdraws only SCIM-owned cohort assignments; manual assignments remain.

@@ -43,4 +43,4 @@ When a provision links to a user, its group relationship follows it into the con
 
 Archiving removes the group from normal active use without deleting historical relationships.
 
-Externally provisioned groups display source and synchronization state. Their name and membership are read-only in Hektor. Inbound SCIM Groups and their mapping screen are not available in the current release, so today's SCIM integration automates users only.
+Incoming SCIM groups are mapped to canonical Hektor groups from **Users**, **Manage provisioning**, **Configure SCIM**. Their source-owned membership is read-only here and must be changed in the identity provider. Manual membership can coexist and is not removed when SCIM withdraws its copy of the relationship.
