@@ -9,6 +9,36 @@ const meta = {
   args: {
     exitHref: '#patient-profile',
     patient: {
+      communication: {
+        accessibilityNeeds: [
+          {
+            id: 'post-stroke-processing',
+            summary: 'Allow additional time to process information.',
+            details:
+              'Use short sentences, reduce distractions and confirm understanding.',
+          },
+        ],
+        languages: [
+          {
+            id: 'english',
+            interpreterRequirement: {
+              status: 'known',
+              value: 'Not required',
+            },
+            language: 'English',
+            preferred: true,
+            proficiency: 'native',
+          },
+        ],
+        preferences: [
+          {
+            id: 'clear-verbal-information',
+            summary: 'Prefers clear verbal explanations.',
+            details:
+              'Pause between topics and provide written information to reinforce key points.',
+          },
+        ],
+      },
       dateOfBirth: '1951-09-19',
       details: {
         address: [
@@ -39,6 +69,16 @@ const meta = {
       ],
       organisationName: 'Jean McFarlane Trust',
       recordContext: 'Stroke Unit — Simulated Practice Placement',
+      relationships: [
+        {
+          id: 'tasha-jenkins',
+          name: 'Tasha Jenkins',
+          notes: 'Lives with Esther and visits daily.',
+          phone: '07SIM000205',
+          relationship: 'Daughter',
+          roles: ['next_of_kin', 'carer'],
+        },
+      ],
       versionNumber: 1,
       versionState: 'draft',
     },
@@ -52,6 +92,17 @@ type Story = StoryObj<typeof meta>;
 export const BaseProfilePreview: Story = {};
 
 export const NarrowPatientDetails: Story = {
+  parameters: {
+    viewport: { defaultViewport: 'mobile1' },
+  },
+};
+
+export const CommunicationAndRelationships: Story = {
+  args: { initialSection: 'communication-relationships' },
+};
+
+export const NarrowCommunicationAndRelationships: Story = {
+  args: { initialSection: 'communication-relationships' },
   parameters: {
     viewport: { defaultViewport: 'mobile1' },
   },

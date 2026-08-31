@@ -87,7 +87,8 @@ view model.
 
 ## Following bite-sized slices
 
-1. Communication, accessibility and relationships.
+1. Communication, accessibility and relationships — planned in
+   `docs/ehr-ui-slice-3-plan.md`.
 2. Problems and allergies.
 3. Baseline medicines.
 4. Structured clinical-history navigation and the first history view.

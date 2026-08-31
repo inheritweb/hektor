@@ -234,8 +234,14 @@ ensures the EHR consumes the patient's past rather than owning or duplicating it
 
 ### Phase 3 — read-only EHR projection and tutor preview — in progress
 
-- Completed: the platform-admin base-profile preview entry point, full-screen
-  simulation surface, minimal patient header and out-of-simulation tools drawer.
+- Completed: the platform-admin version-pinned preview entry point, full-screen
+  simulation surface, prototype-aligned patient banner, responsive record
+  navigation, Patient details section and out-of-simulation tools drawer.
+- Completed: the communication and relationships section specified in
+  `docs/ehr-ui-slice-3-plan.md`, including accessible section switching and
+  exact-version projection of communication needs and relationship records.
+- Next: the problems and allergies safety section specified in
+  `docs/ehr-ui-slice-4-plan.md`.
 - Define a versioned EHR projection over a published system patient-profile
   version.
 - Build the reusable EHR shell and the smallest useful read-only section set

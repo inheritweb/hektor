@@ -73,6 +73,37 @@ function ResolvedPatientEhrPreview({
     <PatientEhrPreviewPage
       exitHref={exitHref}
       patient={{
+        communication: {
+          accessibilityNeeds:
+            patient.document.communication.accessibilityNeeds.map((need) => ({
+              details: need.details,
+              id: need.id,
+              summary: need.summary,
+            })),
+          languages: patient.document.communication.languages.map(
+            (language) => ({
+              id: language.id,
+              interpreterRequirement: authoredBooleanDetail(
+                language.interpreterRequired?.status,
+                language.interpreterRequired?.status === 'known'
+                  ? language.interpreterRequired.value
+                  : undefined,
+              ),
+              language: language.language.display,
+              preferred:
+                patient.document.communication.preferredLanguageId ===
+                language.id,
+              proficiency: language.proficiency,
+            }),
+          ),
+          preferences: patient.document.communication.preferences.map(
+            (preference) => ({
+              details: preference.details,
+              id: preference.id,
+              summary: preference.summary,
+            }),
+          ),
+        },
         dateOfBirth: patient.dateOfBirth,
         details: {
           address: patient.document.contact?.address
@@ -135,11 +166,31 @@ function ResolvedPatientEhrPreview({
         })),
         organisationName: 'Jean McFarlane Trust',
         recordContext: 'Electronic Patient Record — Base profile preview',
+        relationships: patient.document.relationships.map((relationship) => ({
+          email: relationship.contact?.email,
+          id: relationship.id,
+          name: relationship.name,
+          notes: relationship.notes,
+          phone: relationship.contact?.phone,
+          relationship: relationship.relationship.display,
+          roles: relationship.roles,
+        })),
         versionNumber: patient.versionNumber,
         versionState: patient.versionState,
       }}
     />
   );
+}
+
+function authoredBooleanDetail(status?: string, value?: boolean) {
+  if (!status) return { status: 'not_recorded' as const };
+  if (status === 'known')
+    return {
+      status: 'known' as const,
+      value: value ? 'Required' : 'Not required',
+    };
+  if (status === 'not_applicable') return { status: 'not_applicable' as const };
+  return { status: 'unknown' as const };
 }
 
 function authoredTextDetail(status?: string, value?: string) {
