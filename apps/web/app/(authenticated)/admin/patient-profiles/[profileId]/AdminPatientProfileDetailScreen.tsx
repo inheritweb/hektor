@@ -29,6 +29,22 @@ export function AdminPatientProfileDetailScreen({
           ? `/admin/patient-profiles/${profileId}/edit`
           : undefined
       }
+      nextProfile={
+        profile.data.data.navigation.next
+          ? {
+              href: `/admin/patient-profiles/${profile.data.data.navigation.next.id}`,
+              label: profile.data.data.navigation.next.displayName,
+            }
+          : undefined
+      }
+      previousProfile={
+        profile.data.data.navigation.previous
+          ? {
+              href: `/admin/patient-profiles/${profile.data.data.navigation.previous.id}`,
+              label: profile.data.data.navigation.previous.displayName,
+            }
+          : undefined
+      }
       profile={profile.data.data}
     />
   );

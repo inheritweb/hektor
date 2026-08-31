@@ -55,6 +55,7 @@
       "name": "Yusuf Warsame",
       "relationship": { "display": "Husband" },
       "roles": ["next_of_kin"],
+      "contact": { "phone": "0161 881 4426" },
       "notes": "Amina describes strong support from her husband and wider family."
     }
   ],
@@ -82,47 +83,128 @@
       "category": "lifestyle",
       "summary": "Does not smoke.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "first-pregnancy",
+      "category": "obstetric_history",
+      "summary": "This is Amina's first pregnancy.",
+      "details": "She booked at nine weeks and initially followed a low-risk antenatal pathway.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "booking-bmi",
+      "category": "medical_history",
+      "summary": "Booking BMI was 31 kg/m².",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "antenatal-course",
+      "category": "obstetric_history",
+      "summary": "Antenatal course was otherwise uncomplicated.",
+      "details": "There was no hypertensive disease. Group B Streptococcus was not routinely tested in line with the stated UK policy, and no labour risk factors had been identified before the episode.",
+      "sensitivity": "restricted"
     }
   ],
-  "problems": [],
+  "problems": [
+    {
+      "id": "gestational-diabetes",
+      "problem": { "display": "Gestational diabetes mellitus" },
+      "clinicalStatus": "active",
+      "details": "Diagnosed at 28 weeks and controlled with diet; no insulin or metformin was required."
+    }
+  ],
   "allergies": [],
   "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "history": {
+    "entries": [
       {
-        "id": "gestational-diabetes",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Diet-controlled gestational diabetes diagnosed at 28 weeks' gestation.",
-        "details": "OGTT fasting 5.9 mmol/L and 2-hour 8.4 mmol/L; capillary glucose monitoring remained within target range.",
+        "id": "antenatal-booking",
+        "type": "encounter",
+        "summary": "Antenatal booking completed at nine weeks' gestation.",
+        "encounterType": "outpatient_appointment",
+        "careSetting": "maternity",
+        "service": "Antenatal maternity service",
+        "reason": "Routine antenatal booking for first pregnancy.",
+        "outcome": "Initially placed on a low-risk pathway; booking BMI recorded as 31 kg/m².",
         "sensitivity": "restricted"
       },
       {
-        "id": "ventouse-delivery",
-        "category": "procedure",
-        "clinicalStatus": "active",
-        "summary": "Ventouse-assisted vaginal delivery following a prolonged second stage and maternal exhaustion.",
+        "id": "gestational-diabetes-ogtt",
+        "type": "investigation",
+        "summary": "Oral glucose tolerance test at 28 weeks confirmed gestational diabetes.",
+        "kind": "laboratory",
+        "investigation": {
+          "display": "Oral glucose tolerance test"
+        },
+        "status": "final",
+        "results": [
+          {
+            "id": "fasting-glucose",
+            "observation": {
+              "display": "Fasting plasma glucose"
+            },
+            "value": {
+              "type": "quantity",
+              "value": 5.9,
+              "unit": "mmol/L"
+            },
+            "interpretation": "high"
+          },
+          {
+            "id": "two-hour-glucose",
+            "observation": {
+              "display": "Two-hour plasma glucose"
+            },
+            "value": {
+              "type": "quantity",
+              "value": 8.4,
+              "unit": "mmol/L"
+            },
+            "interpretation": "high"
+          }
+        ],
+        "conclusion": "Gestational diabetes diagnosed and managed with diet; capillary glucose remained within target range before the delivery admission.",
         "sensitivity": "restricted"
       },
       {
-        "id": "second-degree-tear-repair",
-        "category": "procedure",
-        "clinicalStatus": "active",
-        "summary": "Second-degree perineal tear repaired under local anaesthetic.",
+        "id": "consultant-led-gdm-referral",
+        "type": "referral",
+        "summary": "Transferred to consultant-led antenatal care after gestational diabetes was diagnosed.",
+        "status": "accepted",
+        "referredFrom": "Routine antenatal pathway",
+        "referredTo": "Consultant-led maternity care",
+        "reason": "Gestational diabetes diagnosed at 28 weeks.",
+        "outcome": "Diet-controlled throughout pregnancy with capillary glucose readings within target range.",
         "sensitivity": "restricted"
       },
       {
-        "id": "postnatal-haemoglobin",
-        "category": "investigation",
-        "clinicalStatus": "active",
-        "summary": "Postnatal day 1 haemoglobin 108 g/L; mild anaemia with no transfusion indicated.",
+        "id": "gdm-care-plan",
+        "type": "care_plan",
+        "summary": "Antenatal gestational diabetes care plan was active.",
+        "status": "active_at_boundary",
+        "need": "Maintain maternal glucose within pregnancy targets and monitor fetal growth.",
+        "goals": [
+          "Maintain capillary glucose within target range",
+          "Monitor fetal growth"
+        ],
+        "interventions": [
+          "Dietary management",
+          "Capillary glucose monitoring",
+          "Consultant-led antenatal review",
+          "Serial fetal growth scans"
+        ],
+        "evaluation": "Glucose remained within target range and fetal growth scans were normal; no insulin or metformin was required.",
         "sensitivity": "restricted"
       },
       {
-        "id": "vte-prophylaxis-plan",
-        "category": "care_plan",
-        "clinicalStatus": "active",
-        "summary": "Seven days of postnatal VTE prophylaxis planned following instrumental delivery and booking BMI of 31.",
+        "id": "antenatal-growth-scans",
+        "type": "investigation",
+        "summary": "Antenatal fetal growth scans were normal.",
+        "kind": "imaging",
+        "investigation": { "display": "Serial fetal growth ultrasound" },
+        "status": "final",
+        "results": [],
+        "conclusion": "Normal fetal growth throughout antenatal monitoring.",
         "sensitivity": "restricted"
       }
     ]

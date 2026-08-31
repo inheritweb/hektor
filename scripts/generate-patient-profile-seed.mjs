@@ -109,7 +109,16 @@ select
   '${generatedAt}'
 from content
 cross join profile
-on conflict (patient_profile_id, version_number) do nothing;
+on conflict (patient_profile_id, version_number) do update
+set
+  document = excluded.document,
+  content_hash = excluded.content_hash,
+  change_summary = excluded.change_summary,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_versions.state = 'draft'
+  and patient_profile_versions.authored_by is null;
 
 do $verify_version_${slug.replaceAll('-', '_')}$
 declare

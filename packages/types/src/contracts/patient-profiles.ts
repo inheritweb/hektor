@@ -12,24 +12,48 @@ import {
   type PatientCatalogueMetadata,
   PatientCareSetting,
   PatientClinicalStatus,
-  PatientClinicalRecordFactCategory,
-  type PatientClinicalRecord,
-  type PatientClinicalRecordFact,
+  PatientClinicalDocumentType,
   type PatientCommunication,
   type PatientCommunicationNeed,
   type PatientContact,
   PatientDataSensitivity,
   type PatientDemographics,
   type PatientIdentity,
+  type PatientHistoricalAssessment,
+  type PatientHistoricalAuthor,
+  type PatientHistoricalCarePlan,
+  type PatientHistoricalDate,
+  type PatientHistoricalDocument,
+  type PatientHistoricalEncounter,
+  PatientHistoricalEncounterType,
+  type PatientHistoricalInvestigation,
+  type PatientHistoricalMedicationCourse,
+  PatientHistoricalMedicationStatus,
+  type PatientHistoricalPeriod,
+  type PatientHistoricalProcedure,
+  type PatientHistoricalReferral,
+  PatientHistoricalCarePlanStatus,
+  type PatientHistoricalObservation,
+  type PatientHistory,
+  PatientHistoryDatePrecision,
+  type PatientHistoryEntry,
+  PatientHistoryEntryType,
+  PatientInvestigationKind,
+  PatientInvestigationStatus,
+  type PatientInvestigationResult,
   PatientLanguageProficiency,
   type PatientLanguage,
   PatientLifeStage,
   PatientMedicationStatus,
+  PatientObservationInterpretation,
+  type PatientObservationValue,
+  PatientObservationValueType,
   type PatientProblem,
   type PatientProfileDocumentV1,
   PatientProfileTag,
   PatientProfileVersionState,
   PatientRelationshipRole,
+  PatientReferralStatus,
   type PatientRelationship,
   PatientSexAtBirth,
   PatientSpecialty,
@@ -40,6 +64,7 @@ import {
 import type {
   PatientProfileCatalogueItem,
   PatientProfileDetail,
+  PatientProfileNavigation,
 } from '../patient-profiles';
 import { PlatformRole } from '../users';
 import { defineContract, hektorResponseSchema } from './base';
@@ -232,23 +257,230 @@ export const patientBaselineMedicationSchema = z
   })
   .strict() satisfies z.ZodType<PatientBaselineMedication>;
 
-export const patientClinicalRecordFactSchema = z
+export const patientHistoricalDateSchema = z
+  .object({
+    value: z.string().max(10),
+    precision: z.enum(PatientHistoryDatePrecision),
+    approximate: z.boolean().optional(),
+  })
+  .strict()
+  .superRefine(({ precision, value }, context) => {
+    const patterns = {
+      [PatientHistoryDatePrecision.Day]: /^\d{4}-\d{2}-\d{2}$/u,
+      [PatientHistoryDatePrecision.Month]: /^\d{4}-\d{2}$/u,
+      [PatientHistoryDatePrecision.Year]: /^\d{4}$/u,
+    };
+    if (!patterns[precision].test(value))
+      context.addIssue({
+        code: 'custom',
+        message: `Value does not match ${precision} precision`,
+        path: ['value'],
+      });
+    if (
+      precision === PatientHistoryDatePrecision.Day &&
+      !z.iso.date().safeParse(value).success
+    )
+      context.addIssue({
+        code: 'custom',
+        message: 'Invalid calendar date',
+        path: ['value'],
+      });
+  }) satisfies z.ZodType<PatientHistoricalDate>;
+
+export const patientHistoricalPeriodSchema = z
+  .object({
+    start: patientHistoricalDateSchema.optional(),
+    end: patientHistoricalDateSchema.optional(),
+  })
+  .strict()
+  .refine(({ start, end }) => start || end, {
+    message: 'A historical period requires a start or end',
+  }) satisfies z.ZodType<PatientHistoricalPeriod>;
+
+export const patientHistoricalAuthorSchema = z
+  .object({
+    name: plainText(200).optional(),
+    role: plainText(200).optional(),
+    service: plainText(200).optional(),
+  })
+  .strict()
+  .refine(({ name, role, service }) => name || role || service, {
+    message: 'Historical author requires at least one field',
+  }) satisfies z.ZodType<PatientHistoricalAuthor>;
+
+const patientHistoryEntryBaseShape = {
+  id: itemIdSchema,
+  summary: plainText(500),
+  details: plainText(4000).optional(),
+  sensitivity: z.enum(PatientDataSensitivity),
+  occurred: patientHistoricalPeriodSchema.optional(),
+  recordedOn: patientHistoricalDateSchema.optional(),
+  author: patientHistoricalAuthorSchema.optional(),
+  sourceReference: plainText(500).optional(),
+};
+
+export const patientObservationValueSchema = z.discriminatedUnion('type', [
+  z
+    .object({
+      type: z.literal(PatientObservationValueType.Quantity),
+      value: z.number().finite(),
+      unit: plainText(50),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal(PatientObservationValueType.Text),
+      value: plainText(1000),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal(PatientObservationValueType.Boolean),
+      value: z.boolean(),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal(PatientObservationValueType.Coded),
+      value: codedDisplayValueSchema,
+    })
+    .strict(),
+]) satisfies z.ZodType<PatientObservationValue>;
+
+export const patientHistoricalEncounterSchema = z
+  .object({
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.Encounter),
+    encounterType: z.enum(PatientHistoricalEncounterType),
+    careSetting: z.enum(PatientCareSetting).optional(),
+    service: plainText(200).optional(),
+    reason: plainText(1000).optional(),
+    outcome: plainText(2000).optional(),
+  })
+  .strict() satisfies z.ZodType<PatientHistoricalEncounter>;
+
+export const patientHistoricalObservationSchema = z
+  .object({
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.Observation),
+    observation: codedDisplayValueSchema,
+    value: patientObservationValueSchema,
+    referenceRange: plainText(200).optional(),
+    interpretation: z.enum(PatientObservationInterpretation).optional(),
+  })
+  .strict() satisfies z.ZodType<PatientHistoricalObservation>;
+
+export const patientHistoricalAssessmentSchema = z
+  .object({
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.Assessment),
+    assessment: codedDisplayValueSchema,
+    score: z.number().finite().optional(),
+    scale: plainText(100).optional(),
+    outcome: plainText(2000),
+    components: z.array(plainText(500)).max(50).optional(),
+  })
+  .strict() satisfies z.ZodType<PatientHistoricalAssessment>;
+
+export const patientInvestigationResultSchema = z
   .object({
     id: itemIdSchema,
-    category: z.enum(PatientClinicalRecordFactCategory),
-    clinicalStatus: z.enum(PatientClinicalStatus),
-    summary: plainText(500),
-    details: plainText(4000).optional(),
-    occurredOn: z.iso.date().optional(),
-    sensitivity: z.enum(PatientDataSensitivity),
+    observation: codedDisplayValueSchema,
+    value: patientObservationValueSchema,
+    referenceRange: plainText(200).optional(),
+    interpretation: z.enum(PatientObservationInterpretation).optional(),
   })
-  .strict() satisfies z.ZodType<PatientClinicalRecordFact>;
+  .strict() satisfies z.ZodType<PatientInvestigationResult>;
 
-export const patientClinicalRecordSchema = z
+export const patientHistoricalInvestigationSchema = z
   .object({
-    facts: z.array(patientClinicalRecordFactSchema).max(200),
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.Investigation),
+    kind: z.enum(PatientInvestigationKind),
+    investigation: codedDisplayValueSchema,
+    status: z.enum(PatientInvestigationStatus),
+    results: z.array(patientInvestigationResultSchema).max(100),
+    conclusion: plainText(2000).optional(),
   })
-  .strict() satisfies z.ZodType<PatientClinicalRecord>;
+  .strict() satisfies z.ZodType<PatientHistoricalInvestigation>;
+
+export const patientHistoricalProcedureSchema = z
+  .object({
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.Procedure),
+    procedure: codedDisplayValueSchema,
+    indication: plainText(1000).optional(),
+    outcome: plainText(2000).optional(),
+    complications: plainText(2000).optional(),
+  })
+  .strict() satisfies z.ZodType<PatientHistoricalProcedure>;
+
+export const patientHistoricalMedicationCourseSchema = z
+  .object({
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.MedicationCourse),
+    medication: codedDisplayValueSchema,
+    status: z.enum(PatientHistoricalMedicationStatus),
+    dose: plainText(200).optional(),
+    route: codedDisplayValueSchema.optional(),
+    frequency: plainText(200).optional(),
+    indication: plainText(500).optional(),
+    reasonEnded: plainText(1000).optional(),
+    response: plainText(2000).optional(),
+  })
+  .strict() satisfies z.ZodType<PatientHistoricalMedicationCourse>;
+
+export const patientHistoricalReferralSchema = z
+  .object({
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.Referral),
+    status: z.enum(PatientReferralStatus),
+    referredFrom: plainText(200).optional(),
+    referredTo: plainText(200),
+    reason: plainText(1000),
+    outcome: plainText(2000).optional(),
+  })
+  .strict() satisfies z.ZodType<PatientHistoricalReferral>;
+
+export const patientHistoricalDocumentSchema = z
+  .object({
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.ClinicalDocument),
+    documentType: z.enum(PatientClinicalDocumentType),
+    title: plainText(300),
+    body: plainText(10_000),
+  })
+  .strict() satisfies z.ZodType<PatientHistoricalDocument>;
+
+export const patientHistoricalCarePlanSchema = z
+  .object({
+    ...patientHistoryEntryBaseShape,
+    type: z.literal(PatientHistoryEntryType.CarePlan),
+    status: z.enum(PatientHistoricalCarePlanStatus),
+    need: plainText(1000),
+    goals: z.array(plainText(1000)).max(30),
+    interventions: z.array(plainText(1000)).max(50),
+    evaluation: plainText(2000).optional(),
+  })
+  .strict() satisfies z.ZodType<PatientHistoricalCarePlan>;
+
+export const patientHistoryEntrySchema = z.discriminatedUnion('type', [
+  patientHistoricalEncounterSchema,
+  patientHistoricalObservationSchema,
+  patientHistoricalAssessmentSchema,
+  patientHistoricalInvestigationSchema,
+  patientHistoricalProcedureSchema,
+  patientHistoricalMedicationCourseSchema,
+  patientHistoricalReferralSchema,
+  patientHistoricalDocumentSchema,
+  patientHistoricalCarePlanSchema,
+]) satisfies z.ZodType<PatientHistoryEntry>;
+
+export const patientHistorySchema = z
+  .object({
+    entries: z.array(patientHistoryEntrySchema).max(500),
+  })
+  .strict() satisfies z.ZodType<PatientHistory>;
 
 export const patientCatalogueMetadataSchema = z
   .object({
@@ -277,7 +509,7 @@ const uniqueIds = (
     ['problems', document.problems],
     ['allergies', document.allergies],
     ['baselineMedications', document.baselineMedications],
-    ['clinicalRecord.facts', document.clinicalRecord?.facts ?? []],
+    ['history.entries', document.history.entries],
   ] as const;
 
   for (const [name, values] of collections) {
@@ -304,7 +536,7 @@ export const patientProfileDocumentV1Schema = z
     problems: z.array(patientProblemSchema).max(100),
     allergies: z.array(patientAllergySchema).max(100),
     baselineMedications: z.array(patientBaselineMedicationSchema).max(100),
-    clinicalRecord: patientClinicalRecordSchema.optional(),
+    history: patientHistorySchema,
     catalogue: patientCatalogueMetadataSchema,
   })
   .strict()
@@ -331,6 +563,14 @@ export const patientProfileCatalogueItemSchema = z.object({
 export const patientProfileDetailSchema =
   patientProfileCatalogueItemSchema.extend({
     document: patientProfileDocumentV1Schema,
+    navigation: z.object({
+      previous: z
+        .object({ id: z.uuid(), displayName: z.string().min(1) })
+        .optional(),
+      next: z
+        .object({ id: z.uuid(), displayName: z.string().min(1) })
+        .optional(),
+    }) satisfies z.ZodType<PatientProfileNavigation>,
     changeSummary: z.string().min(1),
     sourceReference: z.string().min(1).optional(),
     sourceRevision: z.string().min(1).optional(),

@@ -134,14 +134,16 @@ tested.
 
 The current single organisation role is sufficient for the implemented
 administration surface. Add capabilities or finer-grained permissions only when
-a product slice requires them. The patient-profile tutor clone will be the first
-concrete product entitlement; it must be checked in trusted services and must not
-be inferred from seat allowance or UI visibility.
+a product slice requires them. EHR preview and assignment delivery will be the
+first concrete product entitlements; they must be checked in trusted services
+and must not be inferred from seat allowance or UI visibility. Patient-profile
+cloning is deferred.
 
 ## Next identity milestone
 
 Identity is no longer the critical path for the platform-admin patient-profile
 slice. The next identity-specific milestone is an institutional SSO vertical
 slice against the existing provisioning acceptance boundary, followed by hosted
-configuration, security review and operational readiness. Product entitlements
-can proceed independently once the first named EHR capability is agreed.
+configuration, security review and operational readiness. Product entitlement
+work can now proceed against the named EHR preview and assignment-delivery
+capabilities.

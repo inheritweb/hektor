@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   useAdminPatientProfile,
@@ -12,7 +12,6 @@ import {
   PatientAllergyVerificationStatus,
   PatientBackgroundCategory,
   PatientCareSetting,
-  PatientClinicalRecordFactCategory,
   PatientClinicalStatus,
   PatientDataSensitivity,
   PatientLifeStage,
@@ -25,6 +24,9 @@ import {
   type PatientProfileDocumentV1,
 } from '@hektor/types';
 import { Button, Checkbox, Input } from '@hektor/ui/atoms';
+import { NavigationLink } from '@hektor/ui/context';
+
+import { PatientHistoryEditor } from './PatientHistoryEditor';
 
 const label = (value: string) => value.replaceAll('_', ' ');
 
@@ -42,18 +44,7 @@ export function AdminPatientProfileEditScreen({
   profileId: string;
 }) {
   const profile = useAdminPatientProfile({ params: { profileId } });
-  const update = useUpdateAdminPatientProfileDraft();
-  const [document, setDocument] = useState<PatientProfileDocumentV1>();
-  const [changeSummary, setChangeSummary] = useState('');
-  const [error, setError] = useState<string>();
-
-  useEffect(() => {
-    if (!profile.data) return;
-    setDocument(profile.data.data.document);
-    setChangeSummary(profile.data.data.changeSummary);
-  }, [profile.data]);
-
-  if (profile.isPending || !document)
+  if (profile.isPending)
     return (
       <div
         aria-label="Loading patient profile"
@@ -67,6 +58,36 @@ export function AdminPatientProfileEditScreen({
       </p>
     );
 
+  if (!profile.data) return null;
+
+  return (
+    <AdminPatientProfileEditForm
+      initialChangeSummary={profile.data.data.changeSummary}
+      initialDocument={profile.data.data.document}
+      key={profile.data.data.updatedAt}
+      profileId={profileId}
+      updatedAt={profile.data.data.updatedAt}
+    />
+  );
+}
+
+function AdminPatientProfileEditForm({
+  initialChangeSummary,
+  initialDocument,
+  profileId,
+  updatedAt,
+}: {
+  initialChangeSummary: string;
+  initialDocument: PatientProfileDocumentV1;
+  profileId: string;
+  updatedAt: string;
+}) {
+  const update = useUpdateAdminPatientProfileDraft();
+  const [document, setDocument] = useState(initialDocument);
+  const [changeSummary, setChangeSummary] = useState(initialChangeSummary);
+  const [error, setError] = useState<string>();
+  const [saved, setSaved] = useState(false);
+
   const toggle = <T extends string>(values: T[], value: T) =>
     values.includes(value)
       ? values.filter((item) => item !== value)
@@ -78,10 +99,13 @@ export function AdminPatientProfileEditScreen({
         body: {
           document,
           changeSummary,
-          expectedUpdatedAt: profile.data!.data.updatedAt,
+          expectedUpdatedAt: updatedAt,
         },
       },
-      { onError: (next) => setError(next.message) },
+      {
+        onError: (next) => setError(next.message),
+        onSuccess: () => setSaved(true),
+      },
     );
 
   return (
@@ -90,6 +114,7 @@ export function AdminPatientProfileEditScreen({
       onSubmit={(event) => {
         event.preventDefault();
         setError(undefined);
+        setSaved(false);
         save();
       }}
     >
@@ -243,6 +268,12 @@ export function AdminPatientProfileEditScreen({
           inform every learning experience built from this patient.
         </p>
         <div className="mt-4 space-y-4">
+          <div className="border-b border-border pb-2">
+            <h3 className="font-semibold">Languages</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Languages, proficiency and the patient&apos;s preferred language.
+            </p>
+          </div>
           {document.communication.languages.map((language, index) => (
             <div
               className="grid gap-3 rounded border border-border p-4 md:grid-cols-3"
@@ -373,6 +404,12 @@ export function AdminPatientProfileEditScreen({
           >
             Add language
           </Button>
+          <div className="border-b border-border pb-2 pt-4">
+            <h3 className="font-semibold">Communication preferences</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Preferences that help clinicians communicate effectively.
+            </p>
+          </div>
           {document.communication.preferences.map((need, index) => (
             <div className="flex gap-3" key={need.id}>
               <Input
@@ -430,6 +467,77 @@ export function AdminPatientProfileEditScreen({
           >
             Add communication preference
           </Button>
+          <div className="border-b border-border pb-2 pt-4">
+            <h3 className="font-semibold">Accessibility needs</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Reasonable adjustments and other enduring accessibility needs.
+            </p>
+          </div>
+          {document.communication.accessibilityNeeds.map((need, index) => (
+            <div className="flex gap-3" key={need.id}>
+              <Input
+                className="flex-1"
+                value={need.summary}
+                onChange={(event) =>
+                  setDocument({
+                    ...document,
+                    communication: {
+                      ...document.communication,
+                      accessibilityNeeds:
+                        document.communication.accessibilityNeeds.map(
+                          (item, itemIndex) =>
+                            itemIndex === index
+                              ? { ...item, summary: event.target.value }
+                              : item,
+                        ),
+                    },
+                  })
+                }
+              />
+              <Button
+                onClick={() =>
+                  setDocument({
+                    ...document,
+                    communication: {
+                      ...document.communication,
+                      accessibilityNeeds:
+                        document.communication.accessibilityNeeds.filter(
+                          (_, itemIndex) => itemIndex !== index,
+                        ),
+                    },
+                  })
+                }
+                type="button"
+                variant="secondary"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button
+            onClick={() =>
+              setDocument({
+                ...document,
+                communication: {
+                  ...document.communication,
+                  accessibilityNeeds: [
+                    ...document.communication.accessibilityNeeds,
+                    { id: newItemId(), summary: '' },
+                  ],
+                },
+              })
+            }
+            type="button"
+            variant="secondary"
+          >
+            Add accessibility need
+          </Button>
+          <div className="border-b border-border pb-2 pt-4">
+            <h3 className="font-semibold">Relationships</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Family, carers, next of kin and other significant people.
+            </p>
+          </div>
           {document.relationships.map((relationship, index) => (
             <div
               className="grid gap-3 rounded border border-border p-4 md:grid-cols-3"
@@ -545,6 +653,12 @@ export function AdminPatientProfileEditScreen({
           >
             Add relationship
           </Button>
+          <div className="border-b border-border pb-2 pt-4">
+            <h3 className="font-semibold">Background facts</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Social, cultural, family and other durable personal context.
+            </p>
+          </div>
           {document.background.map((fact, index) => (
             <div
               className="grid gap-3 rounded border border-border p-4 md:grid-cols-3"
@@ -1078,169 +1192,12 @@ export function AdminPatientProfileEditScreen({
           </Button>
         </div>
       </section>
-      <section>
-        <h2 className="text-xl font-bold">Clinical record</h2>
-        <div className="mt-4 space-y-4">
-          {(document.clinicalRecord?.facts ?? []).map((fact, index) => (
-            <div
-              className="grid gap-3 rounded border border-border p-4 md:grid-cols-3"
-              key={fact.id}
-            >
-              <label>
-                Category
-                <select
-                  className="mt-1 h-11 w-full border border-border bg-paper px-3"
-                  value={fact.category}
-                  onChange={(event) =>
-                    setDocument({
-                      ...document,
-                      clinicalRecord: {
-                        facts: document.clinicalRecord!.facts.map(
-                          (item, itemIndex) =>
-                            itemIndex === index
-                              ? {
-                                  ...item,
-                                  category: event.target
-                                    .value as PatientClinicalRecordFactCategory,
-                                }
-                              : item,
-                        ),
-                      },
-                    })
-                  }
-                >
-                  {Object.values(PatientClinicalRecordFactCategory).map(
-                    (value) => (
-                      <option key={value} value={value}>
-                        {label(value)}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </label>
-              <label>
-                Status
-                <select
-                  className="mt-1 h-11 w-full border border-border bg-paper px-3"
-                  value={fact.clinicalStatus}
-                  onChange={(event) =>
-                    setDocument({
-                      ...document,
-                      clinicalRecord: {
-                        facts: document.clinicalRecord!.facts.map(
-                          (item, itemIndex) =>
-                            itemIndex === index
-                              ? {
-                                  ...item,
-                                  clinicalStatus: event.target
-                                    .value as PatientClinicalStatus,
-                                }
-                              : item,
-                        ),
-                      },
-                    })
-                  }
-                >
-                  {Object.values(PatientClinicalStatus).map((value) => (
-                    <option key={value} value={value}>
-                      {label(value)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Sensitivity
-                <select
-                  className="mt-1 h-11 w-full border border-border bg-paper px-3"
-                  value={fact.sensitivity}
-                  onChange={(event) =>
-                    setDocument({
-                      ...document,
-                      clinicalRecord: {
-                        facts: document.clinicalRecord!.facts.map(
-                          (item, itemIndex) =>
-                            itemIndex === index
-                              ? {
-                                  ...item,
-                                  sensitivity: event.target
-                                    .value as PatientDataSensitivity,
-                                }
-                              : item,
-                        ),
-                      },
-                    })
-                  }
-                >
-                  {Object.values(PatientDataSensitivity).map((value) => (
-                    <option key={value} value={value}>
-                      {label(value)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="md:col-span-2">
-                Summary
-                <Input
-                  className="mt-1"
-                  value={fact.summary}
-                  onChange={(event) =>
-                    setDocument({
-                      ...document,
-                      clinicalRecord: {
-                        facts: document.clinicalRecord!.facts.map(
-                          (item, itemIndex) =>
-                            itemIndex === index
-                              ? { ...item, summary: event.target.value }
-                              : item,
-                        ),
-                      },
-                    })
-                  }
-                />
-              </label>
-              <Button
-                onClick={() =>
-                  setDocument({
-                    ...document,
-                    clinicalRecord: {
-                      facts: document.clinicalRecord!.facts.filter(
-                        (_, itemIndex) => itemIndex !== index,
-                      ),
-                    },
-                  })
-                }
-                type="button"
-                variant="secondary"
-              >
-                Remove fact
-              </Button>
-            </div>
-          ))}
-          <Button
-            onClick={() =>
-              setDocument({
-                ...document,
-                clinicalRecord: {
-                  facts: [
-                    ...(document.clinicalRecord?.facts ?? []),
-                    {
-                      id: newItemId(),
-                      category: PatientClinicalRecordFactCategory.History,
-                      clinicalStatus: PatientClinicalStatus.Active,
-                      summary: '',
-                      sensitivity: PatientDataSensitivity.Standard,
-                    },
-                  ],
-                },
-              })
-            }
-            type="button"
-            variant="secondary"
-          >
-            Add clinical fact
-          </Button>
-        </div>
-      </section>
+      <PatientHistoryEditor
+        entries={document.history.entries}
+        onChange={(entries) =>
+          setDocument({ ...document, history: { entries } })
+        }
+      />
       <section>
         <h2 className="text-xl font-bold">Catalogue classification</h2>
         <label className="mt-4 block">
@@ -1311,11 +1268,26 @@ export function AdminPatientProfileEditScreen({
           />
         </label>
         {error ? (
-          <p className="mt-3 text-sm text-destructive">{error}</p>
+          <p className="mt-3 text-sm text-destructive" role="alert">
+            {error}
+          </p>
         ) : null}
-        <Button className="mt-4" disabled={update.isPending} type="submit">
-          {update.isPending ? 'Saving…' : 'Save draft'}
-        </Button>
+        {saved ? (
+          <p className="mt-3 text-sm text-primary" role="status">
+            Draft saved.
+          </p>
+        ) : null}
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Button disabled={update.isPending} type="submit">
+            {update.isPending ? 'Saving…' : 'Save draft'}
+          </Button>
+          <NavigationLink
+            className="inline-flex h-11 items-center px-4 text-sm font-semibold text-primary"
+            href={`/admin/patient-profiles/${profileId}`}
+          >
+            Cancel
+          </NavigationLink>
+        </div>
       </section>
     </form>
   );

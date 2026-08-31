@@ -74,8 +74,20 @@ with content as (
       }
     ],
     "preferredLanguageId": "english",
-    "preferences": [],
-    "accessibilityNeeds": []
+    "preferences": [
+      {
+        "id": "verbal-plain-language",
+        "summary": "Explain written information verbally using clear, plain language.",
+        "details": "Allow extra processing time and check understanding without relying on written materials alone."
+      }
+    ],
+    "accessibilityNeeds": [
+      {
+        "id": "dyslexia",
+        "summary": "Dyslexia is documented.",
+        "details": "Written information requires a verbal explanation and additional processing time."
+      }
+    ]
   },
   "contact": {
     "address": {
@@ -86,7 +98,8 @@ with content as (
       "postalCode": "M12 6BE",
       "country": "United Kingdom",
       "synthetic": true
-    }
+    },
+    "phone": "0161 483 9274 / 07742 318 605"
   },
   "relationships": [
     {
@@ -98,6 +111,9 @@ with content as (
       "roles": [
         "next_of_kin"
       ],
+      "contact": {
+        "phone": "07742 318 604"
+      },
       "notes": "Lives with Adam and his younger siblings."
     }
   ],
@@ -113,6 +129,40 @@ with content as (
       "category": "social",
       "summary": "Has no wider social network and is experiencing financial difficulties.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "substance-use-history",
+      "category": "lifestyle",
+      "summary": "Longstanding cannabis, alcohol and tobacco use.",
+      "details": "Cannabis and alcohol use began at age 14; cocaine use is historical. He has been referred to CGL substance misuse services but has not engaged.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "criminal-justice-history",
+      "category": "social",
+      "summary": "Has a history of minor offending and remains in monthly contact with probation.",
+      "details": "First arrest was for car theft at age 14. No serious violence or custodial sentence is documented.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "family-mental-health-history",
+      "category": "family_history",
+      "summary": "A paternal uncle had schizophrenia and died by suicide aged 28.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "education-and-dyslexia-history",
+      "category": "education",
+      "summary": "Dyslexia and behavioural difficulties were identified before secondary school.",
+      "details": "His later education included school exclusion following aggressive outbursts.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "established-care-team",
+      "category": "medical_history",
+      "summary": "Supported by the Jean McFarlane CMHT under enhanced CPA.",
+      "details": "Care coordinator/CPN Maria Santos visits every three weeks; support worker James Nkosi visits every two weeks; consultant Dr A. Williams reviews approximately every six months. Adam is an informal voluntary patient.",
+      "sensitivity": "restricted"
     },
     {
       "id": "childhood-adversity",
@@ -136,32 +186,152 @@ with content as (
       },
       "clinicalStatus": "active",
       "details": "A recent diagnosis in the source material."
+    },
+    {
+      "id": "type-2-diabetes",
+      "problem": {
+        "display": "Type 2 diabetes mellitus"
+      },
+      "clinicalStatus": "active",
+      "details": "Monitoring is overdue and adherence to metformin has been inconsistent."
+    },
+    {
+      "id": "obesity",
+      "problem": {
+        "display": "Obesity"
+      },
+      "clinicalStatus": "active"
+    },
+    {
+      "id": "hypercholesterolaemia",
+      "problem": {
+        "display": "Hypercholesterolaemia"
+      },
+      "clinicalStatus": "active"
+    },
+    {
+      "id": "asthma",
+      "problem": {
+        "display": "Asthma"
+      },
+      "clinicalStatus": "active"
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "risperidone",
+      "medication": {
+        "display": "Risperidone"
+      },
+      "status": "active",
+      "dose": "6 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Schizophrenia",
+      "details": "Adherence has been erratic."
+    },
+    {
+      "id": "mirtazapine",
+      "medication": {
+        "display": "Mirtazapine"
+      },
+      "status": "active",
+      "dose": "30 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "At night",
+      "indication": "Depressive symptoms"
+    },
+    {
+      "id": "metformin",
+      "medication": {
+        "display": "Metformin"
+      },
+      "status": "active",
+      "dose": "500 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Three times daily",
+      "indication": "Type 2 diabetes mellitus",
+      "details": "Adherence has been erratic."
+    },
+    {
+      "id": "simvastatin",
+      "medication": {
+        "display": "Simvastatin"
+      },
+      "status": "active",
+      "dose": "20 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "At night",
+      "indication": "Hypercholesterolaemia"
+    }
+  ],
+  "history": {
+    "entries": [
       {
         "id": "schizophrenia-diagnosis",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Recent diagnosis of schizophrenia.",
+        "type": "assessment",
+        "summary": "Presented to A&E aged 19 with a first psychotic episode.",
+        "assessment": {
+          "display": "Mental health diagnostic assessment"
+        },
+        "outcome": "Schizophrenia diagnosed after paranoid thoughts, auditory hallucinations and persecutory beliefs.",
+        "occurred": {
+          "start": {
+            "value": "2022",
+            "precision": "year",
+            "approximate": true
+          }
+        },
         "sensitivity": "restricted"
       },
       {
-        "id": "childhood-trauma-history",
-        "category": "history",
-        "clinicalStatus": "active",
-        "summary": "History of childhood domestic violence, physical abuse and paternal alcohol dependence.",
-        "details": "Father died when Adam was 15; later history includes school exclusion and early contact with the criminal justice system.",
+        "id": "mental-health-care-pathway",
+        "type": "encounter",
+        "summary": "Progressed from acute assessment to community mental health care.",
+        "encounterType": "community_contact",
+        "careSetting": "community_mental_health",
+        "service": "HBTT, Early Intervention in Psychosis and CMHT",
+        "reason": "Treatment and support following diagnosis of schizophrenia.",
+        "outcome": "Transferred from A&E to Home-Based Treatment Team, then Early Intervention in Psychosis and subsequently CMHT, where he has been supported for six months.",
         "sensitivity": "restricted"
       },
       {
-        "id": "self-neglect-and-exploitation-risk",
-        "category": "risk",
-        "clinicalStatus": "active",
-        "summary": "Risk of self-neglect and exploitation associated with deteriorating self-care, substance use and cannabis-related debts.",
+        "id": "enhanced-cpa-plan",
+        "type": "care_plan",
+        "summary": "Enhanced Care Programme Approach plan is active.",
+        "status": "active_at_boundary",
+        "need": "Coordinated community treatment, recovery support and risk management.",
+        "goals": [
+          "Maintain engagement with treatment",
+          "Monitor mental and physical health",
+          "Coordinate support across services"
+        ],
+        "interventions": [
+          "CPN contact every three weeks",
+          "Support worker contact every two weeks",
+          "Consultant review every six months",
+          "Notify care coordinator of material changes in risk"
+        ],
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "cgl-referral",
+        "type": "referral",
+        "summary": "Referred to CGL substance misuse services.",
+        "status": "accepted",
+        "referredFrom": "Community Mental Health Team",
+        "referredTo": "CGL substance misuse service",
+        "reason": "Longstanding cannabis and alcohol use.",
+        "outcome": "Referral is open but Adam has not engaged with the service.",
         "sensitivity": "restricted"
       }
     ]
@@ -218,7 +388,16 @@ select
   '2026-08-30T00:00:00.000Z'
 from content
 cross join profile
-on conflict (patient_profile_id, version_number) do nothing;
+on conflict (patient_profile_id, version_number) do update
+set
+  document = excluded.document,
+  content_hash = excluded.content_hash,
+  change_summary = excluded.change_summary,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_versions.state = 'draft'
+  and patient_profile_versions.authored_by is null;
 
 do $verify_version_adam_marsden$
 declare
@@ -277,8 +456,20 @@ begin
       }
     ],
     "preferredLanguageId": "english",
-    "preferences": [],
-    "accessibilityNeeds": []
+    "preferences": [
+      {
+        "id": "verbal-plain-language",
+        "summary": "Explain written information verbally using clear, plain language.",
+        "details": "Allow extra processing time and check understanding without relying on written materials alone."
+      }
+    ],
+    "accessibilityNeeds": [
+      {
+        "id": "dyslexia",
+        "summary": "Dyslexia is documented.",
+        "details": "Written information requires a verbal explanation and additional processing time."
+      }
+    ]
   },
   "contact": {
     "address": {
@@ -289,7 +480,8 @@ begin
       "postalCode": "M12 6BE",
       "country": "United Kingdom",
       "synthetic": true
-    }
+    },
+    "phone": "0161 483 9274 / 07742 318 605"
   },
   "relationships": [
     {
@@ -301,6 +493,9 @@ begin
       "roles": [
         "next_of_kin"
       ],
+      "contact": {
+        "phone": "07742 318 604"
+      },
       "notes": "Lives with Adam and his younger siblings."
     }
   ],
@@ -316,6 +511,40 @@ begin
       "category": "social",
       "summary": "Has no wider social network and is experiencing financial difficulties.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "substance-use-history",
+      "category": "lifestyle",
+      "summary": "Longstanding cannabis, alcohol and tobacco use.",
+      "details": "Cannabis and alcohol use began at age 14; cocaine use is historical. He has been referred to CGL substance misuse services but has not engaged.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "criminal-justice-history",
+      "category": "social",
+      "summary": "Has a history of minor offending and remains in monthly contact with probation.",
+      "details": "First arrest was for car theft at age 14. No serious violence or custodial sentence is documented.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "family-mental-health-history",
+      "category": "family_history",
+      "summary": "A paternal uncle had schizophrenia and died by suicide aged 28.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "education-and-dyslexia-history",
+      "category": "education",
+      "summary": "Dyslexia and behavioural difficulties were identified before secondary school.",
+      "details": "His later education included school exclusion following aggressive outbursts.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "established-care-team",
+      "category": "medical_history",
+      "summary": "Supported by the Jean McFarlane CMHT under enhanced CPA.",
+      "details": "Care coordinator/CPN Maria Santos visits every three weeks; support worker James Nkosi visits every two weeks; consultant Dr A. Williams reviews approximately every six months. Adam is an informal voluntary patient.",
+      "sensitivity": "restricted"
     },
     {
       "id": "childhood-adversity",
@@ -339,32 +568,152 @@ begin
       },
       "clinicalStatus": "active",
       "details": "A recent diagnosis in the source material."
+    },
+    {
+      "id": "type-2-diabetes",
+      "problem": {
+        "display": "Type 2 diabetes mellitus"
+      },
+      "clinicalStatus": "active",
+      "details": "Monitoring is overdue and adherence to metformin has been inconsistent."
+    },
+    {
+      "id": "obesity",
+      "problem": {
+        "display": "Obesity"
+      },
+      "clinicalStatus": "active"
+    },
+    {
+      "id": "hypercholesterolaemia",
+      "problem": {
+        "display": "Hypercholesterolaemia"
+      },
+      "clinicalStatus": "active"
+    },
+    {
+      "id": "asthma",
+      "problem": {
+        "display": "Asthma"
+      },
+      "clinicalStatus": "active"
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "risperidone",
+      "medication": {
+        "display": "Risperidone"
+      },
+      "status": "active",
+      "dose": "6 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Schizophrenia",
+      "details": "Adherence has been erratic."
+    },
+    {
+      "id": "mirtazapine",
+      "medication": {
+        "display": "Mirtazapine"
+      },
+      "status": "active",
+      "dose": "30 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "At night",
+      "indication": "Depressive symptoms"
+    },
+    {
+      "id": "metformin",
+      "medication": {
+        "display": "Metformin"
+      },
+      "status": "active",
+      "dose": "500 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Three times daily",
+      "indication": "Type 2 diabetes mellitus",
+      "details": "Adherence has been erratic."
+    },
+    {
+      "id": "simvastatin",
+      "medication": {
+        "display": "Simvastatin"
+      },
+      "status": "active",
+      "dose": "20 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "At night",
+      "indication": "Hypercholesterolaemia"
+    }
+  ],
+  "history": {
+    "entries": [
       {
         "id": "schizophrenia-diagnosis",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Recent diagnosis of schizophrenia.",
+        "type": "assessment",
+        "summary": "Presented to A&E aged 19 with a first psychotic episode.",
+        "assessment": {
+          "display": "Mental health diagnostic assessment"
+        },
+        "outcome": "Schizophrenia diagnosed after paranoid thoughts, auditory hallucinations and persecutory beliefs.",
+        "occurred": {
+          "start": {
+            "value": "2022",
+            "precision": "year",
+            "approximate": true
+          }
+        },
         "sensitivity": "restricted"
       },
       {
-        "id": "childhood-trauma-history",
-        "category": "history",
-        "clinicalStatus": "active",
-        "summary": "History of childhood domestic violence, physical abuse and paternal alcohol dependence.",
-        "details": "Father died when Adam was 15; later history includes school exclusion and early contact with the criminal justice system.",
+        "id": "mental-health-care-pathway",
+        "type": "encounter",
+        "summary": "Progressed from acute assessment to community mental health care.",
+        "encounterType": "community_contact",
+        "careSetting": "community_mental_health",
+        "service": "HBTT, Early Intervention in Psychosis and CMHT",
+        "reason": "Treatment and support following diagnosis of schizophrenia.",
+        "outcome": "Transferred from A&E to Home-Based Treatment Team, then Early Intervention in Psychosis and subsequently CMHT, where he has been supported for six months.",
         "sensitivity": "restricted"
       },
       {
-        "id": "self-neglect-and-exploitation-risk",
-        "category": "risk",
-        "clinicalStatus": "active",
-        "summary": "Risk of self-neglect and exploitation associated with deteriorating self-care, substance use and cannabis-related debts.",
+        "id": "enhanced-cpa-plan",
+        "type": "care_plan",
+        "summary": "Enhanced Care Programme Approach plan is active.",
+        "status": "active_at_boundary",
+        "need": "Coordinated community treatment, recovery support and risk management.",
+        "goals": [
+          "Maintain engagement with treatment",
+          "Monitor mental and physical health",
+          "Coordinate support across services"
+        ],
+        "interventions": [
+          "CPN contact every three weeks",
+          "Support worker contact every two weeks",
+          "Consultant review every six months",
+          "Notify care coordinator of material changes in risk"
+        ],
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "cgl-referral",
+        "type": "referral",
+        "summary": "Referred to CGL substance misuse services.",
+        "status": "accepted",
+        "referredFrom": "Community Mental Health Team",
+        "referredTo": "CGL substance misuse service",
+        "reason": "Longstanding cannabis and alcohol use.",
+        "outcome": "Referral is open but Adam has not engaged with the service.",
         "sensitivity": "restricted"
       }
     ]
@@ -543,6 +892,19 @@ with content as (
       "category": "cultural",
       "summary": "Finds quiet prayer comforting when worried and prefers this to be approached sensitively.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "healthcare-passport",
+      "category": "medical_history",
+      "summary": "Has a learning disability healthcare passport.",
+      "details": "He does not always bring it to appointments because he feels embarrassed.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "social-confidence",
+      "category": "social",
+      "summary": "Values independence, work and social contact but can feel embarrassed about needing support.",
+      "sensitivity": "standard"
     }
   ],
   "problems": [
@@ -564,36 +926,157 @@ with content as (
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "metformin",
+      "medication": {
+        "display": "Metformin"
+      },
+      "status": "active",
+      "dose": "500 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Type 2 diabetes mellitus",
+      "details": "Started after glycaemic control did not improve sufficiently with diet and lifestyle measures."
+    },
+    {
+      "id": "paracetamol-prn",
+      "medication": {
+        "display": "Paracetamol"
+      },
+      "status": "active",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "As required",
+      "indication": "Pain",
+      "details": "His sister organises doses in a reusable dosette box when required."
+    }
+  ],
+  "history": {
+    "entries": [
       {
         "id": "type-2-diabetes-diagnosis",
-        "category": "condition",
-        "clinicalStatus": "active",
+        "type": "assessment",
         "summary": "Type 2 diabetes mellitus diagnosed five months before the source scenario.",
+        "assessment": {
+          "display": "Diabetes diagnostic assessment"
+        },
+        "outcome": "Type 2 diabetes mellitus diagnosed.",
+        "occurred": {
+          "start": {
+            "value": "2026-07",
+            "precision": "month",
+            "approximate": true
+          }
+        },
         "sensitivity": "standard"
       },
       {
         "id": "learning-disability-assessment",
-        "category": "condition",
-        "clinicalStatus": "active",
+        "type": "assessment",
         "summary": "Mild to moderate learning disability affecting understanding of complex health information.",
+        "assessment": {
+          "display": "Learning disability assessment"
+        },
+        "outcome": "Mild to moderate learning disability identified.",
+        "components": [
+          "Communicates verbally and understands everyday conversation",
+          "Finds complex information, medical terminology and being rushed difficult"
+        ],
         "sensitivity": "restricted"
       },
       {
-        "id": "weight-at-review",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Weight recorded as 102 kg; 98 kg at diabetes diagnosis.",
+        "id": "weight-at-diabetes-diagnosis",
+        "type": "observation",
+        "summary": "Weight was 98 kg when diabetes was diagnosed.",
+        "observation": {
+          "display": "Body weight"
+        },
+        "value": {
+          "type": "quantity",
+          "value": 98,
+          "unit": "kg"
+        },
         "sensitivity": "standard"
       },
       {
-        "id": "height-record",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Height recorded as 167 cm.",
+        "id": "initial-hba1c",
+        "type": "observation",
+        "summary": "HbA1c at diagnosis was 54 mmol/mol.",
+        "observation": {
+          "display": "HbA1c"
+        },
+        "value": {
+          "type": "quantity",
+          "value": 54,
+          "unit": "mmol/mol"
+        },
+        "interpretation": "high",
+        "occurred": {
+          "start": {
+            "value": "2026-07",
+            "precision": "month",
+            "approximate": true
+          }
+        },
         "sensitivity": "standard"
+      },
+      {
+        "id": "baseline-activities-communication-assessment",
+        "type": "assessment",
+        "summary": "Baseline Activities of Living and communication assessment completed.",
+        "assessment": {
+          "display": "Activities of Living and communication assessment"
+        },
+        "outcome": "A reasonable-adjustments plan was established with learning disability nurse involvement.",
+        "components": [
+          "Use everyday language",
+          "Avoid unexplained terminology",
+          "Allow extra processing time",
+          "Check understanding without rushing"
+        ],
+        "occurred": {
+          "start": {
+            "value": "2026-10-02",
+            "precision": "day"
+          }
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "metformin-started",
+        "type": "medication_course",
+        "summary": "Metformin started after lifestyle measures did not achieve sufficient glycaemic improvement.",
+        "medication": {
+          "display": "Metformin"
+        },
+        "status": "active_at_boundary",
+        "dose": "500 mg",
+        "route": {
+          "display": "Oral"
+        },
+        "frequency": "Once daily",
+        "indication": "Type 2 diabetes mellitus",
+        "occurred": {
+          "start": {
+            "value": "2026-11-27",
+            "precision": "day"
+          }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "learning-disability-nurse-follow-up",
+        "type": "referral",
+        "summary": "Routine learning disability nurse support is established.",
+        "status": "accepted",
+        "referredTo": "Learning disability nursing service",
+        "reason": "Annual health support and accessible care planning.",
+        "outcome": "Usually seen once or twice each year.",
+        "sensitivity": "restricted"
       }
     ]
   },
@@ -652,7 +1135,16 @@ select
   '2026-08-30T00:00:00.000Z'
 from content
 cross join profile
-on conflict (patient_profile_id, version_number) do nothing;
+on conflict (patient_profile_id, version_number) do update
+set
+  document = excluded.document,
+  content_hash = excluded.content_hash,
+  change_summary = excluded.change_summary,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_versions.state = 'draft'
+  and patient_profile_versions.authored_by is null;
 
 do $verify_version_adebayo_omolade$
 declare
@@ -773,6 +1265,19 @@ begin
       "category": "cultural",
       "summary": "Finds quiet prayer comforting when worried and prefers this to be approached sensitively.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "healthcare-passport",
+      "category": "medical_history",
+      "summary": "Has a learning disability healthcare passport.",
+      "details": "He does not always bring it to appointments because he feels embarrassed.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "social-confidence",
+      "category": "social",
+      "summary": "Values independence, work and social contact but can feel embarrassed about needing support.",
+      "sensitivity": "standard"
     }
   ],
   "problems": [
@@ -794,36 +1299,157 @@ begin
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "metformin",
+      "medication": {
+        "display": "Metformin"
+      },
+      "status": "active",
+      "dose": "500 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Type 2 diabetes mellitus",
+      "details": "Started after glycaemic control did not improve sufficiently with diet and lifestyle measures."
+    },
+    {
+      "id": "paracetamol-prn",
+      "medication": {
+        "display": "Paracetamol"
+      },
+      "status": "active",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "As required",
+      "indication": "Pain",
+      "details": "His sister organises doses in a reusable dosette box when required."
+    }
+  ],
+  "history": {
+    "entries": [
       {
         "id": "type-2-diabetes-diagnosis",
-        "category": "condition",
-        "clinicalStatus": "active",
+        "type": "assessment",
         "summary": "Type 2 diabetes mellitus diagnosed five months before the source scenario.",
+        "assessment": {
+          "display": "Diabetes diagnostic assessment"
+        },
+        "outcome": "Type 2 diabetes mellitus diagnosed.",
+        "occurred": {
+          "start": {
+            "value": "2026-07",
+            "precision": "month",
+            "approximate": true
+          }
+        },
         "sensitivity": "standard"
       },
       {
         "id": "learning-disability-assessment",
-        "category": "condition",
-        "clinicalStatus": "active",
+        "type": "assessment",
         "summary": "Mild to moderate learning disability affecting understanding of complex health information.",
+        "assessment": {
+          "display": "Learning disability assessment"
+        },
+        "outcome": "Mild to moderate learning disability identified.",
+        "components": [
+          "Communicates verbally and understands everyday conversation",
+          "Finds complex information, medical terminology and being rushed difficult"
+        ],
         "sensitivity": "restricted"
       },
       {
-        "id": "weight-at-review",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Weight recorded as 102 kg; 98 kg at diabetes diagnosis.",
+        "id": "weight-at-diabetes-diagnosis",
+        "type": "observation",
+        "summary": "Weight was 98 kg when diabetes was diagnosed.",
+        "observation": {
+          "display": "Body weight"
+        },
+        "value": {
+          "type": "quantity",
+          "value": 98,
+          "unit": "kg"
+        },
         "sensitivity": "standard"
       },
       {
-        "id": "height-record",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Height recorded as 167 cm.",
+        "id": "initial-hba1c",
+        "type": "observation",
+        "summary": "HbA1c at diagnosis was 54 mmol/mol.",
+        "observation": {
+          "display": "HbA1c"
+        },
+        "value": {
+          "type": "quantity",
+          "value": 54,
+          "unit": "mmol/mol"
+        },
+        "interpretation": "high",
+        "occurred": {
+          "start": {
+            "value": "2026-07",
+            "precision": "month",
+            "approximate": true
+          }
+        },
         "sensitivity": "standard"
+      },
+      {
+        "id": "baseline-activities-communication-assessment",
+        "type": "assessment",
+        "summary": "Baseline Activities of Living and communication assessment completed.",
+        "assessment": {
+          "display": "Activities of Living and communication assessment"
+        },
+        "outcome": "A reasonable-adjustments plan was established with learning disability nurse involvement.",
+        "components": [
+          "Use everyday language",
+          "Avoid unexplained terminology",
+          "Allow extra processing time",
+          "Check understanding without rushing"
+        ],
+        "occurred": {
+          "start": {
+            "value": "2026-10-02",
+            "precision": "day"
+          }
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "metformin-started",
+        "type": "medication_course",
+        "summary": "Metformin started after lifestyle measures did not achieve sufficient glycaemic improvement.",
+        "medication": {
+          "display": "Metformin"
+        },
+        "status": "active_at_boundary",
+        "dose": "500 mg",
+        "route": {
+          "display": "Oral"
+        },
+        "frequency": "Once daily",
+        "indication": "Type 2 diabetes mellitus",
+        "occurred": {
+          "start": {
+            "value": "2026-11-27",
+            "precision": "day"
+          }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "learning-disability-nurse-follow-up",
+        "type": "referral",
+        "summary": "Routine learning disability nurse support is established.",
+        "status": "accepted",
+        "referredTo": "Learning disability nursing service",
+        "reason": "Annual health support and accessible care planning.",
+        "outcome": "Usually seen once or twice each year.",
+        "sensitivity": "restricted"
       }
     ]
   },
@@ -970,6 +1596,9 @@ with content as (
       "roles": [
         "next_of_kin"
       ],
+      "contact": {
+        "phone": "0161 881 4426"
+      },
       "notes": "Amina describes strong support from her husband and wider family."
     }
   ],
@@ -997,47 +1626,132 @@ with content as (
       "category": "lifestyle",
       "summary": "Does not smoke.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "first-pregnancy",
+      "category": "obstetric_history",
+      "summary": "This is Amina's first pregnancy.",
+      "details": "She booked at nine weeks and initially followed a low-risk antenatal pathway.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "booking-bmi",
+      "category": "medical_history",
+      "summary": "Booking BMI was 31 kg/m².",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "antenatal-course",
+      "category": "obstetric_history",
+      "summary": "Antenatal course was otherwise uncomplicated.",
+      "details": "There was no hypertensive disease. Group B Streptococcus was not routinely tested in line with the stated UK policy, and no labour risk factors had been identified before the episode.",
+      "sensitivity": "restricted"
     }
   ],
-  "problems": [],
+  "problems": [
+    {
+      "id": "gestational-diabetes",
+      "problem": {
+        "display": "Gestational diabetes mellitus"
+      },
+      "clinicalStatus": "active",
+      "details": "Diagnosed at 28 weeks and controlled with diet; no insulin or metformin was required."
+    }
+  ],
   "allergies": [],
   "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "history": {
+    "entries": [
       {
-        "id": "gestational-diabetes",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Diet-controlled gestational diabetes diagnosed at 28 weeks' gestation.",
-        "details": "OGTT fasting 5.9 mmol/L and 2-hour 8.4 mmol/L; capillary glucose monitoring remained within target range.",
+        "id": "antenatal-booking",
+        "type": "encounter",
+        "summary": "Antenatal booking completed at nine weeks' gestation.",
+        "encounterType": "outpatient_appointment",
+        "careSetting": "maternity",
+        "service": "Antenatal maternity service",
+        "reason": "Routine antenatal booking for first pregnancy.",
+        "outcome": "Initially placed on a low-risk pathway; booking BMI recorded as 31 kg/m².",
         "sensitivity": "restricted"
       },
       {
-        "id": "ventouse-delivery",
-        "category": "procedure",
-        "clinicalStatus": "active",
-        "summary": "Ventouse-assisted vaginal delivery following a prolonged second stage and maternal exhaustion.",
+        "id": "gestational-diabetes-ogtt",
+        "type": "investigation",
+        "summary": "Oral glucose tolerance test at 28 weeks confirmed gestational diabetes.",
+        "kind": "laboratory",
+        "investigation": {
+          "display": "Oral glucose tolerance test"
+        },
+        "status": "final",
+        "results": [
+          {
+            "id": "fasting-glucose",
+            "observation": {
+              "display": "Fasting plasma glucose"
+            },
+            "value": {
+              "type": "quantity",
+              "value": 5.9,
+              "unit": "mmol/L"
+            },
+            "interpretation": "high"
+          },
+          {
+            "id": "two-hour-glucose",
+            "observation": {
+              "display": "Two-hour plasma glucose"
+            },
+            "value": {
+              "type": "quantity",
+              "value": 8.4,
+              "unit": "mmol/L"
+            },
+            "interpretation": "high"
+          }
+        ],
+        "conclusion": "Gestational diabetes diagnosed and managed with diet; capillary glucose remained within target range before the delivery admission.",
         "sensitivity": "restricted"
       },
       {
-        "id": "second-degree-tear-repair",
-        "category": "procedure",
-        "clinicalStatus": "active",
-        "summary": "Second-degree perineal tear repaired under local anaesthetic.",
+        "id": "consultant-led-gdm-referral",
+        "type": "referral",
+        "summary": "Transferred to consultant-led antenatal care after gestational diabetes was diagnosed.",
+        "status": "accepted",
+        "referredFrom": "Routine antenatal pathway",
+        "referredTo": "Consultant-led maternity care",
+        "reason": "Gestational diabetes diagnosed at 28 weeks.",
+        "outcome": "Diet-controlled throughout pregnancy with capillary glucose readings within target range.",
         "sensitivity": "restricted"
       },
       {
-        "id": "postnatal-haemoglobin",
-        "category": "investigation",
-        "clinicalStatus": "active",
-        "summary": "Postnatal day 1 haemoglobin 108 g/L; mild anaemia with no transfusion indicated.",
+        "id": "gdm-care-plan",
+        "type": "care_plan",
+        "summary": "Antenatal gestational diabetes care plan was active.",
+        "status": "active_at_boundary",
+        "need": "Maintain maternal glucose within pregnancy targets and monitor fetal growth.",
+        "goals": [
+          "Maintain capillary glucose within target range",
+          "Monitor fetal growth"
+        ],
+        "interventions": [
+          "Dietary management",
+          "Capillary glucose monitoring",
+          "Consultant-led antenatal review",
+          "Serial fetal growth scans"
+        ],
+        "evaluation": "Glucose remained within target range and fetal growth scans were normal; no insulin or metformin was required.",
         "sensitivity": "restricted"
       },
       {
-        "id": "vte-prophylaxis-plan",
-        "category": "care_plan",
-        "clinicalStatus": "active",
-        "summary": "Seven days of postnatal VTE prophylaxis planned following instrumental delivery and booking BMI of 31.",
+        "id": "antenatal-growth-scans",
+        "type": "investigation",
+        "summary": "Antenatal fetal growth scans were normal.",
+        "kind": "imaging",
+        "investigation": {
+          "display": "Serial fetal growth ultrasound"
+        },
+        "status": "final",
+        "results": [],
+        "conclusion": "Normal fetal growth throughout antenatal monitoring.",
         "sensitivity": "restricted"
       }
     ]
@@ -1095,7 +1809,16 @@ select
   '2026-08-30T00:00:00.000Z'
 from content
 cross join profile
-on conflict (patient_profile_id, version_number) do nothing;
+on conflict (patient_profile_id, version_number) do update
+set
+  document = excluded.document,
+  content_hash = excluded.content_hash,
+  change_summary = excluded.change_summary,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_versions.state = 'draft'
+  and patient_profile_versions.authored_by is null;
 
 do $verify_version_amina_warsame$
 declare
@@ -1182,6 +1905,9 @@ begin
       "roles": [
         "next_of_kin"
       ],
+      "contact": {
+        "phone": "0161 881 4426"
+      },
       "notes": "Amina describes strong support from her husband and wider family."
     }
   ],
@@ -1209,47 +1935,132 @@ begin
       "category": "lifestyle",
       "summary": "Does not smoke.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "first-pregnancy",
+      "category": "obstetric_history",
+      "summary": "This is Amina's first pregnancy.",
+      "details": "She booked at nine weeks and initially followed a low-risk antenatal pathway.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "booking-bmi",
+      "category": "medical_history",
+      "summary": "Booking BMI was 31 kg/m².",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "antenatal-course",
+      "category": "obstetric_history",
+      "summary": "Antenatal course was otherwise uncomplicated.",
+      "details": "There was no hypertensive disease. Group B Streptococcus was not routinely tested in line with the stated UK policy, and no labour risk factors had been identified before the episode.",
+      "sensitivity": "restricted"
     }
   ],
-  "problems": [],
+  "problems": [
+    {
+      "id": "gestational-diabetes",
+      "problem": {
+        "display": "Gestational diabetes mellitus"
+      },
+      "clinicalStatus": "active",
+      "details": "Diagnosed at 28 weeks and controlled with diet; no insulin or metformin was required."
+    }
+  ],
   "allergies": [],
   "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "history": {
+    "entries": [
       {
-        "id": "gestational-diabetes",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Diet-controlled gestational diabetes diagnosed at 28 weeks' gestation.",
-        "details": "OGTT fasting 5.9 mmol/L and 2-hour 8.4 mmol/L; capillary glucose monitoring remained within target range.",
+        "id": "antenatal-booking",
+        "type": "encounter",
+        "summary": "Antenatal booking completed at nine weeks' gestation.",
+        "encounterType": "outpatient_appointment",
+        "careSetting": "maternity",
+        "service": "Antenatal maternity service",
+        "reason": "Routine antenatal booking for first pregnancy.",
+        "outcome": "Initially placed on a low-risk pathway; booking BMI recorded as 31 kg/m².",
         "sensitivity": "restricted"
       },
       {
-        "id": "ventouse-delivery",
-        "category": "procedure",
-        "clinicalStatus": "active",
-        "summary": "Ventouse-assisted vaginal delivery following a prolonged second stage and maternal exhaustion.",
+        "id": "gestational-diabetes-ogtt",
+        "type": "investigation",
+        "summary": "Oral glucose tolerance test at 28 weeks confirmed gestational diabetes.",
+        "kind": "laboratory",
+        "investigation": {
+          "display": "Oral glucose tolerance test"
+        },
+        "status": "final",
+        "results": [
+          {
+            "id": "fasting-glucose",
+            "observation": {
+              "display": "Fasting plasma glucose"
+            },
+            "value": {
+              "type": "quantity",
+              "value": 5.9,
+              "unit": "mmol/L"
+            },
+            "interpretation": "high"
+          },
+          {
+            "id": "two-hour-glucose",
+            "observation": {
+              "display": "Two-hour plasma glucose"
+            },
+            "value": {
+              "type": "quantity",
+              "value": 8.4,
+              "unit": "mmol/L"
+            },
+            "interpretation": "high"
+          }
+        ],
+        "conclusion": "Gestational diabetes diagnosed and managed with diet; capillary glucose remained within target range before the delivery admission.",
         "sensitivity": "restricted"
       },
       {
-        "id": "second-degree-tear-repair",
-        "category": "procedure",
-        "clinicalStatus": "active",
-        "summary": "Second-degree perineal tear repaired under local anaesthetic.",
+        "id": "consultant-led-gdm-referral",
+        "type": "referral",
+        "summary": "Transferred to consultant-led antenatal care after gestational diabetes was diagnosed.",
+        "status": "accepted",
+        "referredFrom": "Routine antenatal pathway",
+        "referredTo": "Consultant-led maternity care",
+        "reason": "Gestational diabetes diagnosed at 28 weeks.",
+        "outcome": "Diet-controlled throughout pregnancy with capillary glucose readings within target range.",
         "sensitivity": "restricted"
       },
       {
-        "id": "postnatal-haemoglobin",
-        "category": "investigation",
-        "clinicalStatus": "active",
-        "summary": "Postnatal day 1 haemoglobin 108 g/L; mild anaemia with no transfusion indicated.",
+        "id": "gdm-care-plan",
+        "type": "care_plan",
+        "summary": "Antenatal gestational diabetes care plan was active.",
+        "status": "active_at_boundary",
+        "need": "Maintain maternal glucose within pregnancy targets and monitor fetal growth.",
+        "goals": [
+          "Maintain capillary glucose within target range",
+          "Monitor fetal growth"
+        ],
+        "interventions": [
+          "Dietary management",
+          "Capillary glucose monitoring",
+          "Consultant-led antenatal review",
+          "Serial fetal growth scans"
+        ],
+        "evaluation": "Glucose remained within target range and fetal growth scans were normal; no insulin or metformin was required.",
         "sensitivity": "restricted"
       },
       {
-        "id": "vte-prophylaxis-plan",
-        "category": "care_plan",
-        "clinicalStatus": "active",
-        "summary": "Seven days of postnatal VTE prophylaxis planned following instrumental delivery and booking BMI of 31.",
+        "id": "antenatal-growth-scans",
+        "type": "investigation",
+        "summary": "Antenatal fetal growth scans were normal.",
+        "kind": "imaging",
+        "investigation": {
+          "display": "Serial fetal growth ultrasound"
+        },
+        "status": "final",
+        "results": [],
+        "conclusion": "Normal fetal growth throughout antenatal monitoring.",
         "sensitivity": "restricted"
       }
     ]
@@ -1364,8 +2175,20 @@ with content as (
       }
     ],
     "preferredLanguageId": "english",
-    "preferences": [],
-    "accessibilityNeeds": []
+    "preferences": [
+      {
+        "id": "direct-supported-communication",
+        "summary": "Speak directly to Emma and involve Nadine as communication support.",
+        "details": "Use a quiet, calm voice, familiar faces, Makaton symbols and communication cards. Avoid lots of people, loud noises and waking her suddenly."
+      }
+    ],
+    "accessibilityNeeds": [
+      {
+        "id": "makaton-communication-aids",
+        "summary": "Uses Makaton symbols and communication cards.",
+        "details": "Emma has a mild to moderate learning disability associated with Down syndrome and needs information presented accessibly."
+      }
+    ]
   },
   "contact": {
     "address": {
@@ -1391,7 +2214,21 @@ with content as (
         "carer",
         "next_of_kin"
       ],
-      "notes": "Emma's sole carer; her father has not been involved since infancy."
+      "contact": {
+        "phone": "07891 234 567"
+      },
+      "notes": "Emma's sole carer and holder of parental responsibility; her father has not been involved since infancy."
+    },
+    {
+      "id": "adam-family-support",
+      "name": "Adam",
+      "relationship": {
+        "display": "Maternal uncle"
+      },
+      "roles": [
+        "other"
+      ],
+      "notes": "Close to Nadine and available as emergency backup."
     }
   ],
   "background": [
@@ -1400,34 +2237,245 @@ with content as (
       "category": "living_arrangements",
       "summary": "Lives with her mother, who is her sole carer.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "school-and-friends",
+      "category": "education",
+      "summary": "Prolonged absence and infection risk have isolated Emma from school friends.",
+      "details": "School sends some work home; there is no return date.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "personality-and-interests",
+      "category": "social",
+      "summary": "Emma is happy and vibrant when well and enjoys music, art, animals, singing and dressing up.",
+      "details": "Taylor Swift, drawing, colouring, Flopsy the soft toy rabbit and favourite films are important sources of comfort. She wants to start dance lessons.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "family-support-pressure",
+      "category": "family",
+      "summary": "Nadine has friends and Emma's uncle for support but is under emotional and financial pressure.",
+      "details": "Maternal grandparents are elderly and in poor health. Nadine is off work and applying for Carer's Allowance.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "established-multidisciplinary-team",
+      "category": "medical_history",
+      "summary": "An established paediatric oncology, cardiology, community nursing, Macmillan and primary-care team supports Emma.",
+      "details": "Named contacts are Dr S. Chen (RMCH haematology/oncology), RMCH cardiology, Gemma Walsh (children's community nurse), Blessing Adeyemi (Paediatric Macmillan) and Dr P. Hughes (Withington Medical Practice). School liaison is ongoing.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "parental-responsibility",
+      "category": "family",
+      "summary": "Nadine holds sole parental responsibility.",
+      "details": "Decisions are made in Emma's best interests with Nadine's informed consent while Emma's wishes are gathered using communication aids and her evolving capacity is considered.",
+      "sensitivity": "restricted"
     }
   ],
   "problems": [
     {
-      "id": "childhood-cancer",
+      "id": "acute-myeloid-leukaemia",
       "problem": {
-        "display": "Childhood cancer"
+        "display": "Acute myeloid leukaemia"
       },
       "clinicalStatus": "active",
-      "details": "The source profile deliberately leaves the cancer type to the later clinical record."
+      "details": "Diagnosed aged five; relapsed after first-line remission and is responding poorly to second-line chemotherapy."
+    },
+    {
+      "id": "down-syndrome",
+      "problem": {
+        "display": "Down syndrome (Trisomy 21)"
+      },
+      "clinicalStatus": "active",
+      "details": "Diagnosed antenatally and associated with a mild to moderate learning disability."
+    },
+    {
+      "id": "atrioventricular-septal-defect",
+      "problem": {
+        "display": "Atrioventricular septal defect"
+      },
+      "clinicalStatus": "active",
+      "details": "Repaired in infancy; a leak at the repair site is under cardiology review following chemotherapy-related cardiac complications."
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "tapentadol",
+      "medication": {
+        "display": "Tapentadol"
+      },
+      "status": "active",
+      "dose": "15 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Every 12 hours",
+      "indication": "Cancer-related pain"
+    },
+    {
+      "id": "amitriptyline",
+      "medication": {
+        "display": "Amitriptyline"
+      },
+      "status": "active",
+      "dose": "10 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "At night",
+      "indication": "Pain and symptom management"
+    },
+    {
+      "id": "paracetamol",
+      "medication": {
+        "display": "Paracetamol"
+      },
+      "status": "active",
+      "dose": "360 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Four times daily",
+      "indication": "Pain"
+    },
+    {
+      "id": "bisacodyl",
+      "medication": {
+        "display": "Bisacodyl"
+      },
+      "status": "active",
+      "dose": "5 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "At night",
+      "indication": "Constipation prevention during opioid treatment"
+    },
+    {
+      "id": "lactulose",
+      "medication": {
+        "display": "Lactulose"
+      },
+      "status": "active",
+      "dose": "5 mL",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Twice daily",
+      "indication": "Constipation prevention during opioid treatment"
+    }
+  ],
+  "history": {
+    "entries": [
       {
-        "id": "childhood-cancer-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Childhood cancer under specialist oncology care.",
+        "id": "avsd-repair",
+        "type": "procedure",
+        "summary": "Atrioventricular septal defect surgically repaired at four months of age.",
+        "procedure": {
+          "display": "Surgical repair of atrioventricular septal defect"
+        },
+        "outcome": "Good initial recovery; the repair-site leak later required renewed cardiology monitoring.",
+        "occurred": {
+          "start": {
+            "value": "2016",
+            "precision": "year"
+          }
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "aml-diagnosis-and-first-line-treatment",
+        "type": "medication_course",
+        "summary": "First-line chemotherapy for acute myeloid leukaemia achieved remission.",
+        "medication": {
+          "display": "First-line AML chemotherapy regimen (specific agents not recorded)"
+        },
+        "status": "completed",
+        "indication": "Acute myeloid leukaemia diagnosed aged five.",
+        "response": "Remission achieved.",
+        "occurred": {
+          "start": {
+            "value": "2021",
+            "precision": "year",
+            "approximate": true
+          }
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "aml-relapse-second-line-treatment",
+        "type": "medication_course",
+        "summary": "Second-line chemotherapy commenced after AML recurrence.",
+        "medication": {
+          "display": "Second-line AML chemotherapy regimen (specific agents not recorded)"
+        },
+        "status": "stopped",
+        "indication": "Recurrent acute myeloid leukaemia.",
+        "reasonEnded": "Paused pending multidisciplinary review because response was poor and treatment caused cardiac complications.",
+        "response": "Poor response with progressive disease.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "picc-infection-hdu-admission",
+        "type": "encounter",
+        "summary": "Admitted to high-dependency care with a PICC line infection.",
+        "encounterType": "admission",
+        "careSetting": "acute_inpatient",
+        "service": "Royal Manchester Children's Hospital",
+        "reason": "PICC line infection during second-line chemotherapy.",
+        "outcome": "Infection treated; the PICC remains in situ and requires checking at every visit.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "staging-mri-progressive-aml",
+        "type": "investigation",
+        "summary": "Staging MRI showed widespread extramedullary AML relapse.",
+        "kind": "imaging",
+        "investigation": {
+          "display": "MRI whole body, brain and whole spine with contrast"
+        },
+        "status": "final",
+        "results": [],
+        "conclusion": "Widespread relapse involving CNS/leptomeninges, left orbit, liver, spleen, kidneys, diffuse marrow and lymph nodes, with no response to second-line chemotherapy and no cord compression or hydrocephalus.",
+        "author": {
+          "name": "Dr A. Okonkwo",
+          "role": "Consultant Paediatric Radiologist",
+          "service": "Royal Manchester Children's Hospital"
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "oncology-referral",
+        "type": "referral",
+        "summary": "Specialist oncology care established before the current community visit.",
+        "status": "accepted",
+        "referredTo": "Royal Manchester Children's Hospital Oncology",
+        "reason": "Childhood cancer requiring specialist oncology care.",
+        "outcome": "Under the care of Dr S. Chen and the children's oncology service.",
         "sensitivity": "restricted"
       },
       {
         "id": "advance-care-plan",
-        "category": "care_plan",
-        "clinicalStatus": "active",
+        "type": "care_plan",
         "summary": "Children and Young People's Advance Care Plan is in progress.",
+        "status": "active_at_boundary",
+        "need": "Parallel planning for supportive and palliative care needs.",
+        "goals": [
+          "Keep Emma comfortable and unafraid",
+          "Support care at home for as long as possible",
+          "Keep Nadine involved in every decision",
+          "Preserve access to familiar people and favourite activities"
+        ],
+        "interventions": [
+          "Continue multidisciplinary CYPACP discussions",
+          "Use Emma's communication aids to gather her wishes",
+          "Maintain active oncology review alongside supportive and palliative planning",
+          "Escalate pain, fever, infection or acute deterioration using the agreed plan"
+        ],
+        "evaluation": "Plan remains in progress and unsigned. DNACPR, ceilings of treatment and ReSPECT decisions await MDT and family discussion.",
         "sensitivity": "restricted"
       }
     ]
@@ -1486,7 +2534,16 @@ select
   '2026-08-30T00:00:00.000Z'
 from content
 cross join profile
-on conflict (patient_profile_id, version_number) do nothing;
+on conflict (patient_profile_id, version_number) do update
+set
+  document = excluded.document,
+  content_hash = excluded.content_hash,
+  change_summary = excluded.change_summary,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_versions.state = 'draft'
+  and patient_profile_versions.authored_by is null;
 
 do $verify_version_emma_barlow$
 declare
@@ -1542,8 +2599,20 @@ begin
       }
     ],
     "preferredLanguageId": "english",
-    "preferences": [],
-    "accessibilityNeeds": []
+    "preferences": [
+      {
+        "id": "direct-supported-communication",
+        "summary": "Speak directly to Emma and involve Nadine as communication support.",
+        "details": "Use a quiet, calm voice, familiar faces, Makaton symbols and communication cards. Avoid lots of people, loud noises and waking her suddenly."
+      }
+    ],
+    "accessibilityNeeds": [
+      {
+        "id": "makaton-communication-aids",
+        "summary": "Uses Makaton symbols and communication cards.",
+        "details": "Emma has a mild to moderate learning disability associated with Down syndrome and needs information presented accessibly."
+      }
+    ]
   },
   "contact": {
     "address": {
@@ -1569,7 +2638,21 @@ begin
         "carer",
         "next_of_kin"
       ],
-      "notes": "Emma's sole carer; her father has not been involved since infancy."
+      "contact": {
+        "phone": "07891 234 567"
+      },
+      "notes": "Emma's sole carer and holder of parental responsibility; her father has not been involved since infancy."
+    },
+    {
+      "id": "adam-family-support",
+      "name": "Adam",
+      "relationship": {
+        "display": "Maternal uncle"
+      },
+      "roles": [
+        "other"
+      ],
+      "notes": "Close to Nadine and available as emergency backup."
     }
   ],
   "background": [
@@ -1578,34 +2661,245 @@ begin
       "category": "living_arrangements",
       "summary": "Lives with her mother, who is her sole carer.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "school-and-friends",
+      "category": "education",
+      "summary": "Prolonged absence and infection risk have isolated Emma from school friends.",
+      "details": "School sends some work home; there is no return date.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "personality-and-interests",
+      "category": "social",
+      "summary": "Emma is happy and vibrant when well and enjoys music, art, animals, singing and dressing up.",
+      "details": "Taylor Swift, drawing, colouring, Flopsy the soft toy rabbit and favourite films are important sources of comfort. She wants to start dance lessons.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "family-support-pressure",
+      "category": "family",
+      "summary": "Nadine has friends and Emma's uncle for support but is under emotional and financial pressure.",
+      "details": "Maternal grandparents are elderly and in poor health. Nadine is off work and applying for Carer's Allowance.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "established-multidisciplinary-team",
+      "category": "medical_history",
+      "summary": "An established paediatric oncology, cardiology, community nursing, Macmillan and primary-care team supports Emma.",
+      "details": "Named contacts are Dr S. Chen (RMCH haematology/oncology), RMCH cardiology, Gemma Walsh (children's community nurse), Blessing Adeyemi (Paediatric Macmillan) and Dr P. Hughes (Withington Medical Practice). School liaison is ongoing.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "parental-responsibility",
+      "category": "family",
+      "summary": "Nadine holds sole parental responsibility.",
+      "details": "Decisions are made in Emma's best interests with Nadine's informed consent while Emma's wishes are gathered using communication aids and her evolving capacity is considered.",
+      "sensitivity": "restricted"
     }
   ],
   "problems": [
     {
-      "id": "childhood-cancer",
+      "id": "acute-myeloid-leukaemia",
       "problem": {
-        "display": "Childhood cancer"
+        "display": "Acute myeloid leukaemia"
       },
       "clinicalStatus": "active",
-      "details": "The source profile deliberately leaves the cancer type to the later clinical record."
+      "details": "Diagnosed aged five; relapsed after first-line remission and is responding poorly to second-line chemotherapy."
+    },
+    {
+      "id": "down-syndrome",
+      "problem": {
+        "display": "Down syndrome (Trisomy 21)"
+      },
+      "clinicalStatus": "active",
+      "details": "Diagnosed antenatally and associated with a mild to moderate learning disability."
+    },
+    {
+      "id": "atrioventricular-septal-defect",
+      "problem": {
+        "display": "Atrioventricular septal defect"
+      },
+      "clinicalStatus": "active",
+      "details": "Repaired in infancy; a leak at the repair site is under cardiology review following chemotherapy-related cardiac complications."
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "tapentadol",
+      "medication": {
+        "display": "Tapentadol"
+      },
+      "status": "active",
+      "dose": "15 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Every 12 hours",
+      "indication": "Cancer-related pain"
+    },
+    {
+      "id": "amitriptyline",
+      "medication": {
+        "display": "Amitriptyline"
+      },
+      "status": "active",
+      "dose": "10 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "At night",
+      "indication": "Pain and symptom management"
+    },
+    {
+      "id": "paracetamol",
+      "medication": {
+        "display": "Paracetamol"
+      },
+      "status": "active",
+      "dose": "360 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Four times daily",
+      "indication": "Pain"
+    },
+    {
+      "id": "bisacodyl",
+      "medication": {
+        "display": "Bisacodyl"
+      },
+      "status": "active",
+      "dose": "5 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "At night",
+      "indication": "Constipation prevention during opioid treatment"
+    },
+    {
+      "id": "lactulose",
+      "medication": {
+        "display": "Lactulose"
+      },
+      "status": "active",
+      "dose": "5 mL",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Twice daily",
+      "indication": "Constipation prevention during opioid treatment"
+    }
+  ],
+  "history": {
+    "entries": [
       {
-        "id": "childhood-cancer-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Childhood cancer under specialist oncology care.",
+        "id": "avsd-repair",
+        "type": "procedure",
+        "summary": "Atrioventricular septal defect surgically repaired at four months of age.",
+        "procedure": {
+          "display": "Surgical repair of atrioventricular septal defect"
+        },
+        "outcome": "Good initial recovery; the repair-site leak later required renewed cardiology monitoring.",
+        "occurred": {
+          "start": {
+            "value": "2016",
+            "precision": "year"
+          }
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "aml-diagnosis-and-first-line-treatment",
+        "type": "medication_course",
+        "summary": "First-line chemotherapy for acute myeloid leukaemia achieved remission.",
+        "medication": {
+          "display": "First-line AML chemotherapy regimen (specific agents not recorded)"
+        },
+        "status": "completed",
+        "indication": "Acute myeloid leukaemia diagnosed aged five.",
+        "response": "Remission achieved.",
+        "occurred": {
+          "start": {
+            "value": "2021",
+            "precision": "year",
+            "approximate": true
+          }
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "aml-relapse-second-line-treatment",
+        "type": "medication_course",
+        "summary": "Second-line chemotherapy commenced after AML recurrence.",
+        "medication": {
+          "display": "Second-line AML chemotherapy regimen (specific agents not recorded)"
+        },
+        "status": "stopped",
+        "indication": "Recurrent acute myeloid leukaemia.",
+        "reasonEnded": "Paused pending multidisciplinary review because response was poor and treatment caused cardiac complications.",
+        "response": "Poor response with progressive disease.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "picc-infection-hdu-admission",
+        "type": "encounter",
+        "summary": "Admitted to high-dependency care with a PICC line infection.",
+        "encounterType": "admission",
+        "careSetting": "acute_inpatient",
+        "service": "Royal Manchester Children's Hospital",
+        "reason": "PICC line infection during second-line chemotherapy.",
+        "outcome": "Infection treated; the PICC remains in situ and requires checking at every visit.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "staging-mri-progressive-aml",
+        "type": "investigation",
+        "summary": "Staging MRI showed widespread extramedullary AML relapse.",
+        "kind": "imaging",
+        "investigation": {
+          "display": "MRI whole body, brain and whole spine with contrast"
+        },
+        "status": "final",
+        "results": [],
+        "conclusion": "Widespread relapse involving CNS/leptomeninges, left orbit, liver, spleen, kidneys, diffuse marrow and lymph nodes, with no response to second-line chemotherapy and no cord compression or hydrocephalus.",
+        "author": {
+          "name": "Dr A. Okonkwo",
+          "role": "Consultant Paediatric Radiologist",
+          "service": "Royal Manchester Children's Hospital"
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "oncology-referral",
+        "type": "referral",
+        "summary": "Specialist oncology care established before the current community visit.",
+        "status": "accepted",
+        "referredTo": "Royal Manchester Children's Hospital Oncology",
+        "reason": "Childhood cancer requiring specialist oncology care.",
+        "outcome": "Under the care of Dr S. Chen and the children's oncology service.",
         "sensitivity": "restricted"
       },
       {
         "id": "advance-care-plan",
-        "category": "care_plan",
-        "clinicalStatus": "active",
+        "type": "care_plan",
         "summary": "Children and Young People's Advance Care Plan is in progress.",
+        "status": "active_at_boundary",
+        "need": "Parallel planning for supportive and palliative care needs.",
+        "goals": [
+          "Keep Emma comfortable and unafraid",
+          "Support care at home for as long as possible",
+          "Keep Nadine involved in every decision",
+          "Preserve access to familiar people and favourite activities"
+        ],
+        "interventions": [
+          "Continue multidisciplinary CYPACP discussions",
+          "Use Emma's communication aids to gather her wishes",
+          "Maintain active oncology review alongside supportive and palliative planning",
+          "Escalate pain, fever, infection or acute deterioration using the agreed plan"
+        ],
+        "evaluation": "Plan remains in progress and unsigned. DNACPR, ceilings of treatment and ReSPECT decisions await MDT and family discussion.",
         "sensitivity": "restricted"
       }
     ]
@@ -1756,7 +3050,10 @@ with content as (
         "next_of_kin",
         "carer"
       ],
-      "notes": "Lives with Esther and is her main source of support."
+      "contact": {
+        "phone": "07SIM000205"
+      },
+      "notes": "Tasha is 42, works part-time as a receptionist, lives with Esther and is her only local informal support. Before the acute presentation Esther did not require care from her."
     }
   ],
   "background": [
@@ -1769,7 +3066,8 @@ with content as (
     {
       "id": "living-with-daughter",
       "category": "living_arrangements",
-      "summary": "Lives with her daughter Tasha in a two-bedroom terraced house.",
+      "summary": "Lives with her daughter Tasha in a rented two-bedroom terraced house.",
+      "details": "The property has stairs and no downstairs toilet or bathroom.",
       "sensitivity": "standard"
     },
     {
@@ -1777,6 +3075,46 @@ with content as (
       "category": "adverse_life_event",
       "summary": "Widowed and experienced a depressive episode after her husband's death.",
       "details": "Previously took antidepressants for two years.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "family-cardiovascular-history",
+      "category": "family_history",
+      "summary": "There is a significant family history of cardiovascular and metabolic disease.",
+      "details": "Her mother died from a stroke aged 85; a sister died from heart disease aged 65; her father had high cholesterol and diabetes.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "smoking-history",
+      "category": "lifestyle",
+      "summary": "Smokes approximately ten cigarettes daily and has smoked since age 18.",
+      "details": "She would like to stop but is reluctant to add smoking-cessation medication to her existing medicines.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "diet-and-activity",
+      "category": "lifestyle",
+      "summary": "Usually eats simple or ready-prepared meals and undertakes little regular exercise.",
+      "details": "Walks for about 30 minutes once or twice a month and drinks alcohol occasionally.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "right-handed",
+      "category": "medical_history",
+      "summary": "Right-handed.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "pre-episode-independence",
+      "category": "living_arrangements",
+      "summary": "Fully independent before the acute presentation.",
+      "details": "Managed personal care, dressing, mobility and domestic tasks without a package of care, equipment, home adaptations or previous adult-social-care involvement.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "gp-practice",
+      "category": "medical_history",
+      "summary": "Registered with Openshaw Health Centre.",
       "sensitivity": "standard"
     }
   ],
@@ -1796,12 +3134,36 @@ with content as (
       "clinicalStatus": "active"
     },
     {
+      "id": "hyperlipidaemia",
+      "problem": {
+        "display": "Hyperlipidaemia"
+      },
+      "clinicalStatus": "active",
+      "details": "Longstanding."
+    },
+    {
+      "id": "knee-osteoarthritis",
+      "problem": {
+        "display": "Osteoarthritis of both knees"
+      },
+      "clinicalStatus": "active",
+      "details": "Mild and not recently troublesome."
+    },
+    {
       "id": "past-depressive-episode",
       "problem": {
         "display": "Depressive episode"
       },
       "clinicalStatus": "resolved",
       "details": "Occurred after bereavement and was treated with antidepressants for two years."
+    },
+    {
+      "id": "recent-low-mood",
+      "problem": {
+        "display": "Low mood"
+      },
+      "clinicalStatus": "active",
+      "details": "Increasing low mood over several months before the acute presentation, not previously disclosed. No hopelessness, self-harm thoughts, hallucinations or delusions were reported."
     }
   ],
   "allergies": [
@@ -1819,43 +3181,145 @@ with content as (
       "details": "Patient-reported reaction in the source profile."
     }
   ],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "amlodipine",
+      "medication": {
+        "display": "Amlodipine"
+      },
+      "status": "active",
+      "dose": "5 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Hypertension"
+    },
+    {
+      "id": "bisoprolol",
+      "medication": {
+        "display": "Bisoprolol"
+      },
+      "status": "active",
+      "dose": "10 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Hypertension and atrial fibrillation"
+    },
+    {
+      "id": "statin",
+      "medication": {
+        "display": "Statin (specific medicine not recorded)"
+      },
+      "status": "active",
+      "dose": "80 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Hyperlipidaemia",
+      "details": "Exact medicine requires reconciliation with the GP or pharmacy record."
+    },
+    {
+      "id": "apixaban",
+      "medication": {
+        "display": "Apixaban"
+      },
+      "status": "active",
+      "dose": "5 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Twice daily",
+      "indication": "Atrial fibrillation",
+      "details": "Morning adherence is good, but evening doses are often forgotten; approximately three evening doses were missed in the week before the acute presentation."
+    },
+    {
+      "id": "naproxen",
+      "medication": {
+        "display": "Naproxen"
+      },
+      "status": "active",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "As required",
+      "indication": "Knee osteoarthritis",
+      "details": "Dose not recalled and not taken for approximately two months; interaction risk with apixaban should be reviewed before use."
+    }
+  ],
+  "history": {
+    "entries": [
       {
-        "id": "acute-ischaemic-stroke",
-        "category": "episode",
-        "clinicalStatus": "active",
-        "summary": "Acute ischaemic stroke affecting the right hemisphere with left-sided facial droop, arm weakness and slurred speech.",
-        "occurredOn": "2026-07-19",
+        "id": "hypertension-diagnosis",
+        "type": "assessment",
+        "summary": "Hypertension diagnosed approximately ten years ago.",
+        "assessment": {
+          "display": "Hypertension assessment"
+        },
+        "outcome": "Hypertension diagnosed; a recent home reading was approximately 160/90 mmHg.",
+        "occurred": {
+          "start": {
+            "value": "2016",
+            "precision": "year",
+            "approximate": true
+          }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "atrial-fibrillation-diagnosis",
+        "type": "assessment",
+        "summary": "Atrial fibrillation diagnosed approximately two years ago.",
+        "assessment": {
+          "display": "Cardiac rhythm assessment"
+        },
+        "outcome": "Atrial fibrillation diagnosed and anticoagulation with apixaban started.",
+        "occurred": {
+          "start": {
+            "value": "2024",
+            "precision": "year",
+            "approximate": true
+          }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "recent-home-blood-pressure",
+        "type": "observation",
+        "summary": "Recent home blood pressure was approximately 160/90 mmHg.",
+        "observation": {
+          "display": "Home blood pressure"
+        },
+        "value": {
+          "type": "text",
+          "value": "Approximately 160/90 mmHg"
+        },
+        "interpretation": "high",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "bereavement-depressive-episode",
+        "type": "assessment",
+        "summary": "Depressive episode following her husband's death, subsequently resolved.",
+        "assessment": {
+          "display": "Mental health assessment"
+        },
+        "outcome": "Depressive episode identified after bereavement and treated with antidepressants for two years.",
         "sensitivity": "restricted"
       },
       {
-        "id": "hypertension-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "History of hypertension.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "atrial-fibrillation-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "History of atrial fibrillation.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "stroke-admission-weight",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Weight recorded as 77 kg; height recorded as 163 cm.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "swallow-and-falls-risk",
-        "category": "risk",
-        "clinicalStatus": "active",
-        "summary": "Falls risk and swallow screening requirement identified following acute stroke presentation.",
+        "id": "bereavement-antidepressant-course",
+        "type": "medication_course",
+        "summary": "Two-year course of antidepressant treatment following bereavement.",
+        "medication": {
+          "display": "Antidepressant medicine (specific medicine not recorded)"
+        },
+        "status": "completed",
+        "indication": "Depressive episode following bereavement.",
+        "reasonEnded": "Course completed; depressive episode recorded as resolved.",
         "sensitivity": "restricted"
       }
     ]
@@ -1912,7 +3376,16 @@ select
   '2026-08-30T00:00:00.000Z'
 from content
 cross join profile
-on conflict (patient_profile_id, version_number) do nothing;
+on conflict (patient_profile_id, version_number) do update
+set
+  document = excluded.document,
+  content_hash = excluded.content_hash,
+  change_summary = excluded.change_summary,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_versions.state = 'draft'
+  and patient_profile_versions.authored_by is null;
 
 do $verify_version_esther_jenkins$
 declare
@@ -2003,7 +3476,10 @@ begin
         "next_of_kin",
         "carer"
       ],
-      "notes": "Lives with Esther and is her main source of support."
+      "contact": {
+        "phone": "07SIM000205"
+      },
+      "notes": "Tasha is 42, works part-time as a receptionist, lives with Esther and is her only local informal support. Before the acute presentation Esther did not require care from her."
     }
   ],
   "background": [
@@ -2016,7 +3492,8 @@ begin
     {
       "id": "living-with-daughter",
       "category": "living_arrangements",
-      "summary": "Lives with her daughter Tasha in a two-bedroom terraced house.",
+      "summary": "Lives with her daughter Tasha in a rented two-bedroom terraced house.",
+      "details": "The property has stairs and no downstairs toilet or bathroom.",
       "sensitivity": "standard"
     },
     {
@@ -2024,6 +3501,46 @@ begin
       "category": "adverse_life_event",
       "summary": "Widowed and experienced a depressive episode after her husband's death.",
       "details": "Previously took antidepressants for two years.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "family-cardiovascular-history",
+      "category": "family_history",
+      "summary": "There is a significant family history of cardiovascular and metabolic disease.",
+      "details": "Her mother died from a stroke aged 85; a sister died from heart disease aged 65; her father had high cholesterol and diabetes.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "smoking-history",
+      "category": "lifestyle",
+      "summary": "Smokes approximately ten cigarettes daily and has smoked since age 18.",
+      "details": "She would like to stop but is reluctant to add smoking-cessation medication to her existing medicines.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "diet-and-activity",
+      "category": "lifestyle",
+      "summary": "Usually eats simple or ready-prepared meals and undertakes little regular exercise.",
+      "details": "Walks for about 30 minutes once or twice a month and drinks alcohol occasionally.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "right-handed",
+      "category": "medical_history",
+      "summary": "Right-handed.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "pre-episode-independence",
+      "category": "living_arrangements",
+      "summary": "Fully independent before the acute presentation.",
+      "details": "Managed personal care, dressing, mobility and domestic tasks without a package of care, equipment, home adaptations or previous adult-social-care involvement.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "gp-practice",
+      "category": "medical_history",
+      "summary": "Registered with Openshaw Health Centre.",
       "sensitivity": "standard"
     }
   ],
@@ -2043,12 +3560,36 @@ begin
       "clinicalStatus": "active"
     },
     {
+      "id": "hyperlipidaemia",
+      "problem": {
+        "display": "Hyperlipidaemia"
+      },
+      "clinicalStatus": "active",
+      "details": "Longstanding."
+    },
+    {
+      "id": "knee-osteoarthritis",
+      "problem": {
+        "display": "Osteoarthritis of both knees"
+      },
+      "clinicalStatus": "active",
+      "details": "Mild and not recently troublesome."
+    },
+    {
       "id": "past-depressive-episode",
       "problem": {
         "display": "Depressive episode"
       },
       "clinicalStatus": "resolved",
       "details": "Occurred after bereavement and was treated with antidepressants for two years."
+    },
+    {
+      "id": "recent-low-mood",
+      "problem": {
+        "display": "Low mood"
+      },
+      "clinicalStatus": "active",
+      "details": "Increasing low mood over several months before the acute presentation, not previously disclosed. No hopelessness, self-harm thoughts, hallucinations or delusions were reported."
     }
   ],
   "allergies": [
@@ -2066,43 +3607,145 @@ begin
       "details": "Patient-reported reaction in the source profile."
     }
   ],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "amlodipine",
+      "medication": {
+        "display": "Amlodipine"
+      },
+      "status": "active",
+      "dose": "5 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Hypertension"
+    },
+    {
+      "id": "bisoprolol",
+      "medication": {
+        "display": "Bisoprolol"
+      },
+      "status": "active",
+      "dose": "10 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Hypertension and atrial fibrillation"
+    },
+    {
+      "id": "statin",
+      "medication": {
+        "display": "Statin (specific medicine not recorded)"
+      },
+      "status": "active",
+      "dose": "80 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Once daily",
+      "indication": "Hyperlipidaemia",
+      "details": "Exact medicine requires reconciliation with the GP or pharmacy record."
+    },
+    {
+      "id": "apixaban",
+      "medication": {
+        "display": "Apixaban"
+      },
+      "status": "active",
+      "dose": "5 mg",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "Twice daily",
+      "indication": "Atrial fibrillation",
+      "details": "Morning adherence is good, but evening doses are often forgotten; approximately three evening doses were missed in the week before the acute presentation."
+    },
+    {
+      "id": "naproxen",
+      "medication": {
+        "display": "Naproxen"
+      },
+      "status": "active",
+      "route": {
+        "display": "Oral"
+      },
+      "frequency": "As required",
+      "indication": "Knee osteoarthritis",
+      "details": "Dose not recalled and not taken for approximately two months; interaction risk with apixaban should be reviewed before use."
+    }
+  ],
+  "history": {
+    "entries": [
       {
-        "id": "acute-ischaemic-stroke",
-        "category": "episode",
-        "clinicalStatus": "active",
-        "summary": "Acute ischaemic stroke affecting the right hemisphere with left-sided facial droop, arm weakness and slurred speech.",
-        "occurredOn": "2026-07-19",
+        "id": "hypertension-diagnosis",
+        "type": "assessment",
+        "summary": "Hypertension diagnosed approximately ten years ago.",
+        "assessment": {
+          "display": "Hypertension assessment"
+        },
+        "outcome": "Hypertension diagnosed; a recent home reading was approximately 160/90 mmHg.",
+        "occurred": {
+          "start": {
+            "value": "2016",
+            "precision": "year",
+            "approximate": true
+          }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "atrial-fibrillation-diagnosis",
+        "type": "assessment",
+        "summary": "Atrial fibrillation diagnosed approximately two years ago.",
+        "assessment": {
+          "display": "Cardiac rhythm assessment"
+        },
+        "outcome": "Atrial fibrillation diagnosed and anticoagulation with apixaban started.",
+        "occurred": {
+          "start": {
+            "value": "2024",
+            "precision": "year",
+            "approximate": true
+          }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "recent-home-blood-pressure",
+        "type": "observation",
+        "summary": "Recent home blood pressure was approximately 160/90 mmHg.",
+        "observation": {
+          "display": "Home blood pressure"
+        },
+        "value": {
+          "type": "text",
+          "value": "Approximately 160/90 mmHg"
+        },
+        "interpretation": "high",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "bereavement-depressive-episode",
+        "type": "assessment",
+        "summary": "Depressive episode following her husband's death, subsequently resolved.",
+        "assessment": {
+          "display": "Mental health assessment"
+        },
+        "outcome": "Depressive episode identified after bereavement and treated with antidepressants for two years.",
         "sensitivity": "restricted"
       },
       {
-        "id": "hypertension-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "History of hypertension.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "atrial-fibrillation-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "History of atrial fibrillation.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "stroke-admission-weight",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Weight recorded as 77 kg; height recorded as 163 cm.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "swallow-and-falls-risk",
-        "category": "risk",
-        "clinicalStatus": "active",
-        "summary": "Falls risk and swallow screening requirement identified following acute stroke presentation.",
+        "id": "bereavement-antidepressant-course",
+        "type": "medication_course",
+        "summary": "Two-year course of antidepressant treatment following bereavement.",
+        "medication": {
+          "display": "Antidepressant medicine (specific medicine not recorded)"
+        },
+        "status": "completed",
+        "indication": "Depressive episode following bereavement.",
+        "reasonEnded": "Course completed; depressive episode recorded as resolved.",
         "sensitivity": "restricted"
       }
     ]

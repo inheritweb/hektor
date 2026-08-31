@@ -1,5 +1,9 @@
 # Patient profiles — Slice 1 plan
 
+Status: implemented foundation. Its intentionally limited clinical-history
+scope is superseded by `docs/patient-profile-history-slice-plan.md`; this file
+remains the record of the original contract and database slice.
+
 Status: proposed document contract and database foundation for review.
 
 Slice 1 defines what a reusable patient profile is and gives it a secure,

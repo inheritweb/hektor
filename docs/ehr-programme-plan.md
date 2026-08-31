@@ -78,13 +78,15 @@ facts, relationships, assets, provenance and review state. It distinguishes
 system-curated, user-owned and organisation-owned profiles and records lineage
 when content is cloned.
 
-### Patient project
+### Patient scenario and profile layers
 
-Owns an authored learning narrative around a patient. A project selects patient
-content, defines its audience and learning intent, and may contain a sequence of
-repeatable stages such as initial presentation, deterioration, investigation
-results, intervention and follow-up. Project configuration must be cloneable and
-editable without rewriting the original system project.
+A `PatientScenario` selects an exact patient-profile version. Its ordered
+`PatientScenarioStep` records reference `PatientProfileLayer` records. A layer
+contains typed modifications to patient data and exists to serve scenarios; it
+is not an independently browsable patient-library asset. The effective patient
+state at a step is the immutable base profile plus every preceding layer in the
+scenario stack. The first layer can establish the initial presentation and later
+layers can introduce results, deterioration, treatment or follow-up.
 
 ### Clinical experience
 
@@ -108,16 +110,16 @@ mutate the source patient profile or leak into another learner's instance.
 
 ## Evolution model
 
-Patient evolution will be modeled as ordered conceptual layers and deterministic
-changes, not as ad hoc mutations to a shared patient row. The baseline patient
-profile is implicit layer zero. Each subsequent layer represents a meaningful
-moment in the authored narrative.
+Patient evolution will be modeled as ordered profile layers and deterministic
+changes, not as ad hoc mutations to a shared patient row. The baseline
+`PatientProfile` is always layer zero. A `PatientScenarioStep` determines when a
+referenced `PatientProfileLayer` joins the stack.
 
 For example:
 
-1. A tutor publishes a project containing layers for weeks 1, 2 and 3.
-2. Each assignment pins an authored project version and its patient-profile
-   version.
+1. A scenario pins a published patient-profile version and contains ordered
+   steps for weeks 1, 2 and 3.
+2. Each step references the layer applied at that moment.
 3. Each learner receives an independent experience instance at layer 1.
 4. A release rule advances or unlocks layer 2 while preserving the exact layer-1
    record and learner work.
@@ -128,90 +130,152 @@ For example:
 
 Layers store typed operations and are rendered cumulatively from the pinned
 baseline. Moving backwards or forwards recomputes the effective record rather
-than applying inverse mutations. Published project versions are immutable, so
-the same layer always produces the same result. The first implementation will
-use a linear sequence; stable layer identities leave room for deliberate
-branching later without making the initial authoring model ambiguous.
+than applying inverse mutations. Published scenarios and their layer stack are
+immutable, so the same scenario step always produces the same result. The first
+implementation will use a linear sequence; stable step and layer identities
+leave room for deliberate branching later without complicating initial
+authoring.
 
-## Delivery sequence
+## Delivery strategy
 
-### Phase 0 — content discovery and vocabulary
+The first major milestone is now a complete learning loop, not patient-library
+cloning or narrative authoring. A tutor selects a curated EHR, previews it,
+configures an exercise, assigns it to learners, and can review the submitted
+work. A learner opens the assignment, reviews the EHR and answers questions or
+completes a mock care plan.
 
-- Inventory current patient fields, EHR sections, authored defaults, learner
-  inputs, calculators, documents and programme-specific variations.
-- Classify each item as patient truth, project narrative, stage change, EHR
-  configuration, learner work, assessment or presentation.
-- Agree canonical product language and the minimum clinical governance metadata.
-- Design the patient-profile model and migration/import approach as a separate,
-  reviewed plan before creating tables.
+This milestone deliberately uses published system patient profiles and a single
+baseline EHR state. It does not require tutors to clone or edit patient records,
+patient projects, narrative layers, staged release, calculators, prescribing or
+complex marking. Those capabilities remain compatible with the domain model but
+are no longer prerequisites for proving the learning experience.
 
-### Phase 1 — platform patient-profile library
+The detailed milestone plan is in `docs/ehr-first-learning-milestone.md`.
 
-- Add a new migration for the agreed patient-profile model.
-- Give platform administrators a searchable, filterable patient library.
-- Support create, view, edit, archive and controlled publication workflows.
-- Record system ownership, provenance, review status, audit metadata and assets.
-- Import a small representative set rather than all existing cases at once.
-- Establish contract, service, database-integration, component and browser tests.
+## Current execution plan
+
+This sequence replaces earlier assumptions that a representative seed or a
+general enrichment pass was sufficient evidence of content completeness.
+
+1. **Complete one reference profile — Esther Jenkins — completed.** Inventory every
+   patient-specific assertion in the prototype and give it a recorded
+   disposition: patient profile, future profile layer, teaching/UI content,
+   duplicate, or deliberate omission. Every profile fact must be represented in
+   the V1 document and visible in platform admin.
+2. **Roll the reconciliation process out to the other four profiles — completed.** Use the
+   same evidence and acceptance criteria, extending the contract only when an
+   actual source fact cannot be represented faithfully.
+3. **Add platform-admin “View in EHR”.** Begin with a deterministic, read-only
+   projection of the base profile and add EHR sections incrementally. Do not add
+   persisted generic EHR configuration until a concrete variation requires it.
+4. **Implement scenario mechanics.** Add `PatientScenario`,
+   `PatientScenarioStep` and `PatientProfileLayer` to the contracts, database and
+   platform-admin experience. A scenario pins a profile version and its steps
+   order the layers applied over that base.
+5. **Consider the tutor experience.** Design tutor browsing, preview and later
+   assignment workflows against working base-profile and scenario EHR previews.
+
+A profile is source-complete only when every patient-specific prototype
+assertion has a documented disposition and everything allocated to the profile
+is represented and displayed. “Clinically reviewed” remains a later governance
+state requiring an appropriate reviewer; it is not silently implied by source
+completeness.
+
+## Revised delivery sequence
+
+### Phase 0 — content discovery and vocabulary — substantially complete
+
+- Completed: prototype review, initial content classification, patient-profile
+  vocabulary and the reviewed profile model/import approach.
+- Outstanding as each EHR section is adopted: classify its authored defaults,
+  learner inputs, calculations and specialist variations.
+
+### Phase 1 — platform patient-profile foundation — in progress
+
+- Completed: schema migration, production-safe seed, five representative system
+  profiles, platform-admin catalogue/detail views and structured draft editing.
+- Outstanding: search/filter controls, create/archive/publication workflow,
+  clinical review UI, assets and fuller automated/browser coverage.
 
 The representative set should cover materially different structures: an acute
 adult, a community patient, a mental-health patient, a child or maternity case,
 and an interprofessional case.
 
-### Phase 2 — tutor discovery and licensed cloning
+### Phase 2 — structured patient history and source reconciliation — complete
 
-- Let tutors browse and preview the published system patient library without
-  exposing platform authoring controls.
-- Enforce the organisation licence at the service/API boundary.
-- Permit an eligible tutor to clone a system profile into their organisation.
-- Preserve lineage to the source and version while making the copy independently
-  editable.
-- Ensure one organisation cannot discover another organisation's private copies.
-- Define what happens when the system source is later corrected or withdrawn;
-  clones must not silently change.
+- Replace the generic clinical-fact ledger in the unreleased V1 contract with typed historical encounters,
+  observations, assessments, investigations, procedures, medication courses,
+  referrals, documents and care plans.
+- Use the current-episode start as the boundary: everything clinically relevant
+  before it belongs to patient history; the active episode and its existing or
+  later records do not. The episode can begin before the learner sees the EHR.
+- Inventory and import the available pre-episode history for all five seeded
+  profiles without inventing missing clinical detail or date precision.
+- Regenerate the five draft documents and production seed against the revised V1
+  contract; no compatibility version is required before release.
+- Extend platform-admin display and bounded draft editing for the new records.
+- Completed: reconciled Esther as the reference case, then applied the same
+  source-disposition and acceptance process to the other four profiles.
 
-This is the first tutor-facing vertical slice. It ends at a trustworthy,
-organisation-owned patient copy and does not yet include learning-experience
-authoring.
+The detailed plan is in `docs/patient-profile-history-slice-plan.md`. This slice
+ensures the EHR consumes the patient's past rather than owning or duplicating it.
 
-### Phase 3 — patient projects and layered evolution
+### Phase 3 — read-only EHR projection and tutor preview
 
-- Create, clone and edit patient projects independently from patient identity.
-- Attach a patient-profile version and configure an ordered layer sequence.
-- Author typed changes to clinical facts, results, documents and record entries.
-- Preview any layer and compare it with the preceding layer.
-- Validate impossible references and incomplete configurations before publish.
-- Add explicit draft, published, superseded and archived lifecycle states.
+- Define a versioned EHR projection over a published system patient-profile
+  version.
+- Build the reusable EHR shell and the smallest useful read-only section set
+  from the prototype: patient banner, summary, clinical history, allergies,
+  medications, communication needs and clinical record.
+- Let tutors browse available EHRs and open the exact learner-facing preview in
+  their active organisation context.
+- Keep platform authoring controls and draft content unavailable to tutors.
+- State synthetic-patient and preview status consistently and meet keyboard,
+  responsive and screen-reader requirements.
 
-### Phase 4 — EHR application foundation
+This is the first tutor-facing slice. It ends at a trustworthy preview of a
+published, baseline EHR and introduces no cloning.
 
-- Convert the reusable visual language from the source application into Hektor
-  components and Storybook stories, following `COMPONENTS.md`.
-- Render a read-only EHR from structured patient/project content first.
-- Add schema-driven learner fields, central tested calculators and autosave.
-- Preserve the clinical setting adaptations present in the source content.
-- Meet keyboard, screen-reader, responsive and contrast requirements before
-  expanding the section catalogue.
+### Phase 4 — exercise definition and tutor assignment
 
-### Phase 5 — tutor assignments and learner delivery
+- Let a tutor select an available EHR and choose one or more response activities:
+  short or long-answer questions and a structured mock care plan.
+- Capture assignment title, instructions, audience, availability and due date.
+- Target cohorts, groups or selected learners inside the active organisation.
+- Pin the EHR, patient-profile and exercise definition used by the assignment so
+  later source edits cannot change learner work.
+- Provide tutor preview of the complete assignment before release.
+- Enforce tutor role, organisation tenancy and any delivery entitlement at the
+  trusted API boundary.
 
-- Let tutors assign a published EHR project to cohorts, groups or selected users.
-- Pin versions and configure availability, stage release and due dates.
-- Create isolated learner experience instances and durable server-side work.
-- Support save, resume, submission, late/locked states and immutable submission
-  snapshots.
-- Ensure suspended memberships retain read-only history and reassignment never
-  merges learner records.
+### Phase 5 — learner run, persistence and submission
 
-### Phase 6 — feedback, assessment and operational maturity
+- Show each learner only assignments addressed to them through current valid
+  organisation membership.
+- Create one isolated learner attempt from the assignment's pinned snapshot.
+- Render the read-only EHR beside the exercise without mutating patient content.
+- Autosave answers and care-plan entries server-side with clear saved, stale and
+  error states.
+- Support resume and explicit submission with an immutable submission snapshot.
+- Give tutors a simple submission view. Rich marking and feedback remain later.
 
-- Add assignment criteria, tutor feedback, formative/summative outcomes and
-  moderation where required.
-- Add reporting without exposing unrelated learner or organisation data.
-- Add content-quality review, project validation, audit views and operational
-  documentation.
-- Expand the imported patient and EHR-section catalogue iteratively, with
-  clinical review and regression fixtures.
+Completion of Phase 5 is the first major EHR milestone.
+
+### Phase 6 — richer assessment and EHR interactions
+
+- Add feedback, marking criteria, formative/summative outcomes and moderation.
+- Add further structured activities, clinical forms and tested calculators.
+- Expand the EHR section catalogue and preserve setting-specific adaptations
+  from the prototype.
+- Add operational reporting without exposing unrelated learner data.
+
+### Phase 7 — deferred authoring and longitudinal capability
+
+- Add organisation/user patient-profile cloning and private authoring.
+- Add patient projects, deterministic narrative layers and staged release.
+- Add clone provenance, project publication and richer content review.
+- Add longitudinal learner experiences only after the baseline assignment loop
+  is reliable.
 
 ## Cross-cutting rules
 
@@ -261,11 +325,11 @@ clinical-governance decisions rather than implicit implementation choices:
 10. What audit and retention guarantees are required before learner work is
     introduced?
 
-## Initial success measure
+## First major milestone success measure
 
-The first patient-profile slice is complete when a platform administrator can
-publish a clinically reviewed system profile, an entitled tutor can find and
-clone it into the selected organisation, an unauthorized organisation cannot
-access that copy, the clone can be edited without changing the system source,
-and all lineage and version information remains explainable through tests and
-the UI.
+A tutor can preview a published synthetic EHR, create an assignment containing
+questions or a mock care plan, target learners in their organisation and release
+it. An assigned learner can open the same pinned EHR, save and resume their work,
+submit it, and the tutor can view that immutable submission. Neither participant
+can mutate the source patient profile, and no data crosses organisation or
+learner boundaries.

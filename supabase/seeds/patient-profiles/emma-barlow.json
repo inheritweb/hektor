@@ -30,8 +30,20 @@
       }
     ],
     "preferredLanguageId": "english",
-    "preferences": [],
-    "accessibilityNeeds": []
+    "preferences": [
+      {
+        "id": "direct-supported-communication",
+        "summary": "Speak directly to Emma and involve Nadine as communication support.",
+        "details": "Use a quiet, calm voice, familiar faces, Makaton symbols and communication cards. Avoid lots of people, loud noises and waking her suddenly."
+      }
+    ],
+    "accessibilityNeeds": [
+      {
+        "id": "makaton-communication-aids",
+        "summary": "Uses Makaton symbols and communication cards.",
+        "details": "Emma has a mild to moderate learning disability associated with Down syndrome and needs information presented accessibly."
+      }
+    ]
   },
   "contact": {
     "address": {
@@ -48,7 +60,15 @@
       "name": "Nadine Barlow",
       "relationship": { "display": "Mother" },
       "roles": ["parent", "guardian", "carer", "next_of_kin"],
-      "notes": "Emma's sole carer; her father has not been involved since infancy."
+      "contact": { "phone": "07891 234 567" },
+      "notes": "Emma's sole carer and holder of parental responsibility; her father has not been involved since infancy."
+    },
+    {
+      "id": "adam-family-support",
+      "name": "Adam",
+      "relationship": { "display": "Maternal uncle" },
+      "roles": ["other"],
+      "notes": "Close to Nadine and available as emergency backup."
     }
   ],
   "background": [
@@ -57,32 +77,210 @@
       "category": "living_arrangements",
       "summary": "Lives with her mother, who is her sole carer.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "school-and-friends",
+      "category": "education",
+      "summary": "Prolonged absence and infection risk have isolated Emma from school friends.",
+      "details": "School sends some work home; there is no return date.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "personality-and-interests",
+      "category": "social",
+      "summary": "Emma is happy and vibrant when well and enjoys music, art, animals, singing and dressing up.",
+      "details": "Taylor Swift, drawing, colouring, Flopsy the soft toy rabbit and favourite films are important sources of comfort. She wants to start dance lessons.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "family-support-pressure",
+      "category": "family",
+      "summary": "Nadine has friends and Emma's uncle for support but is under emotional and financial pressure.",
+      "details": "Maternal grandparents are elderly and in poor health. Nadine is off work and applying for Carer's Allowance.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "established-multidisciplinary-team",
+      "category": "medical_history",
+      "summary": "An established paediatric oncology, cardiology, community nursing, Macmillan and primary-care team supports Emma.",
+      "details": "Named contacts are Dr S. Chen (RMCH haematology/oncology), RMCH cardiology, Gemma Walsh (children's community nurse), Blessing Adeyemi (Paediatric Macmillan) and Dr P. Hughes (Withington Medical Practice). School liaison is ongoing.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "parental-responsibility",
+      "category": "family",
+      "summary": "Nadine holds sole parental responsibility.",
+      "details": "Decisions are made in Emma's best interests with Nadine's informed consent while Emma's wishes are gathered using communication aids and her evolving capacity is considered.",
+      "sensitivity": "restricted"
     }
   ],
   "problems": [
     {
-      "id": "childhood-cancer",
-      "problem": { "display": "Childhood cancer" },
+      "id": "acute-myeloid-leukaemia",
+      "problem": { "display": "Acute myeloid leukaemia" },
       "clinicalStatus": "active",
-      "details": "The source profile deliberately leaves the cancer type to the later clinical record."
+      "details": "Diagnosed aged five; relapsed after first-line remission and is responding poorly to second-line chemotherapy."
+    },
+    {
+      "id": "down-syndrome",
+      "problem": { "display": "Down syndrome (Trisomy 21)" },
+      "clinicalStatus": "active",
+      "details": "Diagnosed antenatally and associated with a mild to moderate learning disability."
+    },
+    {
+      "id": "atrioventricular-septal-defect",
+      "problem": { "display": "Atrioventricular septal defect" },
+      "clinicalStatus": "active",
+      "details": "Repaired in infancy; a leak at the repair site is under cardiology review following chemotherapy-related cardiac complications."
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "tapentadol",
+      "medication": { "display": "Tapentadol" },
+      "status": "active",
+      "dose": "15 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Every 12 hours",
+      "indication": "Cancer-related pain"
+    },
+    {
+      "id": "amitriptyline",
+      "medication": { "display": "Amitriptyline" },
+      "status": "active",
+      "dose": "10 mg",
+      "route": { "display": "Oral" },
+      "frequency": "At night",
+      "indication": "Pain and symptom management"
+    },
+    {
+      "id": "paracetamol",
+      "medication": { "display": "Paracetamol" },
+      "status": "active",
+      "dose": "360 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Four times daily",
+      "indication": "Pain"
+    },
+    {
+      "id": "bisacodyl",
+      "medication": { "display": "Bisacodyl" },
+      "status": "active",
+      "dose": "5 mg",
+      "route": { "display": "Oral" },
+      "frequency": "At night",
+      "indication": "Constipation prevention during opioid treatment"
+    },
+    {
+      "id": "lactulose",
+      "medication": { "display": "Lactulose" },
+      "status": "active",
+      "dose": "5 mL",
+      "route": { "display": "Oral" },
+      "frequency": "Twice daily",
+      "indication": "Constipation prevention during opioid treatment"
+    }
+  ],
+  "history": {
+    "entries": [
       {
-        "id": "childhood-cancer-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Childhood cancer under specialist oncology care.",
+        "id": "avsd-repair",
+        "type": "procedure",
+        "summary": "Atrioventricular septal defect surgically repaired at four months of age.",
+        "procedure": {
+          "display": "Surgical repair of atrioventricular septal defect"
+        },
+        "outcome": "Good initial recovery; the repair-site leak later required renewed cardiology monitoring.",
+        "occurred": { "start": { "value": "2016", "precision": "year" } },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "aml-diagnosis-and-first-line-treatment",
+        "type": "medication_course",
+        "summary": "First-line chemotherapy for acute myeloid leukaemia achieved remission.",
+        "medication": {
+          "display": "First-line AML chemotherapy regimen (specific agents not recorded)"
+        },
+        "status": "completed",
+        "indication": "Acute myeloid leukaemia diagnosed aged five.",
+        "response": "Remission achieved.",
+        "occurred": {
+          "start": { "value": "2021", "precision": "year", "approximate": true }
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "aml-relapse-second-line-treatment",
+        "type": "medication_course",
+        "summary": "Second-line chemotherapy commenced after AML recurrence.",
+        "medication": {
+          "display": "Second-line AML chemotherapy regimen (specific agents not recorded)"
+        },
+        "status": "stopped",
+        "indication": "Recurrent acute myeloid leukaemia.",
+        "reasonEnded": "Paused pending multidisciplinary review because response was poor and treatment caused cardiac complications.",
+        "response": "Poor response with progressive disease.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "picc-infection-hdu-admission",
+        "type": "encounter",
+        "summary": "Admitted to high-dependency care with a PICC line infection.",
+        "encounterType": "admission",
+        "careSetting": "acute_inpatient",
+        "service": "Royal Manchester Children's Hospital",
+        "reason": "PICC line infection during second-line chemotherapy.",
+        "outcome": "Infection treated; the PICC remains in situ and requires checking at every visit.",
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "staging-mri-progressive-aml",
+        "type": "investigation",
+        "summary": "Staging MRI showed widespread extramedullary AML relapse.",
+        "kind": "imaging",
+        "investigation": {
+          "display": "MRI whole body, brain and whole spine with contrast"
+        },
+        "status": "final",
+        "results": [],
+        "conclusion": "Widespread relapse involving CNS/leptomeninges, left orbit, liver, spleen, kidneys, diffuse marrow and lymph nodes, with no response to second-line chemotherapy and no cord compression or hydrocephalus.",
+        "author": {
+          "name": "Dr A. Okonkwo",
+          "role": "Consultant Paediatric Radiologist",
+          "service": "Royal Manchester Children's Hospital"
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "oncology-referral",
+        "type": "referral",
+        "summary": "Specialist oncology care established before the current community visit.",
+        "status": "accepted",
+        "referredTo": "Royal Manchester Children's Hospital Oncology",
+        "reason": "Childhood cancer requiring specialist oncology care.",
+        "outcome": "Under the care of Dr S. Chen and the children's oncology service.",
         "sensitivity": "restricted"
       },
       {
         "id": "advance-care-plan",
-        "category": "care_plan",
-        "clinicalStatus": "active",
+        "type": "care_plan",
         "summary": "Children and Young People's Advance Care Plan is in progress.",
+        "status": "active_at_boundary",
+        "need": "Parallel planning for supportive and palliative care needs.",
+        "goals": [
+          "Keep Emma comfortable and unafraid",
+          "Support care at home for as long as possible",
+          "Keep Nadine involved in every decision",
+          "Preserve access to familiar people and favourite activities"
+        ],
+        "interventions": [
+          "Continue multidisciplinary CYPACP discussions",
+          "Use Emma's communication aids to gather her wishes",
+          "Maintain active oncology review alongside supportive and palliative planning",
+          "Escalate pain, fever, infection or acute deterioration using the agreed plan"
+        ],
+        "evaluation": "Plan remains in progress and unsigned. DNACPR, ceilings of treatment and ReSPECT decisions await MDT and family discussion.",
         "sensitivity": "restricted"
       }
     ]

@@ -33,8 +33,20 @@
       }
     ],
     "preferredLanguageId": "english",
-    "preferences": [],
-    "accessibilityNeeds": []
+    "preferences": [
+      {
+        "id": "verbal-plain-language",
+        "summary": "Explain written information verbally using clear, plain language.",
+        "details": "Allow extra processing time and check understanding without relying on written materials alone."
+      }
+    ],
+    "accessibilityNeeds": [
+      {
+        "id": "dyslexia",
+        "summary": "Dyslexia is documented.",
+        "details": "Written information requires a verbal explanation and additional processing time."
+      }
+    ]
   },
   "contact": {
     "address": {
@@ -43,7 +55,8 @@
       "postalCode": "M12 6BE",
       "country": "United Kingdom",
       "synthetic": true
-    }
+    },
+    "phone": "0161 483 9274 / 07742 318 605"
   },
   "relationships": [
     {
@@ -51,6 +64,9 @@
       "name": "Sandra Marsden",
       "relationship": { "display": "Mother" },
       "roles": ["next_of_kin"],
+      "contact": {
+        "phone": "07742 318 604"
+      },
       "notes": "Lives with Adam and his younger siblings."
     }
   ],
@@ -66,6 +82,40 @@
       "category": "social",
       "summary": "Has no wider social network and is experiencing financial difficulties.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "substance-use-history",
+      "category": "lifestyle",
+      "summary": "Longstanding cannabis, alcohol and tobacco use.",
+      "details": "Cannabis and alcohol use began at age 14; cocaine use is historical. He has been referred to CGL substance misuse services but has not engaged.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "criminal-justice-history",
+      "category": "social",
+      "summary": "Has a history of minor offending and remains in monthly contact with probation.",
+      "details": "First arrest was for car theft at age 14. No serious violence or custodial sentence is documented.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "family-mental-health-history",
+      "category": "family_history",
+      "summary": "A paternal uncle had schizophrenia and died by suicide aged 28.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "education-and-dyslexia-history",
+      "category": "education",
+      "summary": "Dyslexia and behavioural difficulties were identified before secondary school.",
+      "details": "His later education included school exclusion following aggressive outbursts.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "established-care-team",
+      "category": "medical_history",
+      "summary": "Supported by the Jean McFarlane CMHT under enhanced CPA.",
+      "details": "Care coordinator/CPN Maria Santos visits every three weeks; support worker James Nkosi visits every two weeks; consultant Dr A. Williams reviews approximately every six months. Adam is an informal voluntary patient.",
+      "sensitivity": "restricted"
     },
     {
       "id": "childhood-adversity",
@@ -87,32 +137,124 @@
       "problem": { "display": "Schizophrenia" },
       "clinicalStatus": "active",
       "details": "A recent diagnosis in the source material."
+    },
+    {
+      "id": "type-2-diabetes",
+      "problem": { "display": "Type 2 diabetes mellitus" },
+      "clinicalStatus": "active",
+      "details": "Monitoring is overdue and adherence to metformin has been inconsistent."
+    },
+    {
+      "id": "obesity",
+      "problem": { "display": "Obesity" },
+      "clinicalStatus": "active"
+    },
+    {
+      "id": "hypercholesterolaemia",
+      "problem": { "display": "Hypercholesterolaemia" },
+      "clinicalStatus": "active"
+    },
+    {
+      "id": "asthma",
+      "problem": { "display": "Asthma" },
+      "clinicalStatus": "active"
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "risperidone",
+      "medication": { "display": "Risperidone" },
+      "status": "active",
+      "dose": "6 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Once daily",
+      "indication": "Schizophrenia",
+      "details": "Adherence has been erratic."
+    },
+    {
+      "id": "mirtazapine",
+      "medication": { "display": "Mirtazapine" },
+      "status": "active",
+      "dose": "30 mg",
+      "route": { "display": "Oral" },
+      "frequency": "At night",
+      "indication": "Depressive symptoms"
+    },
+    {
+      "id": "metformin",
+      "medication": { "display": "Metformin" },
+      "status": "active",
+      "dose": "500 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Three times daily",
+      "indication": "Type 2 diabetes mellitus",
+      "details": "Adherence has been erratic."
+    },
+    {
+      "id": "simvastatin",
+      "medication": { "display": "Simvastatin" },
+      "status": "active",
+      "dose": "20 mg",
+      "route": { "display": "Oral" },
+      "frequency": "At night",
+      "indication": "Hypercholesterolaemia"
+    }
+  ],
+  "history": {
+    "entries": [
       {
         "id": "schizophrenia-diagnosis",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "Recent diagnosis of schizophrenia.",
+        "type": "assessment",
+        "summary": "Presented to A&E aged 19 with a first psychotic episode.",
+        "assessment": {
+          "display": "Mental health diagnostic assessment"
+        },
+        "outcome": "Schizophrenia diagnosed after paranoid thoughts, auditory hallucinations and persecutory beliefs.",
+        "occurred": {
+          "start": { "value": "2022", "precision": "year", "approximate": true }
+        },
         "sensitivity": "restricted"
       },
       {
-        "id": "childhood-trauma-history",
-        "category": "history",
-        "clinicalStatus": "active",
-        "summary": "History of childhood domestic violence, physical abuse and paternal alcohol dependence.",
-        "details": "Father died when Adam was 15; later history includes school exclusion and early contact with the criminal justice system.",
+        "id": "mental-health-care-pathway",
+        "type": "encounter",
+        "summary": "Progressed from acute assessment to community mental health care.",
+        "encounterType": "community_contact",
+        "careSetting": "community_mental_health",
+        "service": "HBTT, Early Intervention in Psychosis and CMHT",
+        "reason": "Treatment and support following diagnosis of schizophrenia.",
+        "outcome": "Transferred from A&E to Home-Based Treatment Team, then Early Intervention in Psychosis and subsequently CMHT, where he has been supported for six months.",
         "sensitivity": "restricted"
       },
       {
-        "id": "self-neglect-and-exploitation-risk",
-        "category": "risk",
-        "clinicalStatus": "active",
-        "summary": "Risk of self-neglect and exploitation associated with deteriorating self-care, substance use and cannabis-related debts.",
+        "id": "enhanced-cpa-plan",
+        "type": "care_plan",
+        "summary": "Enhanced Care Programme Approach plan is active.",
+        "status": "active_at_boundary",
+        "need": "Coordinated community treatment, recovery support and risk management.",
+        "goals": [
+          "Maintain engagement with treatment",
+          "Monitor mental and physical health",
+          "Coordinate support across services"
+        ],
+        "interventions": [
+          "CPN contact every three weeks",
+          "Support worker contact every two weeks",
+          "Consultant review every six months",
+          "Notify care coordinator of material changes in risk"
+        ],
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "cgl-referral",
+        "type": "referral",
+        "summary": "Referred to CGL substance misuse services.",
+        "status": "accepted",
+        "referredFrom": "Community Mental Health Team",
+        "referredTo": "CGL substance misuse service",
+        "reason": "Longstanding cannabis and alcohol use.",
+        "outcome": "Referral is open but Adam has not engaged with the service.",
         "sensitivity": "restricted"
       }
     ]

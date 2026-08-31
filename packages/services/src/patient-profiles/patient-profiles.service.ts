@@ -154,9 +154,21 @@ export function createPatientProfilesService(client: DatabaseClient) {
     }
     const item = mapCatalogueItem(profile.data, version);
     const document = patientProfileDocumentV1Schema.parse(version.document);
+    const catalogue = await listAdminPatientProfiles();
+    const catalogueIndex = catalogue.findIndex(({ id }) => id === profileId);
+    const previous = catalogue[catalogueIndex - 1];
+    const next = catalogue[catalogueIndex + 1];
     return {
       ...item,
       document,
+      navigation: {
+        ...(previous
+          ? { previous: { id: previous.id, displayName: previous.displayName } }
+          : {}),
+        ...(next
+          ? { next: { id: next.id, displayName: next.displayName } }
+          : {}),
+      },
       changeSummary: version.change_summary,
       ...(version.source_reference
         ? { sourceReference: version.source_reference }

@@ -11,7 +11,7 @@ describe('breadcrumbsForPath', () => {
     ]);
     expect(breadcrumbsForPath('/admin/patient-profiles/profile-id')).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Learning' },
       { label: 'Patient profiles', href: '/admin/patient-profiles' },
       { label: 'Patient profile' },
     ]);
@@ -19,7 +19,7 @@ describe('breadcrumbsForPath', () => {
       breadcrumbsForPath('/admin/patient-profiles/profile-id/edit'),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Learning' },
       { label: 'Patient profiles', href: '/admin/patient-profiles' },
       {
         label: 'Patient profile',
@@ -36,7 +36,7 @@ describe('breadcrumbsForPath', () => {
       breadcrumbsForPath('/admin/users/ab720a62-06df-408d-9e8c-0201ac69269a'),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Users', href: '/admin/users' },
       { label: 'User details' },
     ]);
@@ -47,7 +47,7 @@ describe('breadcrumbsForPath', () => {
       ),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Organisations', href: '/admin/organisations' },
       {
         label: 'Northbridge University',
@@ -63,7 +63,7 @@ describe('breadcrumbsForPath', () => {
       ),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Organisations', href: '/admin/organisations' },
       {
         label: 'Northbridge University',
@@ -82,7 +82,7 @@ describe('breadcrumbsForPath', () => {
       ),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Organisations', href: '/admin/organisations' },
       {
         label: 'Northbridge University',
@@ -97,7 +97,7 @@ describe('breadcrumbsForPath', () => {
       ),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Organisations', href: '/admin/organisations' },
       {
         label: 'Northbridge University',
@@ -112,7 +112,7 @@ describe('breadcrumbsForPath', () => {
       ),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Organisations', href: '/admin/organisations' },
       { label: 'Northbridge University' },
     ]);
@@ -123,7 +123,7 @@ describe('breadcrumbsForPath', () => {
       ),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Organisations', href: '/admin/organisations' },
       {
         label: 'Northbridge University',
@@ -141,7 +141,7 @@ describe('breadcrumbsForPath', () => {
       ),
     ).toEqual([
       { label: 'Home', href: '/' },
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Organisations', href: '/admin/organisations' },
       {
         label: 'Northbridge University',

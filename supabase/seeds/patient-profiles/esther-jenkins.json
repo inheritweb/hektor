@@ -52,7 +52,8 @@
       "name": "Tasha Jenkins",
       "relationship": { "display": "Daughter" },
       "roles": ["next_of_kin", "carer"],
-      "notes": "Lives with Esther and is her main source of support."
+      "contact": { "phone": "07SIM000205" },
+      "notes": "Tasha is 42, works part-time as a receptionist, lives with Esther and is her only local informal support. Before the acute presentation Esther did not require care from her."
     }
   ],
   "background": [
@@ -65,7 +66,8 @@
     {
       "id": "living-with-daughter",
       "category": "living_arrangements",
-      "summary": "Lives with her daughter Tasha in a two-bedroom terraced house.",
+      "summary": "Lives with her daughter Tasha in a rented two-bedroom terraced house.",
+      "details": "The property has stairs and no downstairs toilet or bathroom.",
       "sensitivity": "standard"
     },
     {
@@ -73,6 +75,46 @@
       "category": "adverse_life_event",
       "summary": "Widowed and experienced a depressive episode after her husband's death.",
       "details": "Previously took antidepressants for two years.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "family-cardiovascular-history",
+      "category": "family_history",
+      "summary": "There is a significant family history of cardiovascular and metabolic disease.",
+      "details": "Her mother died from a stroke aged 85; a sister died from heart disease aged 65; her father had high cholesterol and diabetes.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "smoking-history",
+      "category": "lifestyle",
+      "summary": "Smokes approximately ten cigarettes daily and has smoked since age 18.",
+      "details": "She would like to stop but is reluctant to add smoking-cessation medication to her existing medicines.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "diet-and-activity",
+      "category": "lifestyle",
+      "summary": "Usually eats simple or ready-prepared meals and undertakes little regular exercise.",
+      "details": "Walks for about 30 minutes once or twice a month and drinks alcohol occasionally.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "right-handed",
+      "category": "medical_history",
+      "summary": "Right-handed.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "pre-episode-independence",
+      "category": "living_arrangements",
+      "summary": "Fully independent before the acute presentation.",
+      "details": "Managed personal care, dressing, mobility and domestic tasks without a package of care, equipment, home adaptations or previous adult-social-care involvement.",
+      "sensitivity": "standard"
+    },
+    {
+      "id": "gp-practice",
+      "category": "medical_history",
+      "summary": "Registered with Openshaw Health Centre.",
       "sensitivity": "standard"
     }
   ],
@@ -88,10 +130,28 @@
       "clinicalStatus": "active"
     },
     {
+      "id": "hyperlipidaemia",
+      "problem": { "display": "Hyperlipidaemia" },
+      "clinicalStatus": "active",
+      "details": "Longstanding."
+    },
+    {
+      "id": "knee-osteoarthritis",
+      "problem": { "display": "Osteoarthritis of both knees" },
+      "clinicalStatus": "active",
+      "details": "Mild and not recently troublesome."
+    },
+    {
       "id": "past-depressive-episode",
       "problem": { "display": "Depressive episode" },
       "clinicalStatus": "resolved",
       "details": "Occurred after bereavement and was treated with antidepressants for two years."
+    },
+    {
+      "id": "recent-low-mood",
+      "problem": { "display": "Low mood" },
+      "clinicalStatus": "active",
+      "details": "Increasing low mood over several months before the acute presentation, not previously disclosed. No hopelessness, self-harm thoughts, hallucinations or delusions were reported."
     }
   ],
   "allergies": [
@@ -104,43 +164,108 @@
       "details": "Patient-reported reaction in the source profile."
     }
   ],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "amlodipine",
+      "medication": { "display": "Amlodipine" },
+      "status": "active",
+      "dose": "5 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Once daily",
+      "indication": "Hypertension"
+    },
+    {
+      "id": "bisoprolol",
+      "medication": { "display": "Bisoprolol" },
+      "status": "active",
+      "dose": "10 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Once daily",
+      "indication": "Hypertension and atrial fibrillation"
+    },
+    {
+      "id": "statin",
+      "medication": { "display": "Statin (specific medicine not recorded)" },
+      "status": "active",
+      "dose": "80 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Once daily",
+      "indication": "Hyperlipidaemia",
+      "details": "Exact medicine requires reconciliation with the GP or pharmacy record."
+    },
+    {
+      "id": "apixaban",
+      "medication": { "display": "Apixaban" },
+      "status": "active",
+      "dose": "5 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Twice daily",
+      "indication": "Atrial fibrillation",
+      "details": "Morning adherence is good, but evening doses are often forgotten; approximately three evening doses were missed in the week before the acute presentation."
+    },
+    {
+      "id": "naproxen",
+      "medication": { "display": "Naproxen" },
+      "status": "active",
+      "route": { "display": "Oral" },
+      "frequency": "As required",
+      "indication": "Knee osteoarthritis",
+      "details": "Dose not recalled and not taken for approximately two months; interaction risk with apixaban should be reviewed before use."
+    }
+  ],
+  "history": {
+    "entries": [
       {
-        "id": "acute-ischaemic-stroke",
-        "category": "episode",
-        "clinicalStatus": "active",
-        "summary": "Acute ischaemic stroke affecting the right hemisphere with left-sided facial droop, arm weakness and slurred speech.",
-        "occurredOn": "2026-07-19",
+        "id": "hypertension-diagnosis",
+        "type": "assessment",
+        "summary": "Hypertension diagnosed approximately ten years ago.",
+        "assessment": { "display": "Hypertension assessment" },
+        "outcome": "Hypertension diagnosed; a recent home reading was approximately 160/90 mmHg.",
+        "occurred": {
+          "start": { "value": "2016", "precision": "year", "approximate": true }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "atrial-fibrillation-diagnosis",
+        "type": "assessment",
+        "summary": "Atrial fibrillation diagnosed approximately two years ago.",
+        "assessment": { "display": "Cardiac rhythm assessment" },
+        "outcome": "Atrial fibrillation diagnosed and anticoagulation with apixaban started.",
+        "occurred": {
+          "start": { "value": "2024", "precision": "year", "approximate": true }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "recent-home-blood-pressure",
+        "type": "observation",
+        "summary": "Recent home blood pressure was approximately 160/90 mmHg.",
+        "observation": { "display": "Home blood pressure" },
+        "value": { "type": "text", "value": "Approximately 160/90 mmHg" },
+        "interpretation": "high",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "bereavement-depressive-episode",
+        "type": "assessment",
+        "summary": "Depressive episode following her husband's death, subsequently resolved.",
+        "assessment": {
+          "display": "Mental health assessment"
+        },
+        "outcome": "Depressive episode identified after bereavement and treated with antidepressants for two years.",
         "sensitivity": "restricted"
       },
       {
-        "id": "hypertension-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "History of hypertension.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "atrial-fibrillation-history",
-        "category": "condition",
-        "clinicalStatus": "active",
-        "summary": "History of atrial fibrillation.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "stroke-admission-weight",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Weight recorded as 77 kg; height recorded as 163 cm.",
-        "sensitivity": "standard"
-      },
-      {
-        "id": "swallow-and-falls-risk",
-        "category": "risk",
-        "clinicalStatus": "active",
-        "summary": "Falls risk and swallow screening requirement identified following acute stroke presentation.",
+        "id": "bereavement-antidepressant-course",
+        "type": "medication_course",
+        "summary": "Two-year course of antidepressant treatment following bereavement.",
+        "medication": {
+          "display": "Antidepressant medicine (specific medicine not recorded)"
+        },
+        "status": "completed",
+        "indication": "Depressive episode following bereavement.",
+        "reasonEnded": "Course completed; depressive episode recorded as resolved.",
         "sensitivity": "restricted"
       }
     ]

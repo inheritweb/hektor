@@ -125,31 +125,31 @@ export function breadcrumbsForPath(
     if (pathname === '/admin/users/new') {
       return [
         home,
-        { label: 'Admin' },
+        { label: 'Identity' },
         { label: 'Users', href: '/admin/users' },
         { label: 'Add user' },
       ];
     }
     return [
       home,
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Users', href: '/admin/users' },
       { label: 'User details' },
     ];
   }
 
   if (pathname === '/admin/users') {
-    return [home, { label: 'Admin' }, { label: 'Users' }];
+    return [home, { label: 'Identity' }, { label: 'Users' }];
   }
 
   if (pathname === '/admin/patient-profiles') {
-    return [home, { label: 'Admin' }, { label: 'Patient profiles' }];
+    return [home, { label: 'Learning' }, { label: 'Patient profiles' }];
   }
 
   if (pathname.match(/^\/admin\/patient-profiles\/[^/]+\/edit$/)) {
     return [
       home,
-      { label: 'Admin' },
+      { label: 'Learning' },
       { label: 'Patient profiles', href: '/admin/patient-profiles' },
       { label: 'Patient profile', href: pathname.slice(0, -5) },
       { label: 'Edit' },
@@ -159,7 +159,7 @@ export function breadcrumbsForPath(
   if (pathname.match(/^\/admin\/patient-profiles\/[^/]+$/)) {
     return [
       home,
-      { label: 'Admin' },
+      { label: 'Learning' },
       { label: 'Patient profiles', href: '/admin/patient-profiles' },
       { label: 'Patient profile' },
     ];
@@ -167,13 +167,13 @@ export function breadcrumbsForPath(
 
   if (pathname.startsWith('/admin/organisations')) {
     if (pathname === '/admin/organisations') {
-      return [home, { label: 'Admin' }, { label: 'Organisations' }];
+      return [home, { label: 'Identity' }, { label: 'Organisations' }];
     }
 
     if (pathname === '/admin/organisations/new') {
       return [
         home,
-        { label: 'Admin' },
+        { label: 'Identity' },
         { label: 'Organisations', href: '/admin/organisations' },
         { label: 'New organisation' },
       ];
@@ -181,7 +181,7 @@ export function breadcrumbsForPath(
 
     return [
       home,
-      { label: 'Admin' },
+      { label: 'Identity' },
       { label: 'Organisations', href: '/admin/organisations' },
       ...(pathname.match(/\/users\/[^/]+\/edit$/)
         ? [
@@ -526,7 +526,7 @@ export function AuthenticatedShell({
     ...(platformRole === PlatformRole.Admin
       ? [
           {
-            label: 'Admin',
+            label: 'Identity',
             items: [
               {
                 label: 'Users',
@@ -540,6 +540,11 @@ export function AuthenticatedShell({
                 href: '/admin/organisations',
                 active: pathname.startsWith('/admin/organisations'),
               },
+            ],
+          },
+          {
+            label: 'Learning',
+            items: [
               {
                 label: 'Patient profiles',
                 icon: LuFileHeart,

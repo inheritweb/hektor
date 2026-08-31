@@ -117,8 +117,8 @@ foundations without forcing its workflow into the EHR model.
 3. [x] Surface the signed-in user and active context in the application shell.
 4. [x] Add manual, CSV and SCIM provisioning, membership lifecycle, groups,
        cohorts and learner-seat enforcement.
-5. [ ] Define the first EHR capabilities, including system patient-profile
-       discovery/cloning, the personal free allowance and institutional grants.
+5. [ ] Define the first EHR capabilities for published EHR preview and assignment
+       delivery, including the personal free allowance and institutional grants.
 6. [ ] Add product and entitlement persistence from those concrete rules.
 7. [ ] Implement institutional SSO and any exceptional identity reconciliation
        required by the chosen provider.

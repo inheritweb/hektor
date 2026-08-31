@@ -79,15 +79,92 @@ export enum PatientClinicalStatus {
   Resolved = 'resolved',
 }
 
-export enum PatientClinicalRecordFactCategory {
-  Condition = 'condition',
-  History = 'history',
-  Procedure = 'procedure',
-  Episode = 'episode',
+export enum PatientHistoryEntryType {
+  Encounter = 'encounter',
   Observation = 'observation',
+  Assessment = 'assessment',
   Investigation = 'investigation',
-  Risk = 'risk',
+  Procedure = 'procedure',
+  MedicationCourse = 'medication_course',
+  Referral = 'referral',
+  ClinicalDocument = 'clinical_document',
   CarePlan = 'care_plan',
+}
+
+export enum PatientHistoryDatePrecision {
+  Day = 'day',
+  Month = 'month',
+  Year = 'year',
+}
+
+export enum PatientHistoricalEncounterType {
+  Admission = 'admission',
+  EmergencyAttendance = 'emergency_attendance',
+  OutpatientAppointment = 'outpatient_appointment',
+  PrimaryCareAppointment = 'primary_care_appointment',
+  CommunityContact = 'community_contact',
+  HomeVisit = 'home_visit',
+  Birth = 'birth',
+  Other = 'other',
+}
+
+export enum PatientObservationValueType {
+  Quantity = 'quantity',
+  Text = 'text',
+  Boolean = 'boolean',
+  Coded = 'coded',
+}
+
+export enum PatientObservationInterpretation {
+  Normal = 'normal',
+  High = 'high',
+  Low = 'low',
+  Abnormal = 'abnormal',
+}
+
+export enum PatientInvestigationKind {
+  Laboratory = 'laboratory',
+  Imaging = 'imaging',
+  Microbiology = 'microbiology',
+  Histopathology = 'histopathology',
+  Other = 'other',
+}
+
+export enum PatientInvestigationStatus {
+  Pending = 'pending',
+  Preliminary = 'preliminary',
+  Final = 'final',
+  Corrected = 'corrected',
+  Cancelled = 'cancelled',
+}
+
+export enum PatientHistoricalMedicationStatus {
+  ActiveAtBoundary = 'active_at_boundary',
+  Completed = 'completed',
+  Stopped = 'stopped',
+  Unknown = 'unknown',
+}
+
+export enum PatientReferralStatus {
+  Requested = 'requested',
+  Accepted = 'accepted',
+  Completed = 'completed',
+  Declined = 'declined',
+  Cancelled = 'cancelled',
+}
+
+export enum PatientClinicalDocumentType {
+  ClinicalNote = 'clinical_note',
+  Letter = 'letter',
+  DischargeSummary = 'discharge_summary',
+  Handover = 'handover',
+  Other = 'other',
+}
+
+export enum PatientHistoricalCarePlanStatus {
+  ActiveAtBoundary = 'active_at_boundary',
+  Completed = 'completed',
+  Cancelled = 'cancelled',
 }
 
 export enum PatientAllergyVerificationStatus {
@@ -208,23 +285,147 @@ export interface PatientProfileDocumentV1 {
   problems: PatientProblem[];
   allergies: PatientAllergy[];
   baselineMedications: PatientBaselineMedication[];
-  clinicalRecord?: PatientClinicalRecord;
+  history: PatientHistory;
   catalogue: PatientCatalogueMetadata;
 }
 
-export interface PatientClinicalRecord {
-  facts: PatientClinicalRecordFact[];
+export interface PatientHistory {
+  entries: PatientHistoryEntry[];
 }
 
-export interface PatientClinicalRecordFact {
+export interface PatientHistoricalDate {
+  value: string;
+  precision: PatientHistoryDatePrecision;
+  approximate?: boolean;
+}
+
+export interface PatientHistoricalPeriod {
+  start?: PatientHistoricalDate;
+  end?: PatientHistoricalDate;
+}
+
+export interface PatientHistoricalAuthor {
+  name?: string;
+  role?: string;
+  service?: string;
+}
+
+export interface PatientHistoryEntryBase {
   id: string;
-  category: PatientClinicalRecordFactCategory;
-  clinicalStatus: PatientClinicalStatus;
+  type: PatientHistoryEntryType;
   summary: string;
   details?: string;
-  occurredOn?: string;
   sensitivity: PatientDataSensitivity;
+  occurred?: PatientHistoricalPeriod;
+  recordedOn?: PatientHistoricalDate;
+  author?: PatientHistoricalAuthor;
+  sourceReference?: string;
 }
+
+export interface PatientHistoricalEncounter extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.Encounter;
+  encounterType: PatientHistoricalEncounterType;
+  careSetting?: PatientCareSetting;
+  service?: string;
+  reason?: string;
+  outcome?: string;
+}
+
+export type PatientObservationValue =
+  | { type: PatientObservationValueType.Quantity; value: number; unit: string }
+  | { type: PatientObservationValueType.Text; value: string }
+  | { type: PatientObservationValueType.Boolean; value: boolean }
+  | { type: PatientObservationValueType.Coded; value: CodedDisplayValue };
+
+export interface PatientHistoricalObservation extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.Observation;
+  observation: CodedDisplayValue;
+  value: PatientObservationValue;
+  referenceRange?: string;
+  interpretation?: PatientObservationInterpretation;
+}
+
+export interface PatientHistoricalAssessment extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.Assessment;
+  assessment: CodedDisplayValue;
+  score?: number;
+  scale?: string;
+  outcome: string;
+  components?: string[];
+}
+
+export interface PatientInvestigationResult {
+  id: string;
+  observation: CodedDisplayValue;
+  value: PatientObservationValue;
+  referenceRange?: string;
+  interpretation?: PatientObservationInterpretation;
+}
+
+export interface PatientHistoricalInvestigation extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.Investigation;
+  kind: PatientInvestigationKind;
+  investigation: CodedDisplayValue;
+  status: PatientInvestigationStatus;
+  results: PatientInvestigationResult[];
+  conclusion?: string;
+}
+
+export interface PatientHistoricalProcedure extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.Procedure;
+  procedure: CodedDisplayValue;
+  indication?: string;
+  outcome?: string;
+  complications?: string;
+}
+
+export interface PatientHistoricalMedicationCourse extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.MedicationCourse;
+  medication: CodedDisplayValue;
+  status: PatientHistoricalMedicationStatus;
+  dose?: string;
+  route?: CodedDisplayValue;
+  frequency?: string;
+  indication?: string;
+  reasonEnded?: string;
+  response?: string;
+}
+
+export interface PatientHistoricalReferral extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.Referral;
+  status: PatientReferralStatus;
+  referredFrom?: string;
+  referredTo: string;
+  reason: string;
+  outcome?: string;
+}
+
+export interface PatientHistoricalDocument extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.ClinicalDocument;
+  documentType: PatientClinicalDocumentType;
+  title: string;
+  body: string;
+}
+
+export interface PatientHistoricalCarePlan extends PatientHistoryEntryBase {
+  type: PatientHistoryEntryType.CarePlan;
+  status: PatientHistoricalCarePlanStatus;
+  need: string;
+  goals: string[];
+  interventions: string[];
+  evaluation?: string;
+}
+
+export type PatientHistoryEntry =
+  | PatientHistoricalEncounter
+  | PatientHistoricalObservation
+  | PatientHistoricalAssessment
+  | PatientHistoricalInvestigation
+  | PatientHistoricalProcedure
+  | PatientHistoricalMedicationCourse
+  | PatientHistoricalReferral
+  | PatientHistoricalDocument
+  | PatientHistoricalCarePlan;
 
 export interface PatientIdentity {
   givenNames: string[];
@@ -358,8 +559,19 @@ export interface PatientProfileCatalogueItem {
 
 export interface PatientProfileDetail extends PatientProfileCatalogueItem {
   document: PatientProfileDocumentV1;
+  navigation: PatientProfileNavigation;
   changeSummary: string;
   sourceReference?: string;
   sourceRevision?: string;
   updatedAt: string;
+}
+
+export interface PatientProfileNavigationItem {
+  id: string;
+  displayName: string;
+}
+
+export interface PatientProfileNavigation {
+  previous?: PatientProfileNavigationItem;
+  next?: PatientProfileNavigationItem;
 }

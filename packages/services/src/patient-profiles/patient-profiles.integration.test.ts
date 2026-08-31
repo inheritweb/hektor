@@ -50,6 +50,29 @@ function readSeedProfile(slug: string) {
   ) as Json;
 }
 
+function applyProductionSeed() {
+  execFileSync(
+    'docker',
+    [
+      'exec',
+      '-i',
+      'supabase_db_hektor',
+      'psql',
+      '-U',
+      'postgres',
+      '-d',
+      'postgres',
+      '-v',
+      'ON_ERROR_STOP=1',
+    ],
+    {
+      cwd: repositoryRoot,
+      input: readFileSync(productionSeed),
+      stdio: ['pipe', 'pipe', 'pipe'],
+    },
+  );
+}
+
 async function createAuthUser(platformAdmin = false) {
   const password = `Hektor-${randomUUID()}!`;
   const email = `patient-profile-${randomUUID()}@example.com`;
@@ -73,6 +96,8 @@ async function signedInClient(email: string, password: string) {
 
 describe('patient profile database foundation', () => {
   beforeAll(async () => {
+    applyProductionSeed();
+
     const existing = await adminClient
       .from('patient_profiles')
       .select('id')
@@ -149,26 +174,7 @@ describe('patient profile database foundation', () => {
   });
 
   it('applies the production seed repeatedly without changing records', async () => {
-    execFileSync(
-      'docker',
-      [
-        'exec',
-        '-i',
-        'supabase_db_hektor',
-        'psql',
-        '-U',
-        'postgres',
-        '-d',
-        'postgres',
-        '-v',
-        'ON_ERROR_STOP=1',
-      ],
-      {
-        cwd: repositoryRoot,
-        input: readFileSync(productionSeed),
-        stdio: ['pipe', 'pipe', 'pipe'],
-      },
-    );
+    applyProductionSeed();
 
     const profiles = await adminClient
       .from('patient_profiles')

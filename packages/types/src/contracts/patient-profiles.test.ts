@@ -105,6 +105,33 @@ describe('patientProfileDocumentV1Schema', () => {
     );
   });
 
+  it('rejects historical dates that do not match their declared precision', () => {
+    const document = readSeedProfile('adam-marsden') as {
+      history: { entries: Array<Record<string, unknown>> };
+    };
+    document.history.entries[0] = {
+      ...document.history.entries[0],
+      occurred: {
+        start: { value: '2026-08', precision: 'day' },
+      },
+    };
+
+    expect(patientProfileDocumentV1Schema.safeParse(document).success).toBe(
+      false,
+    );
+  });
+
+  it('rejects the retired generic clinical record', () => {
+    const document = {
+      ...(readSeedProfile('emma-barlow') as Record<string, unknown>),
+      clinicalRecord: { facts: [] },
+    };
+
+    expect(patientProfileDocumentV1Schema.safeParse(document).success).toBe(
+      false,
+    );
+  });
+
   it('rejects documents above the total size limit', () => {
     const document = readSeedProfile('emma-barlow') as {
       background: Array<Record<string, unknown>>;

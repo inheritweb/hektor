@@ -88,6 +88,19 @@
       "category": "cultural",
       "summary": "Finds quiet prayer comforting when worried and prefers this to be approached sensitively.",
       "sensitivity": "standard"
+    },
+    {
+      "id": "healthcare-passport",
+      "category": "medical_history",
+      "summary": "Has a learning disability healthcare passport.",
+      "details": "He does not always bring it to appointments because he feels embarrassed.",
+      "sensitivity": "restricted"
+    },
+    {
+      "id": "social-confidence",
+      "category": "social",
+      "summary": "Values independence, work and social contact but can feel embarrassed about needing support.",
+      "sensitivity": "standard"
     }
   ],
   "problems": [
@@ -105,36 +118,133 @@
     }
   ],
   "allergies": [],
-  "baselineMedications": [],
-  "clinicalRecord": {
-    "facts": [
+  "baselineMedications": [
+    {
+      "id": "metformin",
+      "medication": { "display": "Metformin" },
+      "status": "active",
+      "dose": "500 mg",
+      "route": { "display": "Oral" },
+      "frequency": "Once daily",
+      "indication": "Type 2 diabetes mellitus",
+      "details": "Started after glycaemic control did not improve sufficiently with diet and lifestyle measures."
+    },
+    {
+      "id": "paracetamol-prn",
+      "medication": { "display": "Paracetamol" },
+      "status": "active",
+      "route": { "display": "Oral" },
+      "frequency": "As required",
+      "indication": "Pain",
+      "details": "His sister organises doses in a reusable dosette box when required."
+    }
+  ],
+  "history": {
+    "entries": [
       {
         "id": "type-2-diabetes-diagnosis",
-        "category": "condition",
-        "clinicalStatus": "active",
+        "type": "assessment",
         "summary": "Type 2 diabetes mellitus diagnosed five months before the source scenario.",
+        "assessment": {
+          "display": "Diabetes diagnostic assessment"
+        },
+        "outcome": "Type 2 diabetes mellitus diagnosed.",
+        "occurred": {
+          "start": {
+            "value": "2026-07",
+            "precision": "month",
+            "approximate": true
+          }
+        },
         "sensitivity": "standard"
       },
       {
         "id": "learning-disability-assessment",
-        "category": "condition",
-        "clinicalStatus": "active",
+        "type": "assessment",
         "summary": "Mild to moderate learning disability affecting understanding of complex health information.",
+        "assessment": {
+          "display": "Learning disability assessment"
+        },
+        "outcome": "Mild to moderate learning disability identified.",
+        "components": [
+          "Communicates verbally and understands everyday conversation",
+          "Finds complex information, medical terminology and being rushed difficult"
+        ],
         "sensitivity": "restricted"
       },
       {
-        "id": "weight-at-review",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Weight recorded as 102 kg; 98 kg at diabetes diagnosis.",
+        "id": "weight-at-diabetes-diagnosis",
+        "type": "observation",
+        "summary": "Weight was 98 kg when diabetes was diagnosed.",
+        "observation": {
+          "display": "Body weight"
+        },
+        "value": {
+          "type": "quantity",
+          "value": 98,
+          "unit": "kg"
+        },
         "sensitivity": "standard"
       },
       {
-        "id": "height-record",
-        "category": "observation",
-        "clinicalStatus": "active",
-        "summary": "Height recorded as 167 cm.",
+        "id": "initial-hba1c",
+        "type": "observation",
+        "summary": "HbA1c at diagnosis was 54 mmol/mol.",
+        "observation": { "display": "HbA1c" },
+        "value": { "type": "quantity", "value": 54, "unit": "mmol/mol" },
+        "interpretation": "high",
+        "occurred": {
+          "start": {
+            "value": "2026-07",
+            "precision": "month",
+            "approximate": true
+          }
+        },
         "sensitivity": "standard"
+      },
+      {
+        "id": "baseline-activities-communication-assessment",
+        "type": "assessment",
+        "summary": "Baseline Activities of Living and communication assessment completed.",
+        "assessment": {
+          "display": "Activities of Living and communication assessment"
+        },
+        "outcome": "A reasonable-adjustments plan was established with learning disability nurse involvement.",
+        "components": [
+          "Use everyday language",
+          "Avoid unexplained terminology",
+          "Allow extra processing time",
+          "Check understanding without rushing"
+        ],
+        "occurred": {
+          "start": { "value": "2026-10-02", "precision": "day" }
+        },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "metformin-started",
+        "type": "medication_course",
+        "summary": "Metformin started after lifestyle measures did not achieve sufficient glycaemic improvement.",
+        "medication": { "display": "Metformin" },
+        "status": "active_at_boundary",
+        "dose": "500 mg",
+        "route": { "display": "Oral" },
+        "frequency": "Once daily",
+        "indication": "Type 2 diabetes mellitus",
+        "occurred": {
+          "start": { "value": "2026-11-27", "precision": "day" }
+        },
+        "sensitivity": "standard"
+      },
+      {
+        "id": "learning-disability-nurse-follow-up",
+        "type": "referral",
+        "summary": "Routine learning disability nurse support is established.",
+        "status": "accepted",
+        "referredTo": "Learning disability nursing service",
+        "reason": "Annual health support and accessible care planning.",
+        "outcome": "Usually seen once or twice each year.",
+        "sensitivity": "restricted"
       }
     ]
   },
