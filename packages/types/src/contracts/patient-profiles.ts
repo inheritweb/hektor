@@ -50,6 +50,7 @@ import {
   PatientObservationValueType,
   type PatientProblem,
   type PatientProfileDocumentV1,
+  type PatientProfileVersionNavigationItem,
   PatientProfileTag,
   PatientProfileVersionState,
   PatientRelationshipRole,
@@ -571,6 +572,13 @@ export const patientProfileDetailSchema =
         .object({ id: z.uuid(), displayName: z.string().min(1) })
         .optional(),
     }) satisfies z.ZodType<PatientProfileNavigation>,
+    versions: z.array(
+      z.object({
+        id: z.uuid(),
+        versionNumber: z.number().int().positive(),
+        state: z.enum(PatientProfileVersionState),
+      }) satisfies z.ZodType<PatientProfileVersionNavigationItem>,
+    ),
     changeSummary: z.string().min(1),
     sourceReference: z.string().min(1).optional(),
     sourceRevision: z.string().min(1).optional(),
@@ -594,6 +602,14 @@ export const getAdminPatientProfileContract = defineContract({
   path: '/api/admin/patient-profiles/:profileId',
   access: adminPatientProfileAccess,
   params: z.object({ profileId: z.uuid() }),
+  output: hektorResponseSchema(patientProfileDetailSchema),
+});
+
+export const getAdminPatientProfileVersionContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/patient-profiles/:profileId/version/:versionId',
+  access: adminPatientProfileAccess,
+  params: z.object({ profileId: z.uuid(), versionId: z.uuid() }),
   output: hektorResponseSchema(patientProfileDetailSchema),
 });
 

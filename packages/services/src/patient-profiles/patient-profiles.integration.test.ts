@@ -122,11 +122,12 @@ describe('patient profile database foundation', () => {
       await adminClient.auth.admin.deleteUser(userId);
   });
 
-  it('loads exactly the five deterministic system draft profiles', async () => {
+  it('loads the five deterministic production system draft profiles', async () => {
     const profiles = await adminClient
       .from('patient_profiles')
       .select('id, scope, slug')
       .eq('scope', 'system')
+      .in('slug', seedSlugs)
       .order('slug');
 
     expect(profiles.error).toBeNull();
@@ -159,18 +160,54 @@ describe('patient profile database foundation', () => {
     const service = createPatientProfilesService(adminClient);
     const profiles = await service.listAdminPatientProfiles();
 
-    expect(profiles).toHaveLength(5);
+    expect(profiles).toHaveLength(6);
     expect(profiles.map(({ displayName }) => displayName)).toContain(
       'Amina Warsame',
     );
-    expect(profiles.every(({ versionState }) => versionState === 'draft')).toBe(
-      true,
+    expect(profiles.map(({ displayName }) => displayName)).toContain(
+      'James Bond',
     );
+    expect(
+      profiles
+        .filter(({ slug }) => seedSlugs.includes(slug))
+        .every(({ versionState }) => versionState === 'draft'),
+    ).toBe(true);
+    expect(
+      profiles.find(({ slug }) => slug === 'james-bond')?.versionState,
+    ).toBe('published');
 
     const detail = await service.getAdminPatientProfile(profiles[0]!.id);
     expect(detail.id).toBe(profiles[0]!.id);
     expect(detail.document.synthetic).toBe(true);
     expect(detail.versionState).toBe('draft');
+  });
+
+  it('loads the development-only James Bond version history', async () => {
+    const profile = await adminClient
+      .from('patient_profiles')
+      .select('id')
+      .eq('scope', 'system')
+      .eq('slug', 'james-bond')
+      .single();
+    expect(profile.error).toBeNull();
+
+    const versions = await adminClient
+      .from('patient_profile_versions')
+      .select('version_number, state, document')
+      .eq('patient_profile_id', profile.data!.id)
+      .order('version_number');
+    expect(versions.error).toBeNull();
+    expect(versions.data?.map(({ state }) => state)).toEqual([
+      'superseded',
+      'superseded',
+      'published',
+    ]);
+    expect(
+      versions.data?.every(
+        ({ document }) =>
+          patientProfileDocumentV1Schema.safeParse(document).success,
+      ),
+    ).toBe(true);
   });
 
   it('applies the production seed repeatedly without changing records', async () => {
@@ -179,7 +216,8 @@ describe('patient profile database foundation', () => {
     const profiles = await adminClient
       .from('patient_profiles')
       .select('id', { count: 'exact' })
-      .eq('scope', 'system');
+      .eq('scope', 'system')
+      .in('slug', seedSlugs);
     const versions = await adminClient
       .from('patient_profile_versions')
       .select('id', { count: 'exact' })

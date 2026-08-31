@@ -55,3 +55,5 @@ export * from './InvitationUnavailablePage';
 export * from './PatientProfilesPage';
 
 export * from './PatientProfileDetailPage';
+
+export * from './PatientEhrPreviewPage';

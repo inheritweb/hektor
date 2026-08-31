@@ -6,11 +6,29 @@ const meta = {
   title: 'Pages/PatientProfileDetailPage',
   component: PatientProfileDetailPage,
   args: {
+    previewHref: '#ehr-preview',
     profile: {
       displayName: 'Amina Warsame',
       dateOfBirth: '1948-04-12',
       versionNumber: 1,
-      versionState: 'draft',
+      versionState: 'superseded',
+      versions: [
+        {
+          id: 'f88d4513-5d70-4d27-a93d-8b4ce9df8b2c',
+          versionNumber: 3,
+          state: 'published',
+        },
+        {
+          id: '40b99356-b91a-4814-ba50-754e487fb9a5',
+          versionNumber: 2,
+          state: 'superseded',
+        },
+        {
+          id: '4556da1a-b03f-4632-aa46-ef4a70eaa30d',
+          versionNumber: 1,
+          state: 'superseded',
+        },
+      ],
       synopsis:
         'An older adult whose story supports culturally responsive, person-centred care.',
       document: {

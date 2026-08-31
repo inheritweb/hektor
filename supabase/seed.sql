@@ -398,4 +398,264 @@ values (
   'active'
 );
 
+-- Development-only fixture for patient-profile version-history UX. This is
+-- intentionally kept out of seeds/production.sql.
+insert into public.patient_profiles (
+  id, scope, slug, status, created_at, updated_at
+) values (
+  '1c4292c5-729f-4a48-a403-4c6849be3b04',
+  'system',
+  'james-bond',
+  'active',
+  '2026-06-01T09:00:00Z',
+  '2026-08-01T09:00:00Z'
+) on conflict (slug) where scope = 'system' do nothing;
+
+with base_document as (
+  select $james_bond_profile$
+  {
+    "schemaVersion": 1,
+    "synthetic": true,
+    "identity": {
+      "givenNames": ["James"],
+      "familyName": "Bond",
+      "dateOfBirth": "1940-11-11",
+      "pronouns": { "status": "known", "value": ["he", "him"] },
+      "sexAtBirth": { "status": "known", "value": "male" }
+    },
+    "identifiers": [{
+      "id": "hektor-patient-number",
+      "kind": "local_patient_number",
+      "value": "SIM-HKT-007",
+      "display": "Hektor patient number",
+      "issuer": "Hektor",
+      "synthetic": true
+    }],
+    "demographics": {
+      "ethnicity": { "status": "known", "value": { "display": "White British" } },
+      "faithOrBelief": { "status": "unknown" },
+      "nationality": { "status": "known", "value": { "display": "British" } }
+    },
+    "communication": {
+      "languages": [{
+        "id": "english",
+        "language": { "display": "English" },
+        "proficiency": "native",
+        "interpreterRequired": { "status": "known", "value": false }
+      }],
+      "preferredLanguageId": "english",
+      "preferences": [{
+        "id": "concise-direct-communication",
+        "summary": "Prefers concise, direct communication."
+      }],
+      "accessibilityNeeds": []
+    },
+    "contact": {
+      "address": {
+        "lines": ["7 Universal Exports Building", "Regent Street"],
+        "city": "London",
+        "postalCode": "W1B 5RA",
+        "country": "United Kingdom",
+        "synthetic": true
+      }
+    },
+    "relationships": [],
+    "background": [{
+      "id": "government-service",
+      "category": "occupation",
+      "summary": "Employed in government service under a diplomatic and commercial cover role.",
+      "details": "Former Royal Navy officer whose work has involved frequent international travel.",
+      "sensitivity": "restricted"
+    }],
+    "problems": [],
+    "allergies": [],
+    "baselineMedications": [],
+    "history": { "entries": [] },
+    "catalogue": {
+      "synopsis": "A composed, widely travelled former naval officer in government service.",
+      "lifeStage": "older_adult",
+      "careSettings": ["primary_care"],
+      "specialties": ["interprofessional"],
+      "tags": []
+    }
+  }
+  $james_bond_profile$::jsonb as document
+), version_two as (
+  select jsonb_set(
+    jsonb_set(
+      document,
+      '{communication,languages}',
+      '[
+        {
+          "id": "english",
+          "language": { "display": "English" },
+          "proficiency": "native",
+          "interpreterRequired": { "status": "known", "value": false }
+        },
+        {
+          "id": "french",
+          "language": { "display": "French" },
+          "proficiency": "fluent",
+          "interpreterRequired": { "status": "known", "value": false }
+        },
+        {
+          "id": "italian",
+          "language": { "display": "Italian" },
+          "proficiency": "conversational",
+          "interpreterRequired": { "status": "known", "value": false }
+        }
+      ]'::jsonb
+    ),
+    '{background}',
+    (document -> 'background') || '[
+      {
+        "id": "active-lifestyle",
+        "category": "lifestyle",
+        "summary": "Maintains a high level of physical fitness and is an experienced skier, swimmer and horse rider.",
+        "sensitivity": "standard"
+      },
+      {
+        "id": "travel-pattern",
+        "category": "social",
+        "summary": "Work requires frequent overseas travel, often at short notice.",
+        "sensitivity": "restricted"
+      }
+    ]'::jsonb
+  ) as document
+  from base_document
+), version_three as (
+  select jsonb_set(
+    jsonb_set(
+      jsonb_set(
+        v2.document,
+        '{problems}',
+        '[
+          {
+            "id": "right-shoulder-instability",
+            "problem": { "display": "Recurrent right shoulder instability" },
+            "clinicalStatus": "active",
+            "onsetDate": "1973-01-01",
+            "details": "Intermittent pain and instability following multiple occupational injuries."
+          },
+          {
+            "id": "left-knee-injury",
+            "problem": { "display": "Previous left knee ligament injury" },
+            "clinicalStatus": "inactive",
+            "onsetDate": "1981-01-01",
+            "details": "Managed conservatively; occasional stiffness after prolonged exertion."
+          }
+        ]'::jsonb
+      ),
+      '{allergies}',
+      '[
+        {
+          "id": "penicillin",
+          "substance": { "display": "Penicillin" },
+          "clinicalStatus": "active",
+          "verificationStatus": "confirmed",
+          "reactions": ["Generalised urticaria"],
+          "severity": "moderate",
+          "details": "Reaction documented following treatment in 1977."
+        }
+      ]'::jsonb
+    ),
+    '{history,entries}',
+    '[
+      {
+        "id": "naval-service-medical",
+        "type": "assessment",
+        "summary": "Royal Navy discharge medical recorded excellent general health.",
+        "assessment": { "display": "Service discharge medical" },
+        "outcome": "Fit for unrestricted duties with no long-term condition identified.",
+        "occurred": { "start": { "value": "1968", "precision": "year" } },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "right-shoulder-injury",
+        "type": "encounter",
+        "summary": "Treated for a right shoulder dislocation following an occupational injury.",
+        "encounterType": "emergency_attendance",
+        "careSetting": "acute_inpatient",
+        "outcome": "Closed reduction performed; recurrent instability was noted at later review.",
+        "occurred": { "start": { "value": "1973", "precision": "year", "approximate": true } },
+        "sensitivity": "restricted"
+      },
+      {
+        "id": "left-knee-injury",
+        "type": "investigation",
+        "summary": "Assessed after a left knee twisting injury during field work.",
+        "kind": "imaging",
+        "investigation": { "display": "Left knee radiograph" },
+        "status": "final",
+        "results": [],
+        "conclusion": "No fracture; probable ligament injury managed conservatively.",
+        "occurred": { "start": { "value": "1981", "precision": "year", "approximate": true } },
+        "sensitivity": "restricted"
+      }
+    ]'::jsonb
+  ) as document
+  from (
+    select document
+    from version_two
+  ) as v2
+), version_documents as (
+  select 1 as version_number, document from base_document
+  union all
+  select 2, document from version_two
+  union all
+  select 3, document from version_three
+), version_rows as (
+  select
+    version_number,
+    document,
+    case version_number
+      when 1 then 'Initial development profile imported.'
+      when 2 then 'Expanded language, lifestyle and travel background.'
+      when 3 then 'Added reviewed injury, allergy and medical-history detail.'
+    end as change_summary,
+    case version_number when 1 then '2026-06-01T09:00:00Z'::timestamptz
+      when 2 then '2026-07-01T09:00:00Z'::timestamptz
+      else '2026-08-01T09:00:00Z'::timestamptz end as event_at
+  from version_documents
+)
+insert into public.patient_profile_versions (
+  id,
+  patient_profile_id,
+  version_number,
+  state,
+  schema_version,
+  document,
+  content_hash,
+  change_summary,
+  source_reference,
+  source_revision,
+  submitted_at,
+  reviewed_at,
+  published_at,
+  created_at,
+  updated_at
+)
+select
+  case version_number
+    when 1 then '4556da1a-b03f-4632-aa46-ef4a70eaa30d'::uuid
+    when 2 then '40b99356-b91a-4814-ba50-754e487fb9a5'::uuid
+    else 'f88d4513-5d70-4d27-a93d-8b4ce9df8b2c'::uuid
+  end,
+  '1c4292c5-729f-4a48-a403-4c6849be3b04'::uuid,
+  version_number,
+  case version_number when 3 then 'published' else 'superseded' end::public.patient_profile_version_state,
+  1,
+  document,
+  encode(sha256(convert_to(document::text, 'UTF8')), 'hex'),
+  change_summary,
+  'Hektor development fixture inspired by the Roger Moore-era James Bond',
+  'development-v' || version_number,
+  event_at,
+  event_at,
+  event_at,
+  event_at,
+  event_at
+from version_rows
+on conflict (patient_profile_id, version_number) do nothing;
+
 commit;

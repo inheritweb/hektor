@@ -1,5 +1,6 @@
 import {
   getAdminPatientProfile,
+  getAdminPatientProfileVersion,
   listAdminPatientProfiles,
   updateAdminPatientProfileDraft,
 } from '@hektor/api-client/patient-profiles';
@@ -21,6 +22,11 @@ export const useAdminPatientProfile = makeQuery(getAdminPatientProfile, [
   ...ADMIN_PATIENT_PROFILES_QUERY_KEY,
   'detail',
 ]);
+
+export const useAdminPatientProfileVersion = makeQuery(
+  getAdminPatientProfileVersion,
+  [...ADMIN_PATIENT_PROFILES_QUERY_KEY, 'version'],
+);
 
 export const useUpdateAdminPatientProfileDraft = makeMutation(
   updateAdminPatientProfileDraft,

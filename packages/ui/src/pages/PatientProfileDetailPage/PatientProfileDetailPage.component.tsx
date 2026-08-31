@@ -1,11 +1,22 @@
+'use client';
+
+import { useState } from 'react';
 import {
   LuHeartPulse,
+  LuHistory,
   LuLanguages,
   LuPill,
   LuTriangleAlert,
 } from 'react-icons/lu';
 
-import { buttonVariants } from '../../atoms';
+import {
+  buttonVariants,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../atoms';
 import { NavigationLink } from '../../context';
 
 export interface PatientProfileDetailViewModel {
@@ -13,6 +24,11 @@ export interface PatientProfileDetailViewModel {
   dateOfBirth: string;
   versionNumber: number;
   versionState: string;
+  versions: readonly {
+    id: string;
+    versionNumber: number;
+    state: string;
+  }[];
   synopsis: string;
   document: {
     identity: {
@@ -198,13 +214,18 @@ export function PatientProfileDetailPage({
   editHref,
   nextProfile,
   previousProfile,
+  previewHref,
+  onVersionChange,
 }: {
   profile: PatientProfileDetailViewModel;
   editHref?: string;
   nextProfile?: { href: string; label: string };
   previousProfile?: { href: string; label: string };
+  previewHref?: string;
+  onVersionChange?: (versionId: string) => void;
 }) {
   const { document } = profile;
+  const [choosingVersion, setChoosingVersion] = useState(false);
   return (
     <div className="space-y-10">
       <header>
@@ -221,22 +242,87 @@ export function PatientProfileDetailPage({
         <h1 className="mt-2 text-3xl font-bold tracking-tight">
           {profile.displayName}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Born{' '}
-          {new Intl.DateTimeFormat('en-GB', { dateStyle: 'long' }).format(
-            new Date(`${profile.dateOfBirth}T00:00:00Z`),
-          )}{' '}
-          · Version {profile.versionNumber}
-        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <p>
+            Born{' '}
+            {new Intl.DateTimeFormat('en-GB', { dateStyle: 'long' }).format(
+              new Date(`${profile.dateOfBirth}T00:00:00Z`),
+            )}{' '}
+            ·
+          </p>
+          {choosingVersion && profile.versions.length > 1 ? (
+            <Select
+              onValueChange={(versionId) => {
+                if (
+                  versionId &&
+                  versionId !==
+                    profile.versions.find(
+                      ({ versionNumber }) =>
+                        versionNumber === profile.versionNumber,
+                    )?.id
+                )
+                  onVersionChange?.(versionId);
+              }}
+              value={
+                profile.versions.find(
+                  ({ versionNumber }) =>
+                    versionNumber === profile.versionNumber,
+                )?.id
+              }
+            >
+              <SelectTrigger
+                aria-label="Patient profile version"
+                className="min-h-8 w-44 px-2.5"
+              >
+                <SelectValue>
+                  Version {profile.versionNumber} ·{' '}
+                  {profile.versionState.replaceAll('_', ' ')}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {profile.versions.map((version) => (
+                  <SelectItem key={version.id} value={version.id}>
+                    Version {version.versionNumber} ·{' '}
+                    {version.state.replaceAll('_', ' ')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span>Version {profile.versionNumber}</span>
+          )}
+          {profile.versions.length > 1 && !choosingVersion ? (
+            <button
+              aria-label="Choose a patient profile version"
+              className="inline-flex size-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25"
+              onClick={() => setChoosingVersion(true)}
+              type="button"
+            >
+              <LuHistory aria-hidden="true" className="size-4" />
+            </button>
+          ) : null}
+        </div>
         <p className="mt-5 max-w-4xl text-base leading-7">{profile.synopsis}</p>
-        {editHref ? (
-          <NavigationLink
-            className={`${buttonVariants({ variant: 'outline' })} mt-5`}
-            href={editHref}
-          >
-            Edit draft
-          </NavigationLink>
-        ) : null}
+        <div className="mt-5 flex flex-wrap gap-3">
+          {previewHref ? (
+            <NavigationLink
+              className={buttonVariants()}
+              href={previewHref}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              View in EHR
+            </NavigationLink>
+          ) : null}
+          {editHref ? (
+            <NavigationLink
+              className={buttonVariants({ variant: 'outline' })}
+              href={editHref}
+            >
+              Edit draft
+            </NavigationLink>
+          ) : null}
+        </div>
       </header>
 
       {profile.versionState === 'draft' ? (

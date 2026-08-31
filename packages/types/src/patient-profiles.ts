@@ -560,10 +560,17 @@ export interface PatientProfileCatalogueItem {
 export interface PatientProfileDetail extends PatientProfileCatalogueItem {
   document: PatientProfileDocumentV1;
   navigation: PatientProfileNavigation;
+  versions: PatientProfileVersionNavigationItem[];
   changeSummary: string;
   sourceReference?: string;
   sourceRevision?: string;
   updatedAt: string;
+}
+
+export interface PatientProfileVersionNavigationItem {
+  id: string;
+  versionNumber: number;
+  state: PatientProfileVersionState;
 }
 
 export interface PatientProfileNavigationItem {

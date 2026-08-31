@@ -1,5 +1,6 @@
 import {
   getAdminPatientProfileContract,
+  getAdminPatientProfileVersionContract,
   listAdminPatientProfilesContract,
   updateAdminPatientProfileDraftContract,
 } from '@hektor/types/contracts/patient-profiles';
@@ -12,6 +13,10 @@ export const listAdminPatientProfiles = registerApiMethod(
 
 export const getAdminPatientProfile = registerApiMethod(
   getAdminPatientProfileContract,
+);
+
+export const getAdminPatientProfileVersion = registerApiMethod(
+  getAdminPatientProfileVersionContract,
 );
 
 export const updateAdminPatientProfileDraft = registerApiMethod(

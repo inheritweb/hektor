@@ -18,6 +18,8 @@ export * from './OrganisationInvitationManagerSheet';
 
 export * from './OrganisationDetailsRail';
 
+export * from './SimulationTools';
+
 export * from './UserWidget';
 
 export * from './UserLifecycleEditSheet';

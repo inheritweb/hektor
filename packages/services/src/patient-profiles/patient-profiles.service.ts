@@ -126,6 +126,7 @@ export function createPatientProfilesService(client: DatabaseClient) {
 
   async function getAdminPatientProfile(
     profileId: string,
+    versionId?: string,
   ): Promise<PatientProfileDetail> {
     const profile = await client
       .from('patient_profiles')
@@ -146,7 +147,21 @@ export function createPatientProfilesService(client: DatabaseClient) {
         message: 'Patient profile not found',
       });
     }
-    const version = chooseVisibleVersion(await getVisibleVersions([profileId]));
+    const versionResult = await client
+      .from('patient_profile_versions')
+      .select('*')
+      .eq('patient_profile_id', profileId)
+      .order('version_number', { ascending: false });
+    if (versionResult.error) {
+      throw createServiceError(HektorErrorCode.InternalServerError, {
+        message: 'Unable to load patient profile',
+        internalMessage: versionResult.error.message,
+        cause: versionResult.error,
+      });
+    }
+    const version = versionId
+      ? versionResult.data.find(({ id }) => id === versionId)
+      : chooseVisibleVersion(versionResult.data);
     if (!version) {
       throw createServiceError(HektorErrorCode.NotFound, {
         message: 'Patient profile not found',
@@ -169,6 +184,11 @@ export function createPatientProfilesService(client: DatabaseClient) {
           ? { next: { id: next.id, displayName: next.displayName } }
           : {}),
       },
+      versions: versionResult.data.map(({ id, state, version_number }) => ({
+        id,
+        state: state as PatientProfileVersionState,
+        versionNumber: version_number,
+      })),
       changeSummary: version.change_summary,
       ...(version.source_reference
         ? { sourceReference: version.source_reference }

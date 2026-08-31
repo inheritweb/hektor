@@ -47,6 +47,14 @@ Its strongest assets are:
   and
 - an emerging separation between shared patient facts and EHR presentation.
 
+The prototype's UX and information hierarchy have been refined through repeated
+use by an experienced nursing lecturer and practitioner. They are product input,
+not disposable scaffolding. Hektor should preserve their clinical intent,
+recognisable structure and useful information density while improving
+responsiveness, accessibility, consistency and maintainability. Material UX
+departures should be deliberate and reviewed rather than accidental consequences
+of applying generic application patterns.
+
 The integration should retain those assets, but not retain the current runtime
 architecture. Important constraints in the source are:
 
@@ -165,9 +173,13 @@ general enrichment pass was sufficient evidence of content completeness.
 2. **Roll the reconciliation process out to the other four profiles — completed.** Use the
    same evidence and acceptance criteria, extending the contract only when an
    actual source fact cannot be represented faithfully.
-3. **Add platform-admin “View in EHR”.** Begin with a deterministic, read-only
-   projection of the base profile and add EHR sections incrementally. Do not add
-   persisted generic EHR configuration until a concrete variation requires it.
+3. **Add platform-admin “View in EHR” — in progress.** Completed the first
+   increment: CTA, shell-free full-screen preview route, reusable simulation
+   template, patient header metadata and corner simulation-tools drawer. Continue
+   with a deterministic, read-only projection of base-profile sections. Do not
+   add persisted generic EHR configuration until a concrete variation requires
+   it.
+   The next increment is specified in `docs/ehr-ui-slice-2-plan.md`.
 4. **Implement scenario mechanics.** Add `PatientScenario`,
    `PatientScenarioStep` and `PatientProfileLayer` to the contracts, database and
    platform-admin experience. A scenario pins a profile version and its steps
@@ -220,8 +232,10 @@ and an interprofessional case.
 The detailed plan is in `docs/patient-profile-history-slice-plan.md`. This slice
 ensures the EHR consumes the patient's past rather than owning or duplicating it.
 
-### Phase 3 — read-only EHR projection and tutor preview
+### Phase 3 — read-only EHR projection and tutor preview — in progress
 
+- Completed: the platform-admin base-profile preview entry point, full-screen
+  simulation surface, minimal patient header and out-of-simulation tools drawer.
 - Define a versioned EHR projection over a published system patient-profile
   version.
 - Build the reusable EHR shell and the smallest useful read-only section set

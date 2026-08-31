@@ -1,14 +1,29 @@
 'use client';
 
-import { useAdminPatientProfile } from '@hektor/query/patient-profiles';
+import {
+  useAdminPatientProfile,
+  useAdminPatientProfileVersion,
+} from '@hektor/query/patient-profiles';
 import { PatientProfileDetailPage } from '@hektor/ui/pages';
+import { useRouter } from 'next/navigation';
 
 export function AdminPatientProfileDetailScreen({
   profileId,
+  versionId,
 }: {
   profileId: string;
+  versionId?: string;
 }) {
-  const profile = useAdminPatientProfile({ params: { profileId } });
+  const router = useRouter();
+  const currentProfile = useAdminPatientProfile(
+    { params: { profileId } },
+    { enabled: !versionId },
+  );
+  const selectedVersion = useAdminPatientProfileVersion(
+    { params: { profileId, versionId: versionId ?? profileId } },
+    { enabled: Boolean(versionId) },
+  );
+  const profile = versionId ? selectedVersion : currentProfile;
   if (profile.isPending)
     return (
       <div
@@ -37,6 +52,11 @@ export function AdminPatientProfileDetailScreen({
             }
           : undefined
       }
+      onVersionChange={(selectedVersionId) =>
+        router.push(
+          `/admin/patient-profiles/${profileId}/version/${selectedVersionId}`,
+        )
+      }
       previousProfile={
         profile.data.data.navigation.previous
           ? {
@@ -45,6 +65,7 @@ export function AdminPatientProfileDetailScreen({
             }
           : undefined
       }
+      previewHref={`/ehr/patients/${profile.data.data.slug}/version/${profile.data.data.versionId}`}
       profile={profile.data.data}
     />
   );
