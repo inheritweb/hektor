@@ -56,21 +56,40 @@ export interface PatientEhrPreviewViewModel {
     email?: string;
     notes?: string;
   }[];
+  problems: readonly {
+    id: string;
+    problem: string;
+    clinicalStatus: string;
+    onsetDate?: string;
+    resolvedDate?: string;
+    details?: string;
+  }[];
+  allergies: readonly {
+    id: string;
+    substance: string;
+    clinicalStatus: string;
+    verificationStatus: string;
+    reactions: readonly string[];
+    severity?: string;
+    details?: string;
+  }[];
   versionNumber: number;
   versionState: string;
 }
 
 export interface PatientEhrPreviewPageProps {
   exitHref: string;
-  initialSection?: 'patient-details' | 'communication-relationships';
+  initialSection?: PatientEhrSection;
   patient: PatientEhrPreviewViewModel;
 }
 
 const futureRecordSections = [
-  ['C', 'Clinical history'],
-  ['D', 'Medications'],
-  ['E', 'Allergies'],
+  ['D', 'Baseline medications'],
+  ['E', 'Clinical history'],
 ] as const;
+
+type PatientEhrSection =
+  'patient-details' | 'communication-relationships' | 'problems-allergies';
 
 function authoredDetailLabel(detail: PatientEhrAuthoredDetail) {
   if (detail.status === 'known') return detail.value ?? 'Not recorded';
@@ -108,13 +127,14 @@ export function PatientEhrPreviewPage({
     focusAfterNavigation.current = false;
   }, [activeSection]);
 
-  const selectSection = (
-    section: 'patient-details' | 'communication-relationships',
-  ) => {
+  const selectSection = (section: PatientEhrSection) => {
     if (section === activeSection) return;
     focusAfterNavigation.current = true;
     setActiveSection(section);
   };
+  const activeAllergies = patient.allergies.filter(
+    ({ clinicalStatus }) => clinicalStatus === 'active',
+  );
 
   return (
     <SimulationTemplate
@@ -162,6 +182,14 @@ export function PatientEhrPreviewPage({
               label="Profile version"
               value={`${patient.versionNumber} · ${patient.versionState.replaceAll('_', ' ')}`}
             />
+            {activeAllergies.length ? (
+              <div className="ml-auto rounded-[3px] border-2 border-[#ef4444] bg-[#fee2e2] px-3 py-1.5 text-[11px] font-bold text-[#991b1b]">
+                ⚠ ALLERGIES —{' '}
+                {activeAllergies
+                  .map(({ substance }) => substance.toUpperCase())
+                  .join(', ')}
+              </div>
+            ) : null}
           </div>
         </div>
       }
@@ -195,6 +223,12 @@ export function PatientEhrPreviewPage({
               code="B"
               label="Communication & relationships"
               onClick={() => selectSection('communication-relationships')}
+            />
+            <RecordSectionButton
+              active={activeSection === 'problems-allergies'}
+              code="C"
+              label="Problems & allergies"
+              onClick={() => selectSection('problems-allergies')}
             />
             {futureRecordSections.map(([code, label]) => (
               <span
@@ -330,8 +364,13 @@ export function PatientEhrPreviewPage({
                 ) : null}
               </div>
             </section>
-          ) : (
+          ) : activeSection === 'communication-relationships' ? (
             <CommunicationRelationshipsSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : (
+            <ProblemsAllergiesSection
               headingRef={sectionHeading}
               patient={patient}
             />
@@ -486,6 +525,163 @@ function CommunicationRelationshipsSection({
   );
 }
 
+function ProblemsAllergiesSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const activeAllergies = patient.allergies.filter(
+    ({ clinicalStatus }) => clinicalStatus === 'active',
+  );
+  const problemStatusOrder: Record<string, number> = {
+    active: 0,
+    inactive: 1,
+    resolved: 2,
+  };
+  const orderedProblems = [...patient.problems].sort(
+    (left, right) =>
+      (problemStatusOrder[left.clinicalStatus] ?? 3) -
+      (problemStatusOrder[right.clinicalStatus] ?? 3),
+  );
+
+  return (
+    <section
+      className="w-full overflow-hidden rounded-[2px] border border-[#b8cce0] bg-white"
+      id="problems-allergies"
+    >
+      <header className="flex items-center justify-between gap-4 border-b border-[#b0cce4] border-l-[3px] border-l-[#1460aa] bg-[#d0e4f7] px-3 py-1.5 text-[#1c3a5c]">
+        <h2
+          className="text-[11px] font-bold uppercase tracking-[0.04em] outline-none"
+          ref={headingRef}
+          tabIndex={-1}
+        >
+          C — Problems & allergies
+        </h2>
+        <span className="bg-[#1460aa] px-2 py-0.5 text-[10px] font-semibold text-white">
+          REVIEW CLINICAL RECORD
+        </span>
+      </header>
+
+      <div className="space-y-3 p-3">
+        {activeAllergies.length ? (
+          <div className="border-l-4 border-[#ae1c28] bg-[#fee2e2] px-3 py-2 text-[11px] leading-5 text-[#7f1d1d]">
+            <strong>Active allergy record:</strong>{' '}
+            {activeAllergies
+              .map((allergy) => {
+                const reaction = allergy.reactions.length
+                  ? ` — ${allergy.reactions.join(', ')}`
+                  : '';
+                return `${allergy.substance}${reaction}`;
+              })
+              .join('; ')}
+            . Review verification and reaction details below.
+          </div>
+        ) : null}
+
+        <ClinicalSubsection title="Allergies">
+          {patient.allergies.length ? (
+            <div className="grid gap-2.5 xl:grid-cols-2">
+              {patient.allergies.map((allergy) => (
+                <article
+                  className="border border-[#e1b8bd] bg-[#fffafa] p-2.5"
+                  key={allergy.id}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <h4 className="font-bold text-[#7f1d1d]">
+                      {allergy.substance}
+                    </h4>
+                    <span className="border border-[#e1b8bd] bg-white px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#7f1d1d]">
+                      {allergy.clinicalStatus.replaceAll('_', ' ')}
+                    </span>
+                  </div>
+                  <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+                    <CompactDetail
+                      label="Verification"
+                      value={allergy.verificationStatus.replaceAll('_', ' ')}
+                    />
+                    <CompactDetail
+                      label="Severity"
+                      value={allergy.severity ?? 'Not recorded'}
+                    />
+                    <CompactDetail
+                      label="Reaction"
+                      value={allergy.reactions.join(', ') || 'Not recorded'}
+                    />
+                  </dl>
+                  {allergy.details ? (
+                    <p className="mt-2 border-t border-[#f1d5d8] pt-2 text-[11px] leading-5 text-[#374151]">
+                      {allergy.details}
+                    </p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[11px] italic text-[#6b7280]">
+              No allergies recorded
+            </p>
+          )}
+        </ClinicalSubsection>
+
+        <ClinicalSubsection title="Problem list">
+          {orderedProblems.length ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[42rem] border-collapse text-[11px]">
+                <thead>
+                  <tr className="bg-[#d0e4f7] text-left text-[10px] uppercase tracking-[0.04em] text-[#1c3a5c]">
+                    <th className="px-2 py-1.5 font-bold">Problem</th>
+                    <th className="px-2 py-1.5 font-bold">Status</th>
+                    <th className="px-2 py-1.5 font-bold">Onset</th>
+                    <th className="px-2 py-1.5 font-bold">Resolved</th>
+                    <th className="px-2 py-1.5 font-bold">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orderedProblems.map((problem, index) => (
+                    <tr
+                      className={index % 2 === 1 ? 'bg-[#f9fafb]' : 'bg-white'}
+                      key={problem.id}
+                    >
+                      <td className="border-b border-[#e5e7eb] px-2 py-2 font-semibold text-[#1c2b4a]">
+                        {problem.problem}
+                      </td>
+                      <td className="border-b border-[#e5e7eb] px-2 py-2 capitalize">
+                        {problem.clinicalStatus.replaceAll('_', ' ')}
+                      </td>
+                      <td className="border-b border-[#e5e7eb] px-2 py-2">
+                        {formatClinicalDate(problem.onsetDate)}
+                      </td>
+                      <td className="border-b border-[#e5e7eb] px-2 py-2">
+                        {formatClinicalDate(problem.resolvedDate)}
+                      </td>
+                      <td className="border-b border-[#e5e7eb] px-2 py-2 leading-5 text-[#374151]">
+                        {problem.details ?? 'Not recorded'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-[11px] italic text-[#6b7280]">
+              No problems recorded
+            </p>
+          )}
+        </ClinicalSubsection>
+      </div>
+    </section>
+  );
+}
+
+function formatClinicalDate(value?: string) {
+  if (!value) return 'Not recorded';
+  return new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(
+    new Date(`${value}T00:00:00Z`),
+  );
+}
+
 function RecordSectionButton({
   active,
   code,
@@ -500,7 +696,7 @@ function RecordSectionButton({
   return (
     <button
       aria-current={active ? 'page' : undefined}
-      className={`flex w-full items-center gap-2 border-b border-[#e4eff9] px-2.5 py-2 text-left text-[11px] max-md:w-auto max-md:border-r max-md:border-b-0 ${
+      className={`flex w-full cursor-pointer items-center gap-2 border-b border-[#e4eff9] px-2.5 py-2 text-left text-[11px] max-md:w-auto max-md:border-r max-md:border-b-0 ${
         active
           ? 'border-l-[3px] border-l-[#0072ce] bg-[#bdd9ff] font-bold text-[#0a3a7a]'
           : 'text-[#1c3a5c] hover:bg-[#d6ecff] hover:text-[#1460aa]'
@@ -509,7 +705,7 @@ function RecordSectionButton({
       type="button"
     >
       <NavCode>{code}</NavCode>
-      <span className="whitespace-nowrap">{label}</span>
+      <span className="min-w-0 max-md:whitespace-nowrap">{label}</span>
     </button>
   );
 }

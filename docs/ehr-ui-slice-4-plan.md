@@ -1,7 +1,7 @@
 # EHR UI slice 4 — problems and allergies
 
-Status: planned. This is the next bite-sized increment after Communication &
-relationships.
+Status: completed. This is the third record-content increment after
+Communication & relationships.
 
 ## Outcome
 
@@ -110,6 +110,6 @@ adapters.
 
 ## Following bite-sized slices
 
-1. Baseline medicines.
+1. Baseline medicines — planned in `docs/ehr-ui-slice-5-plan.md`.
 2. Structured clinical-history navigation and the first history view.
 3. Prototype-specific clinical sections adopted one at a time after review.

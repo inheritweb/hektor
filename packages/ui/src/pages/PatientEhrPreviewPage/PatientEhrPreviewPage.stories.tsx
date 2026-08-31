@@ -9,6 +9,17 @@ const meta = {
   args: {
     exitHref: '#patient-profile',
     patient: {
+      allergies: [
+        {
+          clinicalStatus: 'active',
+          details: 'Reaction documented following previous treatment.',
+          id: 'erythromycin',
+          reactions: ['Diarrhoea', 'Abdominal pain'],
+          severity: 'moderate',
+          substance: 'Erythromycin',
+          verificationStatus: 'unconfirmed',
+        },
+      ],
       communication: {
         accessibilityNeeds: [
           {
@@ -68,6 +79,22 @@ const meta = {
         },
       ],
       organisationName: 'Jean McFarlane Trust',
+      problems: [
+        {
+          clinicalStatus: 'active',
+          details: 'Requires ongoing primary-care monitoring.',
+          id: 'hypertension',
+          onsetDate: '2012-03-14',
+          problem: 'Hypertension',
+        },
+        {
+          clinicalStatus: 'resolved',
+          id: 'depression',
+          onsetDate: '2008-06-01',
+          problem: 'Depressive episode',
+          resolvedDate: '2009-02-01',
+        },
+      ],
       recordContext: 'Stroke Unit — Simulated Practice Placement',
       relationships: [
         {
@@ -103,6 +130,17 @@ export const CommunicationAndRelationships: Story = {
 
 export const NarrowCommunicationAndRelationships: Story = {
   args: { initialSection: 'communication-relationships' },
+  parameters: {
+    viewport: { defaultViewport: 'mobile1' },
+  },
+};
+
+export const ProblemsAndAllergies: Story = {
+  args: { initialSection: 'problems-allergies' },
+};
+
+export const NarrowProblemsAndAllergies: Story = {
+  args: { initialSection: 'problems-allergies' },
   parameters: {
     viewport: { defaultViewport: 'mobile1' },
   },

@@ -240,8 +240,11 @@ ensures the EHR consumes the patient's past rather than owning or duplicating it
 - Completed: the communication and relationships section specified in
   `docs/ehr-ui-slice-3-plan.md`, including accessible section switching and
   exact-version projection of communication needs and relationship records.
-- Next: the problems and allergies safety section specified in
-  `docs/ehr-ui-slice-4-plan.md`.
+- Completed: the problems and allergies safety section specified in
+  `docs/ehr-ui-slice-4-plan.md`, including persistent active-allergy visibility
+  and neutral empty-record language.
+- Next: the baseline-medications section specified in
+  `docs/ehr-ui-slice-5-plan.md`.
 - Define a versioned EHR projection over a published system patient-profile
   version.
 - Build the reusable EHR shell and the smallest useful read-only section set

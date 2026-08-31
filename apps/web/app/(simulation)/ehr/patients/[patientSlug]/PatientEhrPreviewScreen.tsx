@@ -73,6 +73,15 @@ function ResolvedPatientEhrPreview({
     <PatientEhrPreviewPage
       exitHref={exitHref}
       patient={{
+        allergies: patient.document.allergies.map((allergy) => ({
+          clinicalStatus: allergy.clinicalStatus,
+          details: allergy.details,
+          id: allergy.id,
+          reactions: allergy.reactions,
+          severity: allergy.severity,
+          substance: allergy.substance.display,
+          verificationStatus: allergy.verificationStatus,
+        })),
         communication: {
           accessibilityNeeds:
             patient.document.communication.accessibilityNeeds.map((need) => ({
@@ -165,6 +174,14 @@ function ResolvedPatientEhrPreview({
           value: identifier.value,
         })),
         organisationName: 'Jean McFarlane Trust',
+        problems: patient.document.problems.map((problem) => ({
+          clinicalStatus: problem.clinicalStatus,
+          details: problem.details,
+          id: problem.id,
+          onsetDate: problem.onsetDate,
+          problem: problem.problem.display,
+          resolvedDate: problem.resolvedDate,
+        })),
         recordContext: 'Electronic Patient Record — Base profile preview',
         relationships: patient.document.relationships.map((relationship) => ({
           email: relationship.contact?.email,
