@@ -33,6 +33,10 @@ const identities = {
     profileId: '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
     versionId: '016a3ade-5634-4773-9c08-5c7984af3cec',
   },
+  'sarah-williams': {
+    profileId: '5f049cd0-e8e2-4918-8cfa-fa2da0364895',
+    versionId: '4da06bf1-541e-4e1c-911b-8d8225da94c6',
+  },
 };
 
 const files = readdirSync(profilesDirectory)

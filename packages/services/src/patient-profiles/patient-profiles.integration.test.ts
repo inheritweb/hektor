@@ -35,6 +35,7 @@ const seedSlugs = [
   'amina-warsame',
   'emma-barlow',
   'esther-jenkins',
+  'sarah-williams',
 ];
 
 function readSeedProfile(slug: string) {
@@ -122,7 +123,7 @@ describe('patient profile database foundation', () => {
       await adminClient.auth.admin.deleteUser(userId);
   });
 
-  it('loads the five deterministic production system draft profiles', async () => {
+  it('loads the deterministic production system draft profiles', async () => {
     const profiles = await adminClient
       .from('patient_profiles')
       .select('id, scope, slug')
@@ -160,9 +161,12 @@ describe('patient profile database foundation', () => {
     const service = createPatientProfilesService(adminClient);
     const profiles = await service.listAdminPatientProfiles();
 
-    expect(profiles).toHaveLength(6);
+    expect(profiles).toHaveLength(7);
     expect(profiles.map(({ displayName }) => displayName)).toContain(
       'Amina Warsame',
+    );
+    expect(profiles.map(({ displayName }) => displayName)).toContain(
+      'Sally Williams',
     );
     expect(profiles.map(({ displayName }) => displayName)).toContain(
       'James Bond',
@@ -227,9 +231,9 @@ describe('patient profile database foundation', () => {
       );
 
     expect(profiles.error).toBeNull();
-    expect(profiles.count).toBe(5);
+    expect(profiles.count).toBe(6);
     expect(versions.error).toBeNull();
-    expect(versions.count).toBe(5);
+    expect(versions.count).toBe(6);
   });
 
   it('enforces exclusive ownership and owner-scoped slugs', async () => {

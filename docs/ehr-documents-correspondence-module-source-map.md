@@ -24,13 +24,15 @@ title, document type, summary, full authored body, date, author/role/service and
 sensitivity. Recipient and copied-recipient fields are not yet structured and
 must not be inferred from prose.
 
-## Current five-profile projection
+## Current production-profile projection
 
-None of the five current base Patient Profiles contains a durable letter,
-discharge summary or other clinical correspondence. Esther's acute admission
+The first five base Patient Profiles contain no durable letter, discharge
+summary or other clinical correspondence. Sarah Williams was subsequently added
+with six dated letters from surgery, oncology, primary care and rehabilitation,
+making this the first populated production example. Esther's acute admission
 documents, Amina's postnatal discharge communication and any later Emma CYPACP
-correspondence belong to scenario layers unless a source document predates the
-chosen profile boundary and is explicitly imported.
+correspondence still belong to scenario layers unless a source document
+predates the chosen profile boundary and is explicitly imported.
 
 ## Empty-state meaning
 

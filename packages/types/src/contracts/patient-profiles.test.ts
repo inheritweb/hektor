@@ -23,6 +23,7 @@ const seededProfiles = [
   'emma-barlow',
   'amina-warsame',
   'esther-jenkins',
+  'sarah-williams',
 ];
 
 function readSeedProfile(slug: string) {

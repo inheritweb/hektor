@@ -32,11 +32,14 @@ The generic module follows the prototype's compact chronological clinical-note
 presentation, including document type, title, author/service, date, sensitivity,
 summary and full authored body.
 
-## Current five-profile projection
+## Current production-profile projection
 
-None of the five current base Patient Profiles contains a durable authored
-clinical note or handover. The module therefore establishes the truthful
-projection and empty state without fabricating communications from other facts.
+The first five base Patient Profiles contain no durable authored clinical note
+or handover. Sarah Williams was subsequently added with the profile boundary set
+immediately after her completed 4 August 2026 multidisciplinary rehabilitation
+review. Her authored CNS, physiotherapy and occupational-therapy notes provide
+the first populated production example without fabricating communications from
+care-team or referral data.
 
 ## Empty-state meaning
 
