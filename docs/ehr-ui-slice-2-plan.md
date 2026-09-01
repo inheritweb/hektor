@@ -1,7 +1,8 @@
 # EHR UI slice 2 — record navigation and patient details
 
-Status: completed. This is the first record-content increment after the
-full-screen base-profile preview shell.
+Status: shell and projection foundation completed; section A requires
+reconciliation to Esther Jenkins' exact prototype fields and ordering. See
+`docs/esther-jenkins-ehr-reconstruction-plan.md`.
 
 ## Outcome
 

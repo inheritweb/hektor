@@ -73,6 +73,7 @@ function ResolvedPatientEhrPreview({
     <PatientEhrPreviewPage
       exitHref={exitHref}
       patient={{
+        allergyRecordStatus: patient.document.allergyRecordStatus,
         allergies: patient.document.allergies.map((allergy) => ({
           clinicalStatus: allergy.clinicalStatus,
           details: allergy.details,
@@ -155,6 +156,16 @@ function ResolvedPatientEhrPreview({
               )
               .map(({ summary }) => summary)
               .join(' ') || undefined,
+          gpPractice: backgroundSummary(
+            patient.document.background,
+            'gp-practice',
+          )
+            ?.replace(/^Registered with /, '')
+            .replace(/\.$/, ''),
+          handedness: backgroundSummary(
+            patient.document.background,
+            'right-handed',
+          ),
           pronouns: authoredTextDetail(
             patient.document.identity.pronouns?.status,
             patient.document.identity.pronouns?.status === 'known'
@@ -169,11 +180,57 @@ function ResolvedPatientEhrPreview({
           ),
         },
         displayName: patient.displayName,
+        recordName: `${patient.document.identity.familyName}, ${patient.document.identity.preferredName ?? patient.document.identity.givenNames.join(' ')}`,
         identifiers: patient.document.identifiers.map((identifier) => ({
           display: identifier.display ?? 'Patient identifier',
           value: identifier.value,
         })),
         organisationName: 'Jean McFarlane Trust',
+        personalContext: patient.document.background
+          .filter(({ category }) =>
+            [
+              'adverse_life_event',
+              'cultural',
+              'education',
+              'family',
+              'living_arrangements',
+              'occupation',
+              'social',
+            ].includes(category),
+          )
+          .map(({ category, details, id, summary }) => ({
+            category,
+            details,
+            id,
+            summary,
+          })),
+        baselineMedications: patient.document.baselineMedications.map(
+          (medication) => ({
+            details: medication.details,
+            dose: medication.dose,
+            frequency: medication.frequency,
+            id: medication.id,
+            indication: medication.indication,
+            medication: medication.medication.display,
+            route: medication.route?.display,
+            status: medication.status,
+          }),
+        ),
+        clinicalHistory: {
+          familyHistory: patient.document.background
+            .filter(({ category }) => category === 'family_history')
+            .map(({ details, summary }) => details ?? summary),
+          lifestyleAndSocialHistory: patient.document.background
+            .filter(({ category }) => category === 'lifestyle')
+            .map(({ details, summary }) =>
+              details ? `${summary} — ${details}` : summary,
+            ),
+          pastMedicalHistory: patient.document.problems
+            .filter(({ id }) => id !== 'recent-low-mood')
+            .map(({ details, problem }) =>
+              details ? `${problem.display} — ${details}` : problem.display,
+            ),
+        },
         problems: patient.document.problems.map((problem) => ({
           clinicalStatus: problem.clinicalStatus,
           details: problem.details,
@@ -197,6 +254,13 @@ function ResolvedPatientEhrPreview({
       }}
     />
   );
+}
+
+function backgroundSummary(
+  background: readonly { id: string; summary: string }[],
+  id: string,
+) {
+  return background.find((item) => item.id === id)?.summary;
 }
 
 function authoredBooleanDetail(status?: string, value?: boolean) {

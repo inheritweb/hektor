@@ -1,7 +1,9 @@
 # EHR UI slice 4 — problems and allergies
 
-Status: completed. This is the third record-content increment after
-Communication & relationships.
+Status: implemented but superseded as EHR information architecture. Problem and
+allergy rendering may be reused inside Esther's prototype-defined section C;
+this invented top-level section is not a target design. See
+`docs/esther-jenkins-ehr-reconstruction-plan.md`.
 
 ## Outcome
 

@@ -8,6 +8,7 @@ import {
 } from '@hektor/query/patient-profiles';
 import {
   AuthoredValueStatus,
+  PatientAllergyRecordStatus,
   PatientAllergySeverity,
   PatientAllergyVerificationStatus,
   PatientBackgroundCategory,
@@ -893,6 +894,32 @@ function AdminPatientProfileEditForm({
           >
             Add problem
           </Button>
+          <label className="text-sm font-medium">
+            Allergy record status
+            <select
+              className="mt-1 w-full rounded border border-border bg-background px-3 py-2"
+              value={document.allergyRecordStatus}
+              onChange={(event) => {
+                const allergyRecordStatus = event.target
+                  .value as PatientAllergyRecordStatus;
+                setDocument({
+                  ...document,
+                  allergyRecordStatus,
+                  allergies:
+                    allergyRecordStatus ===
+                    PatientAllergyRecordStatus.KnownAllergies
+                      ? document.allergies
+                      : [],
+                });
+              }}
+            >
+              {Object.values(PatientAllergyRecordStatus).map((value) => (
+                <option key={value} value={value}>
+                  {label(value)}
+                </option>
+              ))}
+            </select>
+          </label>
           {document.allergies.map((allergy, index) => (
             <div
               className="grid gap-3 rounded border border-border p-4 md:grid-cols-3"
@@ -1001,14 +1028,18 @@ function AdminPatientProfileEditForm({
                 />
               </label>
               <Button
-                onClick={() =>
+                onClick={() => {
+                  const allergies = document.allergies.filter(
+                    (_, itemIndex) => itemIndex !== index,
+                  );
                   setDocument({
                     ...document,
-                    allergies: document.allergies.filter(
-                      (_, itemIndex) => itemIndex !== index,
-                    ),
-                  })
-                }
+                    allergies,
+                    allergyRecordStatus: allergies.length
+                      ? PatientAllergyRecordStatus.KnownAllergies
+                      : PatientAllergyRecordStatus.NotRecorded,
+                  });
+                }}
                 type="button"
                 variant="secondary"
               >
@@ -1020,6 +1051,7 @@ function AdminPatientProfileEditForm({
             onClick={() =>
               setDocument({
                 ...document,
+                allergyRecordStatus: PatientAllergyRecordStatus.KnownAllergies,
                 allergies: [
                   ...document.allergies,
                   {

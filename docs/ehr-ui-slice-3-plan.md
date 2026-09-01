@@ -1,7 +1,9 @@
 # EHR UI slice 3 — communication and relationships
 
-Status: completed. This is the second record-content increment after Patient
-details.
+Status: implemented but superseded as EHR information architecture. The
+communication and relationship projections may be reused inside Esther's
+prototype-defined sections A, E and I; this invented top-level section is not a
+target design. See `docs/esther-jenkins-ehr-reconstruction-plan.md`.
 
 ## Outcome
 

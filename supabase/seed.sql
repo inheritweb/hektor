@@ -468,6 +468,7 @@ with base_document as (
       "sensitivity": "restricted"
     }],
     "problems": [],
+    "allergyRecordStatus": "not_recorded",
     "allergies": [],
     "baselineMedications": [],
     "history": { "entries": [] },
@@ -527,9 +528,10 @@ with base_document as (
   select jsonb_set(
     jsonb_set(
       jsonb_set(
-        v2.document,
-        '{problems}',
-        '[
+        jsonb_set(
+          v2.document,
+          '{problems}',
+          '[
           {
             "id": "right-shoulder-instability",
             "problem": { "display": "Recurrent right shoulder instability" },
@@ -544,20 +546,23 @@ with base_document as (
             "onsetDate": "1981-01-01",
             "details": "Managed conservatively; occasional stiffness after prolonged exertion."
           }
+          ]'::jsonb
+        ),
+        '{allergies}',
+        '[
+          {
+            "id": "penicillin",
+            "substance": { "display": "Penicillin" },
+            "clinicalStatus": "active",
+            "verificationStatus": "confirmed",
+            "reactions": ["Generalised urticaria"],
+            "severity": "moderate",
+            "details": "Reaction documented following treatment in 1977."
+          }
         ]'::jsonb
       ),
-      '{allergies}',
-      '[
-        {
-          "id": "penicillin",
-          "substance": { "display": "Penicillin" },
-          "clinicalStatus": "active",
-          "verificationStatus": "confirmed",
-          "reactions": ["Generalised urticaria"],
-          "severity": "moderate",
-          "details": "Reaction documented following treatment in 1977."
-        }
-      ]'::jsonb
+      '{allergyRecordStatus}',
+      '"known_allergies"'::jsonb
     ),
     '{history,entries}',
     '[

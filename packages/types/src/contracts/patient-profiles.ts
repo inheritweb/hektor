@@ -4,6 +4,7 @@ import {
   AuthoredValueStatus,
   type CodedDisplayValue,
   PatientAllergySeverity,
+  PatientAllergyRecordStatus,
   type PatientAllergy,
   PatientAllergyVerificationStatus,
   type PatientBackgroundFact,
@@ -521,6 +522,28 @@ const uniqueIds = (
         path: name.split('.'),
       });
   }
+
+  if (
+    document.allergyRecordStatus ===
+      PatientAllergyRecordStatus.KnownAllergies &&
+    document.allergies.length === 0
+  )
+    context.addIssue({
+      code: 'custom',
+      message: 'Known allergy status requires at least one allergy entry',
+      path: ['allergies'],
+    });
+
+  if (
+    document.allergyRecordStatus !==
+      PatientAllergyRecordStatus.KnownAllergies &&
+    document.allergies.length > 0
+  )
+    context.addIssue({
+      code: 'custom',
+      message: 'Allergy entries require known allergy record status',
+      path: ['allergyRecordStatus'],
+    });
 };
 
 export const patientProfileDocumentV1Schema = z
@@ -535,6 +558,7 @@ export const patientProfileDocumentV1Schema = z
     relationships: z.array(patientRelationshipSchema).max(30),
     background: z.array(patientBackgroundFactSchema).max(100),
     problems: z.array(patientProblemSchema).max(100),
+    allergyRecordStatus: z.enum(PatientAllergyRecordStatus),
     allergies: z.array(patientAllergySchema).max(100),
     baselineMedications: z.array(patientBaselineMedicationSchema).max(100),
     history: patientHistorySchema,

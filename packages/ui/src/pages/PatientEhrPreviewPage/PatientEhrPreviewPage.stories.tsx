@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { EhrSectionType, PatientAllergyRecordStatus } from '@hektor/types';
 
 import { PatientEhrPreviewPage } from './PatientEhrPreviewPage.component';
 
@@ -9,6 +10,7 @@ const meta = {
   args: {
     exitHref: '#patient-profile',
     patient: {
+      allergyRecordStatus: PatientAllergyRecordStatus.KnownAllergies,
       allergies: [
         {
           clinicalStatus: 'active',
@@ -61,6 +63,8 @@ const meta = {
         ],
         ethnicity: { status: 'known', value: 'White British' },
         faithOrBelief: { status: 'unknown' },
+        gpPractice: 'Openshaw Health Centre',
+        handedness: 'Right-handed',
         nationality: { status: 'not_recorded' },
         nextOfKin: [
           'Tasha Jenkins (Daughter) — 07SIM000205 — lives with patient',
@@ -72,6 +76,7 @@ const meta = {
         sexAtBirth: { status: 'known', value: 'female' },
       },
       displayName: 'Esther Jenkins',
+      recordName: 'Jenkins, Esther',
       identifiers: [
         {
           display: 'Hektor patient number',
@@ -79,6 +84,37 @@ const meta = {
         },
       ],
       organisationName: 'Jean McFarlane Trust',
+      personalContext: [
+        {
+          category: 'occupation',
+          id: 'retired-cleaner',
+          summary: 'Retired cleaner.',
+        },
+        {
+          category: 'living_arrangements',
+          details: 'The property has stairs and no downstairs bathroom.',
+          id: 'living-with-daughter',
+          summary: 'Lives with her daughter Tasha in a terraced house.',
+        },
+      ],
+      baselineMedications: [
+        {
+          dose: '5 mg',
+          frequency: 'Once daily',
+          id: 'amlodipine',
+          indication: 'Hypertension',
+          medication: 'Amlodipine',
+          route: 'Oral',
+          status: 'active',
+        },
+      ],
+      clinicalHistory: {
+        familyHistory: ['Mother had a stroke in her seventies.'],
+        lifestyleAndSocialHistory: [
+          'Never smoked. Drinks alcohol occasionally.',
+        ],
+        pastMedicalHistory: ['Hypertension — Diagnosed in 2012.'],
+      },
       problems: [
         {
           clinicalStatus: 'active',
@@ -124,23 +160,40 @@ export const NarrowPatientDetails: Story = {
   },
 };
 
-export const CommunicationAndRelationships: Story = {
-  args: { initialSection: 'communication-relationships' },
+export const AboutMe: Story = {
+  args: { initialSection: EhrSectionType.AboutMe },
 };
 
-export const NarrowCommunicationAndRelationships: Story = {
-  args: { initialSection: 'communication-relationships' },
+export const NarrowAboutMe: Story = {
+  args: { initialSection: EhrSectionType.AboutMe },
   parameters: {
     viewport: { defaultViewport: 'mobile1' },
   },
 };
 
-export const ProblemsAndAllergies: Story = {
-  args: { initialSection: 'problems-allergies' },
+export const AllergiesAdverseReactionsAndAlerts: Story = {
+  args: {
+    initialSection: EhrSectionType.AllergiesAdverseReactionsAndAlerts,
+  },
 };
 
-export const NarrowProblemsAndAllergies: Story = {
-  args: { initialSection: 'problems-allergies' },
+export const AllergyStatusNotRecorded: Story = {
+  args: {
+    initialSection: EhrSectionType.AllergiesAdverseReactionsAndAlerts,
+    patient: {
+      ...meta.args.patient,
+      allergies: [],
+      allergyRecordStatus: PatientAllergyRecordStatus.NotRecorded,
+    },
+  },
+};
+
+export const DocumentsModulePending: Story = {
+  args: { initialSection: EhrSectionType.DocumentsAndCorrespondence },
+};
+
+export const NarrowDocumentsModulePending: Story = {
+  args: { initialSection: EhrSectionType.DocumentsAndCorrespondence },
   parameters: {
     viewport: { defaultViewport: 'mobile1' },
   },

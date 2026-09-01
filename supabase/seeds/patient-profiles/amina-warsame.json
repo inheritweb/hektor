@@ -113,6 +113,7 @@
       "details": "Diagnosed at 28 weeks and controlled with diet; no insulin or metformin was required."
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [],
   "history": {

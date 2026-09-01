@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { PlatformRole } from '../users';
+import { PatientAllergyRecordStatus } from '../patient-profiles';
 import {
   getAdminPatientProfileContract,
   listAdminPatientProfilesContract,
@@ -68,6 +69,29 @@ describe('patientProfileDocumentV1Schema', () => {
     expect(result.success).toBe(false);
     expect(result.error?.issues).toContainEqual(
       expect.objectContaining({ message: 'Duplicate IDs in problems' }),
+    );
+  });
+
+  it('does not allow NKDA alongside allergy entries', () => {
+    const document = readSeedProfile('esther-jenkins') as {
+      allergyRecordStatus: PatientAllergyRecordStatus;
+    };
+    document.allergyRecordStatus =
+      PatientAllergyRecordStatus.NoKnownDrugAllergies;
+
+    expect(patientProfileDocumentV1Schema.safeParse(document).success).toBe(
+      false,
+    );
+  });
+
+  it('requires an allergy entry for known allergy status', () => {
+    const document = readSeedProfile('emma-barlow') as {
+      allergyRecordStatus: PatientAllergyRecordStatus;
+    };
+    document.allergyRecordStatus = PatientAllergyRecordStatus.KnownAllergies;
+
+    expect(patientProfileDocumentV1Schema.safeParse(document).success).toBe(
+      false,
     );
   });
 

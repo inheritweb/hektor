@@ -160,6 +160,7 @@
       "clinicalStatus": "active"
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [
     {

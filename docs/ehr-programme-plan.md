@@ -103,6 +103,19 @@ read-only source material, learner-editable fields, calculations and interaction
 rules. This boundary should later permit other experience types to consume the
 same patient project without depending on EHR components.
 
+The base EHR is an ordered composition of thirteen controlled core section
+types. Section instances have stable identities and sparse integer order values.
+The current work stops at this base EHR structure. In later phases, a
+clinical-audience view may adapt it for a profession, specialty and care setting,
+and a scenario may adapt it further. Those future composition mechanics must
+remain distinct from `PatientProfileLayer` records: the former would change
+presentation and workflow composition; the latter change resolved patient
+facts.
+
+Clinical audience is not an authorization role. Learner, tutor and platform
+administrator govern permissions; pharmacist, GP, community nurse,
+mental-health nurse or surgeon describe the simulated professional perspective.
+
 ### Assignment and delivery
 
 Owns tutor publication to an organisation audience, scheduling, stage release,
@@ -201,6 +214,10 @@ completeness.
   vocabulary and the reviewed profile model/import approach.
 - Outstanding as each EHR section is adopted: classify its authored defaults,
   learner inputs, calculations and specialist variations.
+- Required for every module: begin with Esther's prototype, identify equivalent
+  content even where it is named or grouped differently, then check the other
+  current profiles and wider corpus for variation before fixing the generic
+  boundary.
 
 ### Phase 1 — platform patient-profile foundation — in progress
 
@@ -234,17 +251,29 @@ ensures the EHR consumes the patient's past rather than owning or duplicating it
 
 ### Phase 3 — read-only EHR projection and tutor preview — in progress
 
+- The prototype remains authoritative evidence of clinical workflows and
+  patient-specific variation, but no single prototype patient's navigation is
+  the generic EHR information architecture.
+- Current next slice: establish the controlled thirteen-module core EHR
+  composition, its registry and deterministic sparse ordering, then render the
+  first module across the five current profiles. It does not implement clinical
+  audiences or scenarios. The bounded plan is in
+  `docs/ehr-generic-sections-slice-plan.md`.
+- Patient-specific presenting-history and specialty assessment sections will be
+  added later as scenario-selected modules rather than universal navigation.
+- Learner-entered clinical documentation remains in the EHR when it represents
+  real clinical record work. Educational questions, reflection and assessment
+  scaffolding belong in the simulation-tools panel.
 - Completed: the platform-admin version-pinned preview entry point, full-screen
   simulation surface, prototype-aligned patient banner, responsive record
   navigation, Patient details section and out-of-simulation tools drawer.
-- Completed: the communication and relationships section specified in
-  `docs/ehr-ui-slice-3-plan.md`, including accessible section switching and
-  exact-version projection of communication needs and relationship records.
-- Completed: the problems and allergies safety section specified in
-  `docs/ehr-ui-slice-4-plan.md`, including persistent active-allergy visibility
-  and neutral empty-record language.
-- Next: the baseline-medications section specified in
-  `docs/ehr-ui-slice-5-plan.md`.
+- Superseded: the generic communication/relationships and problems/allergies
+  top-level sections. Their data projections remain useful but will move into
+  Esther's prototype-defined sections.
+- Completed as discovery: an Esther-specific A–C reconstruction exposed the
+  distinction between generic record sections, scenario/specialty modules and
+  learning activity. It is now an input to the abstraction rather than the
+  universal target navigation.
 - Define a versioned EHR projection over a published system patient-profile
   version.
 - Build the reusable EHR shell and the smallest useful read-only section set

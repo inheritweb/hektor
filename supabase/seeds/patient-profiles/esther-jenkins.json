@@ -154,6 +154,7 @@
       "details": "Increasing low mood over several months before the acute presentation, not previously disclosed. No hopelessness, self-harm thoughts, hallucinations or delusions were reported."
     }
   ],
+  "allergyRecordStatus": "known_allergies",
   "allergies": [
     {
       "id": "erythromycin",

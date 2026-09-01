@@ -217,6 +217,7 @@ with content as (
       "clinicalStatus": "active"
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [
     {
@@ -599,6 +600,7 @@ begin
       "clinicalStatus": "active"
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [
     {
@@ -925,6 +927,7 @@ with content as (
       "details": "Described as mild to moderate in the source material."
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [
     {
@@ -1298,6 +1301,7 @@ begin
       "details": "Described as mild to moderate in the source material."
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [
     {
@@ -1658,6 +1662,7 @@ with content as (
       "details": "Diagnosed at 28 weeks and controlled with diet; no insulin or metformin was required."
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [],
   "history": {
@@ -1967,6 +1972,7 @@ begin
       "details": "Diagnosed at 28 weeks and controlled with diet; no insulin or metformin was required."
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [],
   "history": {
@@ -2300,6 +2306,7 @@ with content as (
       "details": "Repaired in infancy; a leak at the repair site is under cardiology review following chemotherapy-related cardiac complications."
     }
   ],
+  "allergyRecordStatus": "not_recorded",
   "allergies": [],
   "baselineMedications": [
     {
@@ -2724,6 +2731,7 @@ begin
       "details": "Repaired in infancy; a leak at the repair site is under cardiology review following chemotherapy-related cardiac complications."
     }
   ],
+  "allergyRecordStatus": "not_recorded",
   "allergies": [],
   "baselineMedications": [
     {
@@ -3166,6 +3174,7 @@ with content as (
       "details": "Increasing low mood over several months before the acute presentation, not previously disclosed. No hopelessness, self-harm thoughts, hallucinations or delusions were reported."
     }
   ],
+  "allergyRecordStatus": "known_allergies",
   "allergies": [
     {
       "id": "erythromycin",
@@ -3592,6 +3601,7 @@ begin
       "details": "Increasing low mood over several months before the acute presentation, not previously disclosed. No hopelessness, self-harm thoughts, hallucinations or delusions were reported."
     }
   ],
+  "allergyRecordStatus": "known_allergies",
   "allergies": [
     {
       "id": "erythromycin",

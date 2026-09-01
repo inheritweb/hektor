@@ -117,6 +117,7 @@
       "details": "Described as mild to moderate in the source material."
     }
   ],
+  "allergyRecordStatus": "no_known_drug_allergies",
   "allergies": [],
   "baselineMedications": [
     {

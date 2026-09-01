@@ -179,6 +179,12 @@ export enum PatientAllergySeverity {
   Severe = 'severe',
 }
 
+export enum PatientAllergyRecordStatus {
+  KnownAllergies = 'known_allergies',
+  NoKnownDrugAllergies = 'no_known_drug_allergies',
+  NotRecorded = 'not_recorded',
+}
+
 export enum PatientMedicationStatus {
   Active = 'active',
   Inactive = 'inactive',
@@ -283,6 +289,7 @@ export interface PatientProfileDocumentV1 {
   relationships: PatientRelationship[];
   background: PatientBackgroundFact[];
   problems: PatientProblem[];
+  allergyRecordStatus: PatientAllergyRecordStatus;
   allergies: PatientAllergy[];
   baselineMedications: PatientBaselineMedication[];
   history: PatientHistory;

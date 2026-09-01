@@ -1,4 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { EhrSectionType, PatientAllergyRecordStatus } from '@hektor/types';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -8,6 +9,7 @@ import {
 } from './PatientEhrPreviewPage.component';
 
 const patient = {
+  allergyRecordStatus: PatientAllergyRecordStatus.KnownAllergies,
   allergies: [
     {
       clinicalStatus: 'active',
@@ -51,8 +53,36 @@ const patient = {
     sexAtBirth: { status: 'known', value: 'female' },
   },
   displayName: 'Esther Jenkins',
+  recordName: 'Jenkins, Esther',
   identifiers: [{ display: 'Hektor patient number', value: 'SIM-HKT-37194' }],
   organisationName: 'Jean McFarlane Trust',
+  personalContext: [
+    {
+      category: 'occupation',
+      id: 'retired-cleaner',
+      summary: 'Retired cleaner.',
+    },
+    {
+      category: 'living_arrangements',
+      id: 'living-with-daughter',
+      summary: 'Lives with her daughter Tasha.',
+    },
+  ],
+  baselineMedications: [
+    {
+      dose: '5 mg',
+      frequency: 'Once daily',
+      id: 'amlodipine',
+      medication: 'Amlodipine',
+      route: 'Oral',
+      status: 'active',
+    },
+  ],
+  clinicalHistory: {
+    familyHistory: ['Mother had a stroke in her seventies.'],
+    lifestyleAndSocialHistory: ['Never smoked.'],
+    pastMedicalHistory: ['Hypertension'],
+  },
   problems: [
     {
       clinicalStatus: 'active',
@@ -77,84 +107,99 @@ const patient = {
 afterEach(cleanup);
 
 describe('PatientEhrPreviewPage', () => {
-  it('switches accessibly from patient details to communication and relationships', async () => {
-    const user = userEvent.setup();
+  it('renders the demographic and administrative module from the patient profile', () => {
     render(<PatientEhrPreviewPage exitHref="#exit" patient={patient} />);
 
     expect(
-      screen.getByRole('heading', { name: 'A — Patient Details' }),
+      screen.getByRole('heading', {
+        name: 'Demographic and administrative',
+      }),
     ).toBeTruthy();
-
-    const communicationNavigation = screen.getByRole('button', {
-      name: /Communication & relationships/,
-    });
-    await user.click(communicationNavigation);
-
-    const heading = screen.getByRole('heading', {
-      name: 'B — Communication & relationships',
-    });
-    expect(heading).toBeTruthy();
-    expect(document.activeElement).toBe(heading);
-    expect(communicationNavigation.getAttribute('aria-current')).toBe('page');
-    expect(screen.getByText('French')).toBeTruthy();
-    expect(screen.getByText('Allow additional processing time.')).toBeTruthy();
-    expect(screen.getByText('Tasha Jenkins')).toBeTruthy();
+    expect(screen.getAllByText('Jenkins, Esther').length).toBeGreaterThan(0);
+    expect(screen.getByText('Tasha Jenkins (Daughter)')).toBeTruthy();
+    expect(
+      within(
+        screen.getByRole('navigation', { name: 'Patient record sections' }),
+      ).getAllByRole('button'),
+    ).toHaveLength(13);
   });
 
-  it('distinguishes an empty communication and relationships record', () => {
+  it('switches accessibly to the profile-driven About me module', async () => {
+    const user = userEvent.setup();
+    render(<PatientEhrPreviewPage exitHref="#exit" patient={patient} />);
+
+    const aboutMeNavigation = screen.getByRole('button', {
+      name: /About me/,
+    });
+    await user.click(aboutMeNavigation);
+
+    const heading = screen.getByRole('heading', {
+      name: 'About me',
+    });
+    expect(document.activeElement).toBe(heading);
+    expect(aboutMeNavigation.getAttribute('aria-current')).toBe('page');
+    expect(screen.getByText('Retired cleaner.')).toBeTruthy();
+    expect(screen.getByText('Lives with her daughter Tasha.')).toBeTruthy();
+    expect(screen.getByText(/Use clear, plain language/)).toBeTruthy();
+  });
+
+  it('does not describe an unimplemented module as an empty clinical record', () => {
     render(
       <PatientEhrPreviewPage
         exitHref="#exit"
-        initialSection="communication-relationships"
+        initialSection={EhrSectionType.DocumentsAndCorrespondence}
+        patient={patient}
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Documents / correspondence' }),
+    ).toBeTruthy();
+    expect(screen.queryByText(/no information|none recorded/i)).toBeNull();
+  });
+
+  it('renders recorded reactions and preserves verification status', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.AllergiesAdverseReactionsAndAlerts}
+        patient={patient}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Penicillin' })).toBeTruthy();
+    expect(screen.getByText('Generalised urticaria')).toBeTruthy();
+    expect(screen.getByText(/active · confirmed/i)).toBeTruthy();
+  });
+
+  it('distinguishes NKDA from an unrecorded allergy status', () => {
+    const { rerender } = render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.AllergiesAdverseReactionsAndAlerts}
         patient={{
           ...patient,
-          communication: {
-            accessibilityNeeds: [],
-            languages: [],
-            preferences: [],
-          },
-          relationships: [],
+          allergies: [],
+          allergyRecordStatus: PatientAllergyRecordStatus.NoKnownDrugAllergies,
         }}
       />,
     );
 
-    expect(screen.getAllByText('None recorded')).toHaveLength(4);
-    expect(
-      screen.queryByText('Communication adjustments are recorded.'),
-    ).toBeNull();
-  });
+    expect(screen.getByText(/No known drug allergies \(NKDA\)/)).toBeTruthy();
 
-  it('keeps active allergies visible and switches to the complete safety section', async () => {
-    const user = userEvent.setup();
-    render(<PatientEhrPreviewPage exitHref="#exit" patient={patient} />);
-
-    expect(screen.getByText(/ALLERGIES — PENICILLIN/)).toBeTruthy();
-
-    const safetyNavigation = screen.getByRole('button', {
-      name: /Problems & allergies/,
-    });
-    await user.click(safetyNavigation);
-
-    const heading = screen.getByRole('heading', {
-      name: 'C — Problems & allergies',
-    });
-    expect(document.activeElement).toBe(heading);
-    expect(screen.getByText('Generalised urticaria')).toBeTruthy();
-    expect(
-      screen.getByText('Recurrent right shoulder instability'),
-    ).toBeTruthy();
-  });
-
-  it('describes empty allergy data without asserting no known allergies', () => {
-    render(
+    rerender(
       <PatientEhrPreviewPage
         exitHref="#exit"
-        initialSection="problems-allergies"
-        patient={{ ...patient, allergies: [] }}
+        initialSection={EhrSectionType.AllergiesAdverseReactionsAndAlerts}
+        patient={{
+          ...patient,
+          allergies: [],
+          allergyRecordStatus: PatientAllergyRecordStatus.NotRecorded,
+        }}
       />,
     );
 
-    expect(screen.getByText('No allergies recorded')).toBeTruthy();
-    expect(screen.queryByText(/No known allergies/i)).toBeNull();
+    expect(screen.getByText(/This does not mean/)).toBeTruthy();
+    expect(screen.queryByText(/No known drug allergies \(NKDA\)/)).toBeNull();
   });
 });

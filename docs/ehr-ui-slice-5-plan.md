@@ -1,7 +1,8 @@
 # EHR UI slice 5 — baseline medications
 
-Status: planned. This is the next bite-sized increment after Problems &
-allergies.
+Status: superseded before implementation. Esther's prototype combines clinical
+history, medicines and allergies in section C. See
+`docs/esther-jenkins-ehr-reconstruction-plan.md`.
 
 ## Outcome
 

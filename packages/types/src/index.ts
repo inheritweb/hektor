@@ -10,6 +10,8 @@ export * from './contracts/statistics';
 
 export * from './organisations';
 
+export * from './ehr';
+
 export * from './patient-profiles';
 
 export * from './scim';
