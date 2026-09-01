@@ -29,9 +29,31 @@ export function PatientEhrPreviewScreen({
   if (!profile)
     return <PreviewError message="That patient profile could not be found." />;
 
+  const profileIndex = profiles.data.data.findIndex(
+    ({ id }) => id === profile.id,
+  );
+  const previousProfile = profiles.data.data[profileIndex - 1];
+  const nextProfile = profiles.data.data[profileIndex + 1];
+
   return (
     <ResolvedPatientEhrPreview
       expectedVersionId={versionId}
+      nextPatient={
+        nextProfile
+          ? {
+              href: `/ehr/patients/${encodeURIComponent(nextProfile.slug)}`,
+              label: nextProfile.displayName,
+            }
+          : undefined
+      }
+      previousPatient={
+        previousProfile
+          ? {
+              href: `/ehr/patients/${encodeURIComponent(previousProfile.slug)}`,
+              label: previousProfile.displayName,
+            }
+          : undefined
+      }
       profileId={profile.id}
     />
   );
@@ -39,14 +61,20 @@ export function PatientEhrPreviewScreen({
 
 function ResolvedPatientEhrPreview({
   expectedVersionId,
+  nextPatient,
+  previousPatient,
   profileId,
 }: {
   expectedVersionId?: string;
+  nextPatient?: { href: string; label: string };
+  previousPatient?: { href: string; label: string };
   profileId: string;
 }) {
   const currentProfile = useAdminPatientProfile(
     { params: { profileId } },
-    { enabled: !expectedVersionId },
+    {
+      placeholderData: (previousProfile) => previousProfile,
+    },
   );
   const selectedVersion = useAdminPatientProfileVersion(
     {
@@ -72,6 +100,7 @@ function ResolvedPatientEhrPreview({
   return (
     <PatientEhrPreviewPage
       exitHref={exitHref}
+      nextPatient={nextPatient}
       patient={{
         allergyRecordStatus: patient.document.allergyRecordStatus,
         allergies: patient.document.allergies.map((allergy) => ({
@@ -231,6 +260,7 @@ function ResolvedPatientEhrPreview({
               details ? `${problem.display} — ${details}` : problem.display,
             ),
         },
+        historyEntries: patient.document.history.entries,
         problems: patient.document.problems.map((problem) => ({
           clinicalStatus: problem.clinicalStatus,
           details: problem.details,
@@ -252,6 +282,7 @@ function ResolvedPatientEhrPreview({
         versionNumber: patient.versionNumber,
         versionState: patient.versionState,
       }}
+      previousPatient={previousPatient}
     />
   );
 }

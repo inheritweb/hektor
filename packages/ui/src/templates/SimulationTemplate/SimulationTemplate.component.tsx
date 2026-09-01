@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { LuPanelRightOpen, LuX } from 'react-icons/lu';
 
 import { Button } from '../../atoms';
+import { useSimulationToolsState } from '../../context';
 
 export interface SimulationTemplateProps {
   children: ReactNode;
@@ -16,7 +17,10 @@ export function SimulationTemplate({
   header,
   tools,
 }: SimulationTemplateProps) {
-  const [toolsOpen, setToolsOpen] = useState(false);
+  const [localToolsOpen, setLocalToolsOpen] = useState(false);
+  const sharedToolsState = useSimulationToolsState();
+  const toolsOpen = sharedToolsState?.open ?? localToolsOpen;
+  const setToolsOpen = sharedToolsState?.setOpen ?? setLocalToolsOpen;
 
   return (
     <div

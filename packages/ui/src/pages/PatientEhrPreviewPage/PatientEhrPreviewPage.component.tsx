@@ -2,7 +2,9 @@
 
 import {
   EhrSectionType,
+  PatientHistoryEntryType,
   type EhrSectionConfiguration,
+  type PatientHistoryEntry,
   PatientAllergyRecordStatus,
 } from '@hektor/types';
 import {
@@ -104,6 +106,7 @@ export interface PatientEhrPreviewViewModel {
     familyHistory: readonly string[];
     lifestyleAndSocialHistory: readonly string[];
   };
+  historyEntries: readonly PatientHistoryEntry[];
   personalContext: readonly {
     id: string;
     category: string;
@@ -117,7 +120,14 @@ export interface PatientEhrPreviewViewModel {
 export interface PatientEhrPreviewPageProps {
   exitHref: string;
   initialSection?: EhrSectionType;
+  nextPatient?: PatientEhrPreviewNavigationItem;
   patient: PatientEhrPreviewViewModel;
+  previousPatient?: PatientEhrPreviewNavigationItem;
+}
+
+export interface PatientEhrPreviewNavigationItem {
+  href: string;
+  label: string;
 }
 
 const recordSections = resolveEhrSections(
@@ -147,7 +157,9 @@ function patientAge(dateOfBirth: string) {
 export function PatientEhrPreviewPage({
   exitHref,
   initialSection = EhrSectionType.DemographicAndAdministrative,
+  nextPatient,
   patient,
+  previousPatient,
 }: PatientEhrPreviewPageProps) {
   const [activeSection, setActiveSection] = useState(initialSection);
   const sectionHeading = useRef<HTMLHeadingElement>(null);
@@ -181,6 +193,8 @@ export function PatientEhrPreviewPage({
       tools={
         <SimulationTools
           exitHref={exitHref}
+          nextPreview={nextPatient}
+          previousPreview={previousPatient}
           previewLabel="Platform-admin patient-profile preview"
         />
       }
@@ -227,6 +241,39 @@ export function PatientEhrPreviewPage({
               headingRef={sectionHeading}
               patient={patient}
             />
+          ) : activeSection ===
+            EhrSectionType.MedicationsAndMedicinesOptimisation ? (
+            <MedicationsAndMedicinesOptimisationSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : activeSection === EhrSectionType.ProblemListAndClinicalHistory ? (
+            <ProblemListAndClinicalHistorySection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : activeSection ===
+            EhrSectionType.StandardisedAssessmentsAndRiskScreening ? (
+            <StandardisedAssessmentsAndRiskScreeningSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : activeSection === EhrSectionType.CareAndSupportPlanning ? (
+            <CareAndSupportPlanningSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : activeSection ===
+            EhrSectionType.ObservationsInvestigationsAndProcedures ? (
+            <ObservationsInvestigationsAndProceduresSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : activeSection === EhrSectionType.CareEncountersAndTransitions ? (
+            <CareEncountersAndTransitionsSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
           ) : (
             <UnimplementedEhrSection
               headingRef={sectionHeading}
@@ -239,6 +286,1331 @@ export function PatientEhrPreviewPage({
         </div>
       </div>
     </SimulationTemplate>
+  );
+}
+
+function CareEncountersAndTransitionsSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const encounters = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.Encounter }
+    > => entry.type === PatientHistoryEntryType.Encounter,
+  );
+  const referrals = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.Referral }
+    > => entry.type === PatientHistoryEntryType.Referral,
+  );
+
+  return (
+    <EhrSection
+      badge="PATIENT PROFILE"
+      headingRef={headingRef}
+      id={EhrSectionType.CareEncountersAndTransitions}
+      title="Care encounters and transitions"
+    >
+      <div className="border-l-4 border-[#0072ce] bg-[#e8f3fb] px-3 py-2 text-[11px] leading-5 text-[#003b6f]">
+        This view contains encounters and referral pathways completed before the
+        scenario boundary. A scenario may add a current admission, transfer,
+        discharge or new referral without changing the base Patient Profile.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Care encounters</ClinicalPrompt>
+        {encounters.length ? (
+          <ol className="relative space-y-3 border-l-2 border-[#8fb5da] pl-5">
+            {encounters.map((encounter) => (
+              <li className="relative" key={encounter.id}>
+                <span
+                  aria-hidden="true"
+                  className="absolute top-3 -left-[1.55rem] size-2.5 rounded-full border-2 border-white bg-[#1460aa]"
+                />
+                <article className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white">
+                  <div className="flex flex-wrap items-start justify-between gap-2 bg-[#edf3fb] px-3 py-2">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+                        {encounter.encounterType.replaceAll('_', ' ')}
+                        {encounter.careSetting
+                          ? ` · ${encounter.careSetting.replaceAll('_', ' ')}`
+                          : ''}
+                      </p>
+                      <h3 className="mt-0.5 text-xs font-bold text-[#1c3a5c]">
+                        {encounter.summary}
+                      </h3>
+                    </div>
+                    {historicalPeriodLabel(encounter) ? (
+                      <span className="text-[10px] font-semibold text-[#52657a]">
+                        {historicalPeriodLabel(encounter)}
+                      </span>
+                    ) : null}
+                  </div>
+                  <dl className="grid gap-x-5 gap-y-2 px-3 py-3 md:grid-cols-2">
+                    <ClinicalDefinition
+                      label="Service"
+                      value={encounter.service}
+                    />
+                    <ClinicalDefinition
+                      label="Reason for encounter"
+                      value={encounter.reason}
+                    />
+                    <div className="md:col-span-2">
+                      <ClinicalDefinition
+                        label="Outcome or transition"
+                        value={encounter.outcome}
+                      />
+                    </div>
+                    {encounter.details ? (
+                      <div className="md:col-span-2">
+                        <ClinicalDefinition
+                          label="Additional detail"
+                          value={encounter.details}
+                        />
+                      </div>
+                    ) : null}
+                  </dl>
+                  <div className="px-3 pb-3">
+                    <HistoricalRecordMeta entry={encounter} />
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <NeutralRecordMessage>
+            No durable care encounters recorded
+          </NeutralRecordMessage>
+        )}
+      </div>
+
+      <Divider />
+
+      <div>
+        <ClinicalPrompt>Referrals and care transitions</ClinicalPrompt>
+        {referrals.length ? (
+          <div className="grid gap-2.5 xl:grid-cols-2">
+            {referrals.map((referral) => (
+              <article
+                className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white"
+                key={referral.id}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2 bg-[#d0e4f7] px-3 py-2">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+                      Referral
+                    </p>
+                    <h3 className="mt-0.5 text-xs font-bold text-[#1c3a5c]">
+                      {referral.summary}
+                    </h3>
+                  </div>
+                  <ReferralStatus status={referral.status} />
+                </div>
+                <dl className="grid gap-x-5 gap-y-2 px-3 py-3 md:grid-cols-2">
+                  <ClinicalDefinition
+                    label="Referred from"
+                    value={referral.referredFrom}
+                  />
+                  <ClinicalDefinition
+                    label="Referred to"
+                    value={referral.referredTo}
+                  />
+                  <div className="md:col-span-2">
+                    <ClinicalDefinition
+                      label="Reason for referral"
+                      value={referral.reason}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <ClinicalDefinition
+                      label="Outcome"
+                      value={referral.outcome}
+                    />
+                  </div>
+                  {referral.details ? (
+                    <div className="md:col-span-2">
+                      <ClinicalDefinition
+                        label="Additional detail"
+                        value={referral.details}
+                      />
+                    </div>
+                  ) : null}
+                </dl>
+                <div className="px-3 pb-3">
+                  <HistoricalRecordMeta entry={referral} />
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <NeutralRecordMessage>
+            No durable referrals or care transitions recorded
+          </NeutralRecordMessage>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+function ReferralStatus({ status }: { status: string }) {
+  const classes =
+    status === 'accepted' || status === 'completed'
+      ? 'bg-[#dcfce7] text-[#166534]'
+      : status === 'requested'
+        ? 'bg-[#dbeafe] text-[#1e40af]'
+        : 'bg-[#e5e7eb] text-[#4b5563]';
+
+  return (
+    <span
+      className={`rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] ${classes}`}
+    >
+      {status.replaceAll('_', ' ')}
+    </span>
+  );
+}
+
+function ObservationsInvestigationsAndProceduresSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const observations = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.Observation }
+    > => entry.type === PatientHistoryEntryType.Observation,
+  );
+  const investigations = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.Investigation }
+    > => entry.type === PatientHistoryEntryType.Investigation,
+  );
+  const procedures = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.Procedure }
+    > => entry.type === PatientHistoryEntryType.Procedure,
+  );
+
+  return (
+    <EhrSection
+      badge="PATIENT PROFILE"
+      headingRef={headingRef}
+      id={EhrSectionType.ObservationsInvestigationsAndProcedures}
+      title="Observations, investigations and procedures"
+    >
+      <div className="border-l-4 border-[#0072ce] bg-[#e8f3fb] px-3 py-2 text-[11px] leading-5 text-[#003b6f]">
+        These are durable records from before the scenario boundary. Current
+        observations, episode investigations and procedures appear only when a
+        scenario layer supplies them.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Recorded observations</ClinicalPrompt>
+        {observations.length ? (
+          <div className="overflow-x-auto rounded-[3px] border border-[#b8cfe8] bg-white">
+            <table className="w-full min-w-[44rem] border-collapse text-[11px]">
+              <thead>
+                <tr className="bg-[#d0e4f7] text-left text-[10px] uppercase tracking-[0.04em] text-[#1c3a5c]">
+                  <th className="px-2 py-2">Observation</th>
+                  <th className="px-2 py-2">Value</th>
+                  <th className="px-2 py-2">Reference range</th>
+                  <th className="px-2 py-2">Interpretation</th>
+                  <th className="px-2 py-2">When</th>
+                  <th className="px-2 py-2">Context</th>
+                </tr>
+              </thead>
+              <tbody>
+                {observations.map((observation, index) => (
+                  <tr
+                    className={index % 2 ? 'bg-[#f9fafb]' : 'bg-white'}
+                    key={observation.id}
+                  >
+                    <td className="border-b border-[#d8dee8] px-2 py-2 font-bold text-[#1c2b4a]">
+                      {observation.observation.display}
+                    </td>
+                    <td className="border-b border-[#d8dee8] px-2 py-2 font-semibold">
+                      {observationValueLabel(observation.value)}
+                    </td>
+                    <ClinicalTableValue value={observation.referenceRange} />
+                    <td className="border-b border-[#d8dee8] px-2 py-2">
+                      <ResultInterpretation
+                        interpretation={observation.interpretation}
+                      />
+                    </td>
+                    <ClinicalTableValue
+                      value={historicalPeriodLabel(observation)}
+                    />
+                    <ClinicalTableValue
+                      value={observation.details ?? observation.summary}
+                    />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <NeutralRecordMessage>
+            No durable observations recorded
+          </NeutralRecordMessage>
+        )}
+      </div>
+
+      <Divider />
+
+      <div>
+        <ClinicalPrompt>Investigations and results</ClinicalPrompt>
+        {investigations.length ? (
+          <div className="space-y-3">
+            {investigations.map((investigation) => (
+              <InvestigationCard
+                investigation={investigation}
+                key={investigation.id}
+              />
+            ))}
+          </div>
+        ) : (
+          <NeutralRecordMessage>
+            No durable investigations recorded
+          </NeutralRecordMessage>
+        )}
+      </div>
+
+      <Divider />
+
+      <div>
+        <ClinicalPrompt>Procedures</ClinicalPrompt>
+        {procedures.length ? (
+          <div className="grid gap-2.5 xl:grid-cols-2">
+            {procedures.map((procedure) => (
+              <article
+                className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white"
+                key={procedure.id}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2 bg-[#d0e4f7] px-3 py-2">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+                      Recorded procedure
+                    </p>
+                    <h3 className="mt-0.5 text-xs font-bold text-[#1c3a5c]">
+                      {procedure.procedure.display}
+                    </h3>
+                  </div>
+                  {procedure.sensitivity === 'restricted' ? (
+                    <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#92400e]">
+                      Restricted
+                    </span>
+                  ) : null}
+                </div>
+                <dl className="grid gap-x-4 gap-y-2 px-3 py-3 md:grid-cols-2">
+                  <ClinicalDefinition
+                    label="Record summary"
+                    value={procedure.summary}
+                  />
+                  <ClinicalDefinition
+                    label="Indication"
+                    value={procedure.indication}
+                  />
+                  <ClinicalDefinition
+                    label="Outcome"
+                    value={procedure.outcome}
+                  />
+                  <ClinicalDefinition
+                    label="Complications"
+                    value={procedure.complications}
+                  />
+                  {procedure.details ? (
+                    <div className="md:col-span-2">
+                      <ClinicalDefinition
+                        label="Additional detail"
+                        value={procedure.details}
+                      />
+                    </div>
+                  ) : null}
+                </dl>
+                <div className="px-3 pb-3">
+                  <HistoricalRecordMeta entry={procedure} />
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <NeutralRecordMessage>
+            No durable procedures recorded
+          </NeutralRecordMessage>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+function InvestigationCard({
+  investigation,
+}: {
+  investigation: Extract<
+    PatientHistoryEntry,
+    { type: PatientHistoryEntryType.Investigation }
+  >;
+}) {
+  return (
+    <article className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white">
+      <div className="flex flex-wrap items-start justify-between gap-2 bg-[#d0e4f7] px-3 py-2">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+            {investigation.kind.replaceAll('_', ' ')} investigation
+          </p>
+          <h3 className="mt-0.5 text-xs font-bold text-[#1c3a5c]">
+            {investigation.investigation.display}
+          </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="rounded-sm bg-white px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#1c3a5c]">
+            {investigation.status.replaceAll('_', ' ')}
+          </span>
+          {investigation.sensitivity === 'restricted' ? (
+            <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#92400e]">
+              Restricted
+            </span>
+          ) : null}
+        </div>
+      </div>
+      <div className="space-y-3 px-3 py-3">
+        <p className="text-[11px] leading-5 text-[#1c2b4a]">
+          {investigation.summary}
+        </p>
+        {investigation.results.length ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[38rem] border-collapse text-[11px]">
+              <thead>
+                <tr className="bg-[#edf3fb] text-left text-[10px] uppercase tracking-[0.04em] text-[#1c3a5c]">
+                  <th className="px-2 py-1.5">Result</th>
+                  <th className="px-2 py-1.5">Value</th>
+                  <th className="px-2 py-1.5">Reference range</th>
+                  <th className="px-2 py-1.5">Flag</th>
+                </tr>
+              </thead>
+              <tbody>
+                {investigation.results.map((result) => (
+                  <tr key={result.id}>
+                    <td className="border-b border-[#d8dee8] px-2 py-2 font-semibold">
+                      {result.observation.display}
+                    </td>
+                    <td className="border-b border-[#d8dee8] px-2 py-2">
+                      {observationValueLabel(result.value)}
+                    </td>
+                    <ClinicalTableValue value={result.referenceRange} />
+                    <td className="border-b border-[#d8dee8] px-2 py-2">
+                      <ResultInterpretation
+                        interpretation={result.interpretation}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-[11px] italic text-[#6b7280]">
+            No discrete result values recorded
+          </p>
+        )}
+        <dl>
+          <ClinicalDefinition
+            label="Conclusion"
+            value={investigation.conclusion}
+          />
+        </dl>
+        {investigation.details ? (
+          <dl>
+            <ClinicalDefinition
+              label="Additional detail"
+              value={investigation.details}
+            />
+          </dl>
+        ) : null}
+        <HistoricalRecordMeta entry={investigation} />
+      </div>
+    </article>
+  );
+}
+
+function ClinicalTableValue({ value }: { value?: string }) {
+  return (
+    <td className="border-b border-[#d8dee8] px-2 py-2 align-top leading-5">
+      {value ?? 'Not recorded'}
+    </td>
+  );
+}
+
+function ResultInterpretation({ interpretation }: { interpretation?: string }) {
+  if (!interpretation)
+    return <span className="text-[#6b7280]">Not recorded</span>;
+  const highlighted = interpretation !== 'normal';
+  return (
+    <span
+      className={
+        highlighted
+          ? 'font-bold text-[#92400e]'
+          : 'font-semibold text-[#166534]'
+      }
+    >
+      {interpretation.replaceAll('_', ' ')}
+    </span>
+  );
+}
+
+function ClinicalDefinition({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string;
+}) {
+  return (
+    <div>
+      <dt className="text-[9px] font-bold uppercase tracking-[0.04em] text-[#52657a]">
+        {label}
+      </dt>
+      <dd
+        className={`mt-0.5 text-[11px] leading-5 ${value ? 'text-[#1c2b4a]' : 'italic text-[#6b7280]'}`}
+      >
+        {value ?? 'Not recorded'}
+      </dd>
+    </div>
+  );
+}
+
+function CareAndSupportPlanningSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const carePlans = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.CarePlan }
+    > => entry.type === PatientHistoryEntryType.CarePlan,
+  );
+
+  return (
+    <EhrSection
+      badge="PATIENT PROFILE"
+      headingRef={headingRef}
+      id={EhrSectionType.CareAndSupportPlanning}
+      title="Care and support planning"
+    >
+      <div className="border-l-4 border-[#0072ce] bg-[#e8f3fb] px-3 py-2 text-[11px] leading-5 text-[#003b6f]">
+        This view contains authored care and support plans that form part of the
+        durable Patient Profile. It does not infer a plan from diagnoses,
+        relationships or background facts.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Recorded care and support plans</ClinicalPrompt>
+        {carePlans.length ? (
+          <div className="space-y-3">
+            {carePlans.map((carePlan) => (
+              <article
+                className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white"
+                key={carePlan.id}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2 bg-[#d0e4f7] px-3 py-2">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+                      Care and support plan
+                    </p>
+                    <h3 className="mt-0.5 text-xs font-bold text-[#1c3a5c]">
+                      {carePlan.summary}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CarePlanStatus status={carePlan.status} />
+                    {carePlan.sensitivity === 'restricted' ? (
+                      <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#92400e]">
+                        Restricted
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="space-y-4 px-3 py-3">
+                  {carePlan.details ? (
+                    <p className="text-[11px] leading-5 text-[#374151]">
+                      {carePlan.details}
+                    </p>
+                  ) : null}
+                  <div>
+                    <FieldLabel>Identified need</FieldLabel>
+                    <p className="text-[11px] leading-5 text-[#1c2b4a]">
+                      {carePlan.need}
+                    </p>
+                  </div>
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <CarePlanList
+                      emptyLabel="No goals recorded"
+                      items={carePlan.goals}
+                      label="Goals"
+                    />
+                    <CarePlanList
+                      emptyLabel="No interventions recorded"
+                      items={carePlan.interventions}
+                      label="Planned interventions and support"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>Evaluation</FieldLabel>
+                    <p
+                      className={`text-[11px] leading-5 ${carePlan.evaluation ? 'text-[#1c2b4a]' : 'italic text-[#6b7280]'}`}
+                    >
+                      {carePlan.evaluation ?? 'No evaluation recorded'}
+                    </p>
+                  </div>
+                  <HistoricalRecordMeta entry={carePlan} />
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="border-l-4 border-[#6b7280] bg-[#f3f4f6] px-3 py-3 text-[11px] leading-5 text-[#374151]">
+            <strong>
+              No durable care or support plan is recorded in this base Patient
+              Profile.
+            </strong>{' '}
+            This does not mean that the person has no care needs or that a
+            scenario contains no care-planning activity.
+          </div>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+function CarePlanStatus({ status }: { status: string }) {
+  const classes =
+    status === 'active_at_boundary'
+      ? 'bg-[#dcfce7] text-[#166534]'
+      : status === 'completed'
+        ? 'bg-[#e0e7ff] text-[#3730a3]'
+        : 'bg-[#fef3c7] text-[#92400e]';
+
+  return (
+    <span
+      className={`rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] ${classes}`}
+    >
+      {status.replaceAll('_', ' ')}
+    </span>
+  );
+}
+
+function CarePlanList({
+  emptyLabel,
+  items,
+  label,
+}: {
+  emptyLabel: string;
+  items: readonly string[];
+  label: string;
+}) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      {items.length ? (
+        <ul className="mt-1 space-y-1">
+          {items.map((item) => (
+            <li
+              className="border-l-2 border-[#8fb5da] bg-[#f3f7fd] px-2 py-1 text-[11px] leading-5"
+              key={item}
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-1 text-[11px] italic text-[#6b7280]">{emptyLabel}</p>
+      )}
+    </div>
+  );
+}
+
+function HistoricalRecordMeta({ entry }: { entry: PatientHistoryEntry }) {
+  const occurred = historicalPeriodLabel(entry);
+  const author = entry.author
+    ? [entry.author.name, entry.author.role, entry.author.service]
+        .filter(Boolean)
+        .join(' · ')
+    : undefined;
+  const parts = [
+    occurred,
+    entry.recordedOn
+      ? `Recorded ${historicalDateLabel(entry.recordedOn)}`
+      : undefined,
+    author ? `By ${author}` : undefined,
+  ].filter(Boolean);
+
+  return parts.length ? (
+    <p className="border-t border-[#e5e7eb] pt-2 text-[10px] text-[#6b7280]">
+      {parts.join(' · ')}
+    </p>
+  ) : null;
+}
+
+function StandardisedAssessmentsAndRiskScreeningSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const assessments = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.Assessment }
+    > =>
+      entry.type === PatientHistoryEntryType.Assessment &&
+      (entry.score !== undefined ||
+        Boolean(entry.scale) ||
+        Boolean(entry.components?.length)),
+  );
+
+  return (
+    <EhrSection
+      badge="PATIENT PROFILE"
+      headingRef={headingRef}
+      id={EhrSectionType.StandardisedAssessmentsAndRiskScreening}
+      title="Standardised assessments and risk screening"
+    >
+      <div className="border-l-4 border-[#0072ce] bg-[#e8f3fb] px-3 py-2 text-[11px] leading-5 text-[#003b6f]">
+        This view contains completed structured assessments recorded before the
+        scenario boundary. Current risk screens and learner-entered assessments
+        appear only when supplied by a scenario or activity.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Recorded assessments and screens</ClinicalPrompt>
+        {assessments.length ? (
+          <div className="grid gap-2.5 xl:grid-cols-2">
+            {assessments.map((assessment) => (
+              <article
+                className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white"
+                key={assessment.id}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2 bg-[#d0e4f7] px-3 py-2">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+                      Recorded assessment
+                    </p>
+                    <h3 className="mt-0.5 text-xs font-bold text-[#1c3a5c]">
+                      {assessment.assessment.display}
+                    </h3>
+                  </div>
+                  {assessment.score !== undefined ? (
+                    <div className="min-w-16 rounded-[3px] border border-[#8fb5da] bg-white px-2 py-1 text-center">
+                      <span className="block text-[9px] font-bold uppercase text-[#52657a]">
+                        Score
+                      </span>
+                      <strong className="text-sm text-[#1c2b4a]">
+                        {assessment.score}
+                        {assessment.scale ? ` ${assessment.scale}` : ''}
+                      </strong>
+                    </div>
+                  ) : assessment.scale ? (
+                    <span className="rounded-sm bg-white px-2 py-1 text-[10px] font-semibold text-[#1c3a5c]">
+                      {assessment.scale}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="space-y-3 px-3 py-3">
+                  <div>
+                    <FieldLabel>Record summary</FieldLabel>
+                    <p className="text-[11px] leading-5 text-[#1c2b4a]">
+                      {assessment.summary}
+                    </p>
+                  </div>
+                  <div>
+                    <FieldLabel>Outcome</FieldLabel>
+                    <p className="text-[11px] leading-5 text-[#1c2b4a]">
+                      {assessment.outcome}
+                    </p>
+                  </div>
+                  {assessment.components?.length ? (
+                    <div>
+                      <FieldLabel>Recorded components</FieldLabel>
+                      <ul className="mt-1 grid gap-1 md:grid-cols-2">
+                        {assessment.components.map((component) => (
+                          <li
+                            className="border-l-2 border-[#8fb5da] bg-[#f3f7fd] px-2 py-1 text-[11px] leading-5"
+                            key={component}
+                          >
+                            {component}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  <AssessmentRecordMeta assessment={assessment} />
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="border-l-4 border-[#6b7280] bg-[#f3f4f6] px-3 py-3 text-[11px] leading-5 text-[#374151]">
+            <strong>
+              No standardised assessments or risk screens are recorded in this
+              base Patient Profile.
+            </strong>{' '}
+            This does not mean that screening has been completed or that no
+            risks are present. Scenario-specific assessments will appear here
+            when scenario layers are introduced.
+          </div>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+function AssessmentRecordMeta({
+  assessment,
+}: {
+  assessment: Extract<
+    PatientHistoryEntry,
+    { type: PatientHistoryEntryType.Assessment }
+  >;
+}) {
+  const occurred = historicalPeriodLabel(assessment);
+  const author = assessment.author
+    ? [
+        assessment.author.name,
+        assessment.author.role,
+        assessment.author.service,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : undefined;
+
+  if (!occurred && !assessment.recordedOn && !author) return null;
+
+  return (
+    <p className="border-t border-[#e5e7eb] pt-2 text-[10px] text-[#6b7280]">
+      {[
+        occurred,
+        assessment.recordedOn
+          ? `Recorded ${historicalDateLabel(assessment.recordedOn)}`
+          : undefined,
+        author ? `By ${author}` : undefined,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
+    </p>
+  );
+}
+
+function ProblemListAndClinicalHistorySection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const problems = patient.problems
+    .map((problem, sourceIndex) => ({ problem, sourceIndex }))
+    .sort((left, right) => {
+      const statusOrder = { active: 0, inactive: 1, resolved: 2 };
+      return (
+        (statusOrder[left.problem.clinicalStatus as keyof typeof statusOrder] ??
+          3) -
+          (statusOrder[
+            right.problem.clinicalStatus as keyof typeof statusOrder
+          ] ?? 3) || left.sourceIndex - right.sourceIndex
+      );
+    })
+    .map(({ problem }) => problem);
+
+  return (
+    <EhrSection
+      badge="PATIENT PROFILE"
+      headingRef={headingRef}
+      id={EhrSectionType.ProblemListAndClinicalHistory}
+      title="Problem list / clinical history"
+    >
+      <div className="border-l-4 border-[#0072ce] bg-[#e8f3fb] px-3 py-2 text-[11px] leading-5 text-[#003b6f]">
+        This module contains durable problems and historical records from the
+        selected Patient Profile version. A current presentation or episode is
+        added by a scenario.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Problem list</ClinicalPrompt>
+        {problems.length ? (
+          <div className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white">
+            <div className="hidden grid-cols-[minmax(12rem,2fr)_7rem_8rem_8rem_minmax(12rem,2fr)] bg-[#d0e4f7] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.04em] text-[#1c3a5c] md:grid">
+              <span>Problem</span>
+              <span>Status</span>
+              <span>Onset</span>
+              <span>Resolved</span>
+              <span>Details</span>
+            </div>
+            {problems.map((problem, index) => (
+              <article
+                className={`grid gap-2 border-t border-[#d8dee8] px-3 py-3 first:border-t-0 md:grid-cols-[minmax(12rem,2fr)_7rem_8rem_8rem_minmax(12rem,2fr)] md:items-start ${index % 2 ? 'bg-[#f9fafb]' : 'bg-white'}`}
+                key={problem.id}
+              >
+                <h3 className="text-xs font-bold text-[#1c2b4a]">
+                  {problem.problem}
+                </h3>
+                <ProblemStatus status={problem.clinicalStatus} />
+                <CompactClinicalValue label="Onset" value={problem.onsetDate} />
+                <CompactClinicalValue
+                  label="Resolved"
+                  value={problem.resolvedDate}
+                />
+                <CompactClinicalValue label="Details" value={problem.details} />
+              </article>
+            ))}
+          </div>
+        ) : (
+          <NeutralRecordMessage>No problems recorded</NeutralRecordMessage>
+        )}
+      </div>
+
+      <Divider />
+
+      <div>
+        <ClinicalPrompt>Clinical history</ClinicalPrompt>
+        {patient.historyEntries.length ? (
+          <div className="space-y-2.5">
+            {patient.historyEntries.map((entry) => (
+              <HistoryEntryCard entry={entry} key={entry.id} />
+            ))}
+          </div>
+        ) : (
+          <NeutralRecordMessage>
+            No historical records documented
+          </NeutralRecordMessage>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+function ProblemStatus({ status }: { status: string }) {
+  const classes =
+    status === 'active'
+      ? 'bg-[#dcfce7] text-[#166534]'
+      : status === 'resolved'
+        ? 'bg-[#e0e7ff] text-[#3730a3]'
+        : 'bg-[#e5e7eb] text-[#4b5563]';
+  return (
+    <span
+      className={`w-fit rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] ${classes}`}
+    >
+      {status.replaceAll('_', ' ')}
+    </span>
+  );
+}
+
+function CompactClinicalValue({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string;
+}) {
+  return (
+    <div className="text-[11px] leading-5">
+      <span className="mr-1 font-bold text-[#52657a] md:hidden">{label}:</span>
+      <span>{value ?? 'Not recorded'}</span>
+    </div>
+  );
+}
+
+function HistoryEntryCard({ entry }: { entry: PatientHistoryEntry }) {
+  const details = historyEntryDetails(entry);
+  const occurred = historicalPeriodLabel(entry);
+  const author = entry.author
+    ? [entry.author.name, entry.author.role, entry.author.service]
+        .filter(Boolean)
+        .join(' · ')
+    : undefined;
+
+  return (
+    <article className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-[#edf3fb] px-3 py-2">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+            {entry.type.replaceAll('_', ' ')}
+          </p>
+          <h3 className="mt-0.5 text-xs font-bold text-[#1c2b4a]">
+            {entry.summary}
+          </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          {occurred ? (
+            <span className="text-[10px] font-semibold text-[#52657a]">
+              {occurred}
+            </span>
+          ) : null}
+          {entry.sensitivity === 'restricted' ? (
+            <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#92400e]">
+              Restricted
+            </span>
+          ) : null}
+        </div>
+      </div>
+      <div className="px-3 py-3">
+        {entry.details ? (
+          <p className="mb-3 text-[11px] leading-5 text-[#374151]">
+            {entry.details}
+          </p>
+        ) : null}
+        {details.length ? (
+          <dl className="grid gap-x-5 gap-y-2 md:grid-cols-2">
+            {details.map(({ label, value }) => (
+              <div key={`${entry.id}-${label}`}>
+                <dt className="text-[9px] font-bold uppercase tracking-[0.04em] text-[#52657a]">
+                  {label}
+                </dt>
+                <dd className="mt-0.5 whitespace-pre-line text-[11px] leading-5 text-[#1c2b4a]">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {entry.recordedOn || author ? (
+          <p className="mt-3 border-t border-[#e5e7eb] pt-2 text-[10px] text-[#6b7280]">
+            {entry.recordedOn
+              ? `Recorded ${historicalDateLabel(entry.recordedOn)}`
+              : ''}
+            {entry.recordedOn && author ? ' · ' : ''}
+            {author ? `By ${author}` : ''}
+          </p>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function historyEntryDetails(entry: PatientHistoryEntry) {
+  const details: { label: string; value: string }[] = [];
+  const add = (label: string, value?: string | number) => {
+    if (value !== undefined && value !== '')
+      details.push({ label, value: String(value) });
+  };
+
+  switch (entry.type) {
+    case PatientHistoryEntryType.Encounter:
+      add('Encounter', entry.encounterType.replaceAll('_', ' '));
+      add('Care setting', entry.careSetting?.replaceAll('_', ' '));
+      add('Service', entry.service);
+      add('Reason', entry.reason);
+      add('Outcome', entry.outcome);
+      break;
+    case PatientHistoryEntryType.Observation:
+      add('Observation', entry.observation.display);
+      add('Value', observationValueLabel(entry.value));
+      add('Reference range', entry.referenceRange);
+      add('Interpretation', entry.interpretation);
+      break;
+    case PatientHistoryEntryType.Assessment:
+      add('Assessment', entry.assessment.display);
+      add(
+        'Score',
+        entry.score === undefined
+          ? undefined
+          : `${entry.score}${entry.scale ? ` ${entry.scale}` : ''}`,
+      );
+      add('Outcome', entry.outcome);
+      add('Components', entry.components?.join('\n'));
+      break;
+    case PatientHistoryEntryType.Investigation:
+      add('Investigation', entry.investigation.display);
+      add('Kind', entry.kind.replaceAll('_', ' '));
+      add('Status', entry.status.replaceAll('_', ' '));
+      add(
+        'Results',
+        entry.results
+          .map(
+            (result) =>
+              `${result.observation.display}: ${observationValueLabel(result.value)}${result.referenceRange ? ` (range ${result.referenceRange})` : ''}${result.interpretation ? ` — ${result.interpretation}` : ''}`,
+          )
+          .join('\n'),
+      );
+      add('Conclusion', entry.conclusion);
+      break;
+    case PatientHistoryEntryType.Procedure:
+      add('Procedure', entry.procedure.display);
+      add('Indication', entry.indication);
+      add('Outcome', entry.outcome);
+      add('Complications', entry.complications);
+      break;
+    case PatientHistoryEntryType.MedicationCourse:
+      add('Medicine', entry.medication.display);
+      add('Status', entry.status.replaceAll('_', ' '));
+      add('Dose', entry.dose);
+      add('Route', entry.route?.display);
+      add('Frequency', entry.frequency);
+      add('Indication', entry.indication);
+      add('Reason ended', entry.reasonEnded);
+      add('Response', entry.response);
+      break;
+    case PatientHistoryEntryType.Referral:
+      add('Status', entry.status.replaceAll('_', ' '));
+      add('Referred from', entry.referredFrom);
+      add('Referred to', entry.referredTo);
+      add('Reason', entry.reason);
+      add('Outcome', entry.outcome);
+      break;
+    case PatientHistoryEntryType.ClinicalDocument:
+      add('Document type', entry.documentType.replaceAll('_', ' '));
+      add('Title', entry.title);
+      add('Document', entry.body);
+      break;
+    case PatientHistoryEntryType.CarePlan:
+      add('Status', entry.status.replaceAll('_', ' '));
+      add('Need', entry.need);
+      add('Goals', entry.goals.join('\n'));
+      add('Interventions', entry.interventions.join('\n'));
+      add('Evaluation', entry.evaluation);
+      break;
+  }
+
+  return details;
+}
+
+function observationValueLabel(
+  value: Extract<
+    PatientHistoryEntry,
+    { type: PatientHistoryEntryType.Observation }
+  >['value'],
+) {
+  if (value.type === 'quantity') return `${value.value} ${value.unit}`;
+  if (value.type === 'coded') return value.value.display;
+  if (value.type === 'boolean') return value.value ? 'Yes' : 'No';
+  return value.value;
+}
+
+function historicalPeriodLabel(entry: PatientHistoryEntry) {
+  const { start, end } = entry.occurred ?? {};
+  if (start && end)
+    return `${historicalDateLabel(start)} to ${historicalDateLabel(end)}`;
+  if (start) return historicalDateLabel(start);
+  if (end) return `Until ${historicalDateLabel(end)}`;
+  return undefined;
+}
+
+function historicalDateLabel(date: { approximate?: boolean; value: string }) {
+  return `${date.approximate ? 'About ' : ''}${date.value}`;
+}
+
+function MedicationsAndMedicinesOptimisationSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const medications = patient.baselineMedications
+    .map((medication, sourceIndex) => ({ medication, sourceIndex }))
+    .sort((left, right) => {
+      const leftActive = left.medication.status === 'active' ? 0 : 1;
+      const rightActive = right.medication.status === 'active' ? 0 : 1;
+      return leftActive - rightActive || left.sourceIndex - right.sourceIndex;
+    })
+    .map(({ medication }) => medication);
+  const activeAllergies = patient.allergies.filter(
+    ({ clinicalStatus }) => clinicalStatus === 'active',
+  );
+
+  return (
+    <EhrSection
+      badge="REVIEW & VERIFY"
+      evidenceHref="https://bnf.nice.org.uk/"
+      headingRef={headingRef}
+      id={EhrSectionType.MedicationsAndMedicinesOptimisation}
+      title="Medications / medicines optimisation"
+    >
+      <div className="border-l-4 border-[#0072ce] bg-[#e8f3fb] px-3 py-2 text-[11px] leading-5 text-[#003b6f]">
+        These are baseline medicines recorded in the Patient Profile. They are
+        not a prescription, administration record or completed medicines
+        reconciliation.
+      </div>
+
+      {activeAllergies.length ? (
+        <div className="border-l-4 border-[#ae1c28] bg-[#fee2e2] px-3 py-2 text-[11px] leading-5 text-[#991b1b]">
+          ⚠ <strong>Active allergy alert:</strong>{' '}
+          {activeAllergies
+            .map(
+              ({ reactions, substance }) =>
+                `${substance} — ${reactions.join(', ') || 'reaction not recorded'}`,
+            )
+            .join('; ')}
+        </div>
+      ) : patient.allergyRecordStatus ===
+        PatientAllergyRecordStatus.NoKnownDrugAllergies ? (
+        <div className="border-l-4 border-[#15803d] bg-[#f0fdf4] px-3 py-2 text-[11px] font-semibold text-[#14532d]">
+          ✓ No known drug allergies (NKDA) recorded.
+        </div>
+      ) : (
+        <div className="border-l-4 border-[#d97706] bg-[#fffbeb] px-3 py-2 text-[11px] text-[#92400e]">
+          ⚠ Allergy status is not recorded. Confirm before clinical use.
+        </div>
+      )}
+
+      <div>
+        <ClinicalPrompt>Baseline medicines</ClinicalPrompt>
+        {medications.length ? (
+          <>
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full min-w-[52rem] border-collapse text-[11px]">
+                <thead>
+                  <tr className="bg-[#d0e4f7] text-left text-[10px] uppercase tracking-[0.04em] text-[#1c3a5c]">
+                    <th className="px-2 py-2">Medicine</th>
+                    <th className="px-2 py-2">Status</th>
+                    <th className="px-2 py-2">Dose</th>
+                    <th className="px-2 py-2">Route</th>
+                    <th className="px-2 py-2">Frequency</th>
+                    <th className="px-2 py-2">Indication</th>
+                    <th className="px-2 py-2">Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {medications.map((medication, index) => (
+                    <MedicationTableRow
+                      index={index}
+                      key={medication.id}
+                      medication={medication}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="space-y-2 md:hidden">
+              {medications.map((medication) => (
+                <MedicationCard key={medication.id} medication={medication} />
+              ))}
+            </div>
+          </>
+        ) : (
+          <NeutralRecordMessage>
+            No baseline medications recorded
+          </NeutralRecordMessage>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+type PreviewMedication =
+  PatientEhrPreviewViewModel['baselineMedications'][number];
+
+function MedicationTableRow({
+  index,
+  medication,
+}: {
+  index: number;
+  medication: PreviewMedication;
+}) {
+  return (
+    <tr className={index % 2 ? 'bg-[#f9fafb]' : 'bg-white'}>
+      <td className="border-b border-[#d8dee8] px-2 py-2 font-bold text-[#1c2b4a]">
+        {medication.medication}
+      </td>
+      <td className="border-b border-[#d8dee8] px-2 py-2">
+        <MedicationStatus status={medication.status} />
+      </td>
+      <MedicationTableValue value={medication.dose} />
+      <MedicationTableValue value={medication.route} />
+      <MedicationTableValue value={medication.frequency} />
+      <MedicationTableValue value={medication.indication} />
+      <MedicationTableValue value={medication.details} />
+    </tr>
+  );
+}
+
+function MedicationTableValue({ value }: { value?: string }) {
+  return (
+    <td className="border-b border-[#d8dee8] px-2 py-2 align-top leading-5">
+      {value ?? 'Not recorded'}
+    </td>
+  );
+}
+
+function MedicationCard({ medication }: { medication: PreviewMedication }) {
+  return (
+    <article className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white">
+      <div className="flex items-center justify-between gap-2 bg-[#d0e4f7] px-3 py-2">
+        <h3 className="text-xs font-bold text-[#1c3a5c]">
+          {medication.medication}
+        </h3>
+        <MedicationStatus status={medication.status} />
+      </div>
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-2 px-3 py-3 text-[11px]">
+        <MedicationCardValue label="Dose" value={medication.dose} />
+        <MedicationCardValue label="Route" value={medication.route} />
+        <MedicationCardValue label="Frequency" value={medication.frequency} />
+        <MedicationCardValue label="Indication" value={medication.indication} />
+        <div className="col-span-2">
+          <MedicationCardValue label="Notes" value={medication.details} />
+        </div>
+      </dl>
+    </article>
+  );
+}
+
+function MedicationCardValue({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string;
+}) {
+  return (
+    <div>
+      <dt className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+        {label}
+      </dt>
+      <dd className="mt-0.5 leading-5 text-[#1c2b4a]">
+        {value ?? 'Not recorded'}
+      </dd>
+    </div>
+  );
+}
+
+function MedicationStatus({ status }: { status: string }) {
+  return (
+    <span
+      className={`inline-flex rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] ${
+        status === 'active'
+          ? 'bg-[#dcfce7] text-[#166534]'
+          : 'bg-[#e5e7eb] text-[#4b5563]'
+      }`}
+    >
+      {status.replaceAll('_', ' ')}
+    </span>
   );
 }
 
