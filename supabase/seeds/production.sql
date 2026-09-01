@@ -308,6 +308,7 @@ with content as (
       {
         "id": "enhanced-cpa-plan",
         "type": "care_plan",
+        "category": "care_and_support",
         "summary": "Enhanced Care Programme Approach plan is active.",
         "status": "active_at_boundary",
         "need": "Coordinated community treatment, recovery support and risk management.",
@@ -691,6 +692,7 @@ begin
       {
         "id": "enhanced-cpa-plan",
         "type": "care_plan",
+        "category": "care_and_support",
         "summary": "Enhanced Care Programme Approach plan is active.",
         "status": "active_at_boundary",
         "need": "Coordinated community treatment, recovery support and risk management.",
@@ -1730,6 +1732,7 @@ with content as (
       {
         "id": "gdm-care-plan",
         "type": "care_plan",
+        "category": "care_and_support",
         "summary": "Antenatal gestational diabetes care plan was active.",
         "status": "active_at_boundary",
         "need": "Maintain maternal glucose within pregnancy targets and monitor fetal growth.",
@@ -2040,6 +2043,7 @@ begin
       {
         "id": "gdm-care-plan",
         "type": "care_plan",
+        "category": "care_and_support",
         "summary": "Antenatal gestational diabetes care plan was active.",
         "status": "active_at_boundary",
         "need": "Maintain maternal glucose within pregnancy targets and monitor fetal growth.",
@@ -2467,6 +2471,7 @@ with content as (
       {
         "id": "advance-care-plan",
         "type": "care_plan",
+        "category": "advance_and_emergency_care",
         "summary": "Children and Young People's Advance Care Plan is in progress.",
         "status": "active_at_boundary",
         "need": "Parallel planning for supportive and palliative care needs.",
@@ -2892,6 +2897,7 @@ begin
       {
         "id": "advance-care-plan",
         "type": "care_plan",
+        "category": "advance_and_emergency_care",
         "summary": "Children and Young People's Advance Care Plan is in progress.",
         "status": "active_at_boundary",
         "need": "Parallel planning for supportive and palliative care needs.",

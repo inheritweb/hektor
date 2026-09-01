@@ -23,6 +23,7 @@ import {
   type PatientHistoricalAssessment,
   type PatientHistoricalAuthor,
   type PatientHistoricalCarePlan,
+  PatientHistoricalCarePlanCategory,
   type PatientHistoricalDate,
   type PatientHistoricalDocument,
   type PatientHistoricalEncounter,
@@ -458,6 +459,7 @@ export const patientHistoricalCarePlanSchema = z
   .object({
     ...patientHistoryEntryBaseShape,
     type: z.literal(PatientHistoryEntryType.CarePlan),
+    category: z.enum(PatientHistoricalCarePlanCategory),
     status: z.enum(PatientHistoricalCarePlanStatus),
     need: plainText(1000),
     goals: z.array(plainText(1000)).max(30),

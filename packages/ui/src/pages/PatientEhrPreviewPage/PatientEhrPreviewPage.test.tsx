@@ -2,9 +2,11 @@ import {
   EhrSectionType,
   PatientAllergyRecordStatus,
   PatientCareSetting,
+  PatientClinicalDocumentType,
   PatientDataSensitivity,
   PatientHistoryDatePrecision,
   PatientHistoryEntryType,
+  PatientHistoricalCarePlanCategory,
   PatientHistoricalCarePlanStatus,
   PatientHistoricalEncounterType,
   PatientInvestigationKind,
@@ -82,6 +84,7 @@ const patient = {
       summary: 'Lives with her daughter Tasha.',
     },
   ],
+  safeguarding: [],
   baselineMedications: [
     {
       dose: '5 mg',
@@ -395,6 +398,7 @@ describe('PatientEhrPreviewPage', () => {
             ...patient.historyEntries,
             {
               evaluation: 'The plan remains in progress.',
+              category: PatientHistoricalCarePlanCategory.CareAndSupport,
               goals: ['Remain safely at home'],
               id: 'community-support-plan',
               interventions: ['Weekly community nursing contact'],
@@ -585,5 +589,245 @@ describe('PatientEhrPreviewPage', () => {
       screen.getByText('No durable referrals or care transitions recorded'),
     ).toBeTruthy();
     expect(screen.queryByText(/Acute Stroke Admission/)).toBeNull();
+  });
+
+  it('renders an authored advance and emergency care plan', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.EndOfLifeAndEmergencyCarePlanning}
+        patient={{
+          ...patient,
+          historyEntries: [
+            {
+              category:
+                PatientHistoricalCarePlanCategory.AdvanceAndEmergencyCare,
+              evaluation:
+                'ReSPECT and DNACPR decisions remain in progress and unsigned.',
+              goals: ['Keep Emma comfortable and unafraid'],
+              id: 'advance-care-plan',
+              interventions: ['Continue multidisciplinary CYPACP discussions'],
+              need: 'Parallel planning for supportive and palliative care.',
+              sensitivity: PatientDataSensitivity.Restricted,
+              status: PatientHistoricalCarePlanStatus.ActiveAtBoundary,
+              summary:
+                "Children and Young People's Advance Care Plan is in progress.",
+              type: PatientHistoryEntryType.CarePlan,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'End-of-life and emergency care planning',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Children and Young People's Advance Care Plan is in progress.",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText('Keep Emma comfortable and unafraid')).toBeTruthy();
+    expect(
+      screen.getByText('Continue multidisciplinary CYPACP discussions'),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        'ReSPECT and DNACPR decisions remain in progress and unsigned.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('does not infer resuscitation or escalation decisions from an absent plan', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.EndOfLifeAndEmergencyCarePlanning}
+        patient={patient}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        'No durable end-of-life or emergency care plan is recorded in this base Patient Profile.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText(/not a clinical conclusion/)).toBeTruthy();
+  });
+
+  it('renders only explicitly recorded safeguarding information', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.Safeguarding}
+        patient={{
+          ...patient,
+          safeguarding: [
+            {
+              details: 'Record requires review with the safeguarding lead.',
+              id: 'exploitation-vulnerability',
+              sensitivity: PatientDataSensitivity.Restricted,
+              summary: 'Vulnerability to exploitation is recorded.',
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Safeguarding' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Vulnerability to exploitation is recorded.'),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Record requires review with the safeguarding lead.'),
+    ).toBeTruthy();
+    expect(screen.queryByText('Lives independently')).toBeNull();
+  });
+
+  it('does not infer that an absent safeguarding record means no concern', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.Safeguarding}
+        patient={patient}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        'No durable safeguarding information is recorded in this base Patient Profile.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText(/does not assert that safeguarding/)).toBeTruthy();
+  });
+
+  it('renders authored clinical notes and handovers as professional communication', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.MultiProfessionalCommunication}
+        patient={{
+          ...patient,
+          historyEntries: [
+            {
+              author: {
+                name: 'Gemma Walsh',
+                role: "Children's community nurse",
+                service: 'Community nursing team',
+              },
+              body: 'Situation stable. Continue the agreed symptom plan and contact oncology if pain escalates.',
+              documentType: PatientClinicalDocumentType.Handover,
+              id: 'community-handover',
+              recordedOn: {
+                precision: PatientHistoryDatePrecision.Day,
+                value: '2026-05-20',
+              },
+              sensitivity: PatientDataSensitivity.Restricted,
+              summary: 'Community team handover completed.',
+              title: 'Community nursing handover',
+              type: PatientHistoryEntryType.ClinicalDocument,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Multi-professional communication' }),
+    ).toBeTruthy();
+    expect(screen.getByText('Community nursing handover')).toBeTruthy();
+    expect(screen.getByText('Community team handover completed.')).toBeTruthy();
+    expect(screen.getByText(/Situation stable/)).toBeTruthy();
+    expect(screen.getByText(/Gemma Walsh/)).toBeTruthy();
+  });
+
+  it('does not present a care team or referral as an authored communication', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.MultiProfessionalCommunication}
+        patient={patient}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        'No durable multi-professional clinical note or handover is recorded in this base Patient Profile.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText(/A scenario may add current notes/)).toBeTruthy();
+  });
+
+  it('renders letters and correspondence without duplicating handovers', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.DocumentsAndCorrespondence}
+        patient={{
+          ...patient,
+          historyEntries: [
+            {
+              author: {
+                name: 'Dr Priya Chandran',
+                role: 'Consultant Clinical Oncologist',
+                service: 'Clinical Oncology',
+              },
+              body: 'Dear Dr Marsh, the patient has completed primary treatment and has been referred for rehabilitation follow-up.',
+              documentType: PatientClinicalDocumentType.Letter,
+              id: 'oncology-clinic-letter',
+              recordedOn: {
+                precision: PatientHistoryDatePrecision.Day,
+                value: '2026-02-03',
+              },
+              sensitivity: PatientDataSensitivity.Standard,
+              summary: 'End-of-treatment oncology letter sent to primary care.',
+              title: 'Oncology end-of-treatment letter',
+              type: PatientHistoryEntryType.ClinicalDocument,
+            },
+            {
+              body: 'This handover belongs in professional communication.',
+              documentType: PatientClinicalDocumentType.Handover,
+              id: 'ward-handover',
+              sensitivity: PatientDataSensitivity.Restricted,
+              summary: 'Ward handover.',
+              title: 'Ward handover',
+              type: PatientHistoryEntryType.ClinicalDocument,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Documents / correspondence' }),
+    ).toBeTruthy();
+    expect(screen.getByText('Oncology end-of-treatment letter')).toBeTruthy();
+    expect(
+      screen.getByText('End-of-treatment oncology letter sent to primary care.'),
+    ).toBeTruthy();
+    expect(screen.getByText(/Dear Dr Marsh/)).toBeTruthy();
+    expect(screen.getByText(/Dr Priya Chandran/)).toBeTruthy();
+    expect(screen.queryByText('Ward handover')).toBeNull();
+  });
+
+  it('describes an absent document record without implying no scenario documents', () => {
+    render(
+      <PatientEhrPreviewPage
+        exitHref="#exit"
+        initialSection={EhrSectionType.DocumentsAndCorrespondence}
+        patient={patient}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        'No durable document or correspondence is recorded in this base Patient Profile.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText(/A scenario may add current referral letters/)).toBeTruthy();
   });
 });

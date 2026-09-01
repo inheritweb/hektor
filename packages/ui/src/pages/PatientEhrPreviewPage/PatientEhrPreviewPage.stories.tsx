@@ -3,9 +3,11 @@ import {
   EhrSectionType,
   PatientAllergyRecordStatus,
   PatientCareSetting,
+  PatientClinicalDocumentType,
   PatientDataSensitivity,
   PatientHistoryDatePrecision,
   PatientHistoryEntryType,
+  PatientHistoricalCarePlanCategory,
   PatientHistoricalCarePlanStatus,
   PatientHistoricalEncounterType,
   PatientInvestigationKind,
@@ -111,6 +113,7 @@ const meta = {
           summary: 'Lives with her daughter Tasha in a terraced house.',
         },
       ],
+      safeguarding: [],
       baselineMedications: [
         {
           dose: '5 mg',
@@ -325,6 +328,7 @@ export const CareAndSupportPlanning: Story = {
         ...meta.args.patient.historyEntries,
         {
           evaluation: 'The plan remains active and under review.',
+          category: PatientHistoricalCarePlanCategory.CareAndSupport,
           goals: ['Maintain independence', 'Reduce avoidable deterioration'],
           id: 'community-support-plan',
           interventions: [
@@ -439,12 +443,146 @@ export const NoDurableEncountersOrTransitions: Story = {
   },
 };
 
-export const DocumentsModulePending: Story = {
-  args: { initialSection: EhrSectionType.DocumentsAndCorrespondence },
+export const EndOfLifeAndEmergencyCarePlanning: Story = {
+  args: {
+    initialSection: EhrSectionType.EndOfLifeAndEmergencyCarePlanning,
+    patient: {
+      ...meta.args.patient,
+      historyEntries: [
+        ...meta.args.patient.historyEntries,
+        {
+          category: PatientHistoricalCarePlanCategory.AdvanceAndEmergencyCare,
+          evaluation:
+            'ReSPECT and DNACPR decisions remain in progress and unsigned.',
+          goals: [
+            'Keep Emma comfortable and unafraid',
+            'Support care at home for as long as possible',
+          ],
+          id: 'advance-care-plan',
+          interventions: [
+            'Continue multidisciplinary CYPACP discussions',
+            'Use communication aids to gather and record Emma’s wishes',
+          ],
+          need: 'Parallel planning for supportive and palliative care needs.',
+          sensitivity: PatientDataSensitivity.Restricted,
+          status: PatientHistoricalCarePlanStatus.ActiveAtBoundary,
+          summary:
+            "Children and Young People's Advance Care Plan is in progress.",
+          type: PatientHistoryEntryType.CarePlan,
+        },
+      ],
+    },
+  },
 };
 
-export const NarrowDocumentsModulePending: Story = {
-  args: { initialSection: EhrSectionType.DocumentsAndCorrespondence },
+export const NoEndOfLifeOrEmergencyCarePlanRecorded: Story = {
+  args: {
+    initialSection: EhrSectionType.EndOfLifeAndEmergencyCarePlanning,
+    patient: { ...meta.args.patient, historyEntries: [] },
+  },
+};
+
+export const Safeguarding: Story = {
+  args: {
+    initialSection: EhrSectionType.Safeguarding,
+    patient: {
+      ...meta.args.patient,
+      safeguarding: [
+        {
+          details:
+            'Review the recorded concern in context and follow local safeguarding policy.',
+          id: 'exploitation-vulnerability',
+          sensitivity: PatientDataSensitivity.Restricted,
+          summary: 'Vulnerability to exploitation is recorded.',
+        },
+      ],
+    },
+  },
+};
+
+export const NoSafeguardingInformationRecorded: Story = {
+  args: {
+    initialSection: EhrSectionType.Safeguarding,
+    patient: { ...meta.args.patient, safeguarding: [] },
+  },
+};
+
+export const MultiProfessionalCommunication: Story = {
+  args: {
+    initialSection: EhrSectionType.MultiProfessionalCommunication,
+    patient: {
+      ...meta.args.patient,
+      historyEntries: [
+        ...meta.args.patient.historyEntries,
+        {
+          author: {
+            name: 'Gemma Walsh',
+            role: "Children's community nurse",
+            service: 'Community nursing team',
+          },
+          body: 'Situation stable. Continue the agreed symptom plan and contact oncology if pain escalates.',
+          documentType: PatientClinicalDocumentType.Handover,
+          id: 'community-handover',
+          recordedOn: {
+            precision: PatientHistoryDatePrecision.Day,
+            value: '2026-05-20',
+          },
+          sensitivity: PatientDataSensitivity.Restricted,
+          summary: 'Community team handover completed.',
+          title: 'Community nursing handover',
+          type: PatientHistoryEntryType.ClinicalDocument,
+        },
+      ],
+    },
+  },
+};
+
+export const NoMultiProfessionalCommunicationRecorded: Story = {
+  args: {
+    initialSection: EhrSectionType.MultiProfessionalCommunication,
+    patient: { ...meta.args.patient, historyEntries: [] },
+  },
+};
+
+export const DocumentsAndCorrespondence: Story = {
+  args: {
+    initialSection: EhrSectionType.DocumentsAndCorrespondence,
+    patient: {
+      ...meta.args.patient,
+      historyEntries: [
+        ...meta.args.patient.historyEntries,
+        {
+          author: {
+            name: 'Dr Priya Chandran',
+            role: 'Consultant Clinical Oncologist',
+            service: 'Clinical Oncology',
+          },
+          body: 'Dear Dr Marsh,\n\nThe patient has completed primary treatment and has been referred for rehabilitation follow-up. Please continue the medicines listed in the shared record.\n\nYours sincerely,\nDr Priya Chandran',
+          documentType: PatientClinicalDocumentType.Letter,
+          id: 'oncology-clinic-letter',
+          recordedOn: {
+            precision: PatientHistoryDatePrecision.Day,
+            value: '2026-02-03',
+          },
+          sensitivity: PatientDataSensitivity.Standard,
+          summary: 'End-of-treatment oncology letter sent to primary care.',
+          title: 'Oncology end-of-treatment letter',
+          type: PatientHistoryEntryType.ClinicalDocument,
+        },
+      ],
+    },
+  },
+};
+
+export const NoDocumentsOrCorrespondenceRecorded: Story = {
+  args: {
+    initialSection: EhrSectionType.DocumentsAndCorrespondence,
+    patient: { ...meta.args.patient, historyEntries: [] },
+  },
+};
+
+export const NarrowDocumentsAndCorrespondence: Story = {
+  args: DocumentsAndCorrespondence.args,
   parameters: {
     viewport: { defaultViewport: 'mobile1' },
   },

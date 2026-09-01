@@ -167,6 +167,11 @@ export enum PatientHistoricalCarePlanStatus {
   Cancelled = 'cancelled',
 }
 
+export enum PatientHistoricalCarePlanCategory {
+  CareAndSupport = 'care_and_support',
+  AdvanceAndEmergencyCare = 'advance_and_emergency_care',
+}
+
 export enum PatientAllergyVerificationStatus {
   Confirmed = 'confirmed',
   Unconfirmed = 'unconfirmed',
@@ -416,6 +421,7 @@ export interface PatientHistoricalDocument extends PatientHistoryEntryBase {
 
 export interface PatientHistoricalCarePlan extends PatientHistoryEntryBase {
   type: PatientHistoryEntryType.CarePlan;
+  category: PatientHistoricalCarePlanCategory;
   status: PatientHistoricalCarePlanStatus;
   need: string;
   goals: string[];

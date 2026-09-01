@@ -5,7 +5,10 @@ import {
   useAdminPatientProfileVersion,
   useAdminPatientProfiles,
 } from '@hektor/query/patient-profiles';
-import { PatientRelationshipRole } from '@hektor/types';
+import {
+  PatientBackgroundCategory,
+  PatientRelationshipRole,
+} from '@hektor/types';
 import { buttonVariants } from '@hektor/ui/atoms';
 import { NavigationLink } from '@hektor/ui/context';
 import { PatientEhrPreviewPage } from '@hektor/ui/pages';
@@ -231,6 +234,17 @@ function ResolvedPatientEhrPreview({
             category,
             details,
             id,
+            summary,
+          })),
+        safeguarding: patient.document.background
+          .filter(
+            ({ category }) =>
+              category === PatientBackgroundCategory.Safeguarding,
+          )
+          .map(({ details, id, sensitivity, summary }) => ({
+            details,
+            id,
+            sensitivity,
             summary,
           })),
         baselineMedications: patient.document.baselineMedications.map(

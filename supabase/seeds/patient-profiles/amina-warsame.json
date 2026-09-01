@@ -181,6 +181,7 @@
       {
         "id": "gdm-care-plan",
         "type": "care_plan",
+        "category": "care_and_support",
         "summary": "Antenatal gestational diabetes care plan was active.",
         "status": "active_at_boundary",
         "need": "Maintain maternal glucose within pregnancy targets and monitor fetal growth.",

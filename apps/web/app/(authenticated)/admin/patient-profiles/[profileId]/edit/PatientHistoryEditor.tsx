@@ -3,6 +3,7 @@
 import {
   PatientClinicalDocumentType,
   PatientDataSensitivity,
+  PatientHistoricalCarePlanCategory,
   PatientHistoricalCarePlanStatus,
   PatientHistoricalEncounterType,
   PatientHistoricalMedicationStatus,
@@ -100,6 +101,7 @@ function defaultEntry(
       return {
         ...base,
         type,
+        category: PatientHistoricalCarePlanCategory.CareAndSupport,
         status: PatientHistoricalCarePlanStatus.Completed,
         need: '',
         goals: [],
@@ -969,6 +971,28 @@ export function PatientHistoryEditor({
             ) : null}
             {entry.type === PatientHistoryEntryType.CarePlan ? (
               <div className="grid gap-4 md:grid-cols-2">
+                <label>
+                  Category
+                  <select
+                    className="mt-1 h-11 w-full border border-border bg-paper px-3"
+                    value={entry.category}
+                    onChange={(event) =>
+                      replace(index, {
+                        ...entry,
+                        category: event.target
+                          .value as PatientHistoricalCarePlanCategory,
+                      })
+                    }
+                  >
+                    {Object.values(PatientHistoricalCarePlanCategory).map(
+                      (value) => (
+                        <option key={value} value={value}>
+                          {label(value)}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </label>
                 <label>
                   Status
                   <select

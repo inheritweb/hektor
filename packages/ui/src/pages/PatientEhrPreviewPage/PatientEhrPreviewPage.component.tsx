@@ -2,6 +2,8 @@
 
 import {
   EhrSectionType,
+  PatientClinicalDocumentType,
+  PatientHistoricalCarePlanCategory,
   PatientHistoryEntryType,
   type EhrSectionConfiguration,
   type PatientHistoryEntry,
@@ -112,6 +114,12 @@ export interface PatientEhrPreviewViewModel {
     category: string;
     summary: string;
     details?: string;
+  }[];
+  safeguarding: readonly {
+    id: string;
+    summary: string;
+    details?: string;
+    sensitivity: string;
   }[];
   versionNumber: number;
   versionState: string;
@@ -274,6 +282,28 @@ export function PatientEhrPreviewPage({
               headingRef={sectionHeading}
               patient={patient}
             />
+          ) : activeSection ===
+            EhrSectionType.EndOfLifeAndEmergencyCarePlanning ? (
+            <EndOfLifeAndEmergencyCarePlanningSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : activeSection === EhrSectionType.Safeguarding ? (
+            <SafeguardingSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : activeSection ===
+            EhrSectionType.MultiProfessionalCommunication ? (
+            <MultiProfessionalCommunicationSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
+          ) : activeSection === EhrSectionType.DocumentsAndCorrespondence ? (
+            <DocumentsAndCorrespondenceSection
+              headingRef={sectionHeading}
+              patient={patient}
+            />
           ) : (
             <UnimplementedEhrSection
               headingRef={sectionHeading}
@@ -286,6 +316,405 @@ export function PatientEhrPreviewPage({
         </div>
       </div>
     </SimulationTemplate>
+  );
+}
+
+function DocumentsAndCorrespondenceSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const documents = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.ClinicalDocument }
+    > =>
+      entry.type === PatientHistoryEntryType.ClinicalDocument &&
+      [
+        PatientClinicalDocumentType.Letter,
+        PatientClinicalDocumentType.DischargeSummary,
+        PatientClinicalDocumentType.Other,
+      ].includes(entry.documentType),
+  );
+
+  return (
+    <EhrSection
+      badge="PATIENT PROFILE"
+      headingRef={headingRef}
+      id={EhrSectionType.DocumentsAndCorrespondence}
+      title="Documents / correspondence"
+    >
+      <div className="border-l-4 border-[#0072ce] bg-[#e8f3fb] px-3 py-2 text-[11px] leading-5 text-[#003b6f]">
+        This view contains durable letters, discharge summaries and other
+        authored correspondence from before the scenario boundary. Clinical
+        notes, handovers and investigation results remain in their respective
+        record modules.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Recorded documents and correspondence</ClinicalPrompt>
+        {documents.length ? (
+          <div className="space-y-3">
+            {documents.map((document) => (
+              <article
+                className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white"
+                key={document.id}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2 border-b border-[#c8d8ec] bg-[#f0f5fc] px-3 py-2">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+                      {document.documentType.replaceAll('_', ' ')}
+                    </p>
+                    <h3 className="mt-0.5 text-xs font-bold text-[#1c3a5c]">
+                      {document.title}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {document.recordedOn ? (
+                      <span className="text-[10px] font-semibold text-[#52657a]">
+                        {historicalDateLabel(document.recordedOn)}
+                      </span>
+                    ) : null}
+                    {document.sensitivity === 'restricted' ? (
+                      <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#92400e]">
+                        Restricted
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="space-y-3 px-3 py-3">
+                  <div>
+                    <FieldLabel>Document summary</FieldLabel>
+                    <p className="mt-1 text-[11px] leading-5 text-[#1c2b4a]">
+                      {document.summary}
+                    </p>
+                  </div>
+                  {document.details ? (
+                    <div>
+                      <FieldLabel>Context</FieldLabel>
+                      <p className="mt-1 whitespace-pre-line text-[11px] leading-5 text-[#374151]">
+                        {document.details}
+                      </p>
+                    </div>
+                  ) : null}
+                  <div className="border-t border-[#d8dee8] pt-3">
+                    <p className="whitespace-pre-line text-[11px] leading-5 text-[#1c2b4a]">
+                      {document.body}
+                    </p>
+                  </div>
+                  <HistoricalRecordMeta entry={document} />
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="border-l-4 border-[#6b7280] bg-[#f3f4f6] px-3 py-3 text-[11px] leading-5 text-[#374151]">
+            <strong>
+              No durable document or correspondence is recorded in this base
+              Patient Profile.
+            </strong>{' '}
+            A scenario may add current referral letters, reports, discharge
+            correspondence or other documents without changing the base record.
+          </div>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+function MultiProfessionalCommunicationSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const communications = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.ClinicalDocument }
+    > =>
+      entry.type === PatientHistoryEntryType.ClinicalDocument &&
+      [
+        PatientClinicalDocumentType.ClinicalNote,
+        PatientClinicalDocumentType.Handover,
+      ].includes(entry.documentType),
+  );
+
+  return (
+    <EhrSection
+      badge="PATIENT PROFILE"
+      headingRef={headingRef}
+      id={EhrSectionType.MultiProfessionalCommunication}
+      title="Multi-professional communication"
+    >
+      <div className="border-l-4 border-[#0072ce] bg-[#e8f3fb] px-3 py-2 text-[11px] leading-5 text-[#003b6f]">
+        This view contains authored clinical notes and handovers shared between
+        professionals before the scenario boundary. It does not turn care-team
+        membership or a referral into a communication record.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Clinical notes and handovers</ClinicalPrompt>
+        {communications.length ? (
+          <ol className="space-y-3">
+            {communications.map((communication) => (
+              <li key={communication.id}>
+                <article className="overflow-hidden rounded-[3px] border border-[#b8cfe8] bg-white">
+                  <div className="flex flex-wrap items-start justify-between gap-2 bg-[#d0e4f7] px-3 py-2">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#52657a]">
+                        {communication.documentType.replaceAll('_', ' ')}
+                      </p>
+                      <h3 className="mt-0.5 text-xs font-bold text-[#1c3a5c]">
+                        {communication.title}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {historicalPeriodLabel(communication) ? (
+                        <span className="text-[10px] font-semibold text-[#52657a]">
+                          {historicalPeriodLabel(communication)}
+                        </span>
+                      ) : null}
+                      {communication.sensitivity === 'restricted' ? (
+                        <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#92400e]">
+                          Restricted
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="space-y-3 px-3 py-3">
+                    <div>
+                      <FieldLabel>Record summary</FieldLabel>
+                      <p className="mt-1 text-[11px] leading-5 text-[#1c2b4a]">
+                        {communication.summary}
+                      </p>
+                    </div>
+                    {communication.details ? (
+                      <div>
+                        <FieldLabel>Context</FieldLabel>
+                        <p className="mt-1 whitespace-pre-line text-[11px] leading-5 text-[#374151]">
+                          {communication.details}
+                        </p>
+                      </div>
+                    ) : null}
+                    <div className="border-l-[3px] border-[#8fb5da] bg-[#f7f9fc] px-3 py-2">
+                      <FieldLabel>Authored communication</FieldLabel>
+                      <p className="mt-1 whitespace-pre-line text-[11px] leading-5 text-[#1c2b4a]">
+                        {communication.body}
+                      </p>
+                    </div>
+                    <HistoricalRecordMeta entry={communication} />
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <div className="border-l-4 border-[#6b7280] bg-[#f3f4f6] px-3 py-3 text-[11px] leading-5 text-[#374151]">
+            <strong>
+              No durable multi-professional clinical note or handover is
+              recorded in this base Patient Profile.
+            </strong>{' '}
+            A scenario may add current notes, MDT communication or handover
+            records, and an activity may ask a learner to author one.
+          </div>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+function SafeguardingSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const safeguardingRecords = patient.safeguarding;
+
+  return (
+    <EhrSection
+      badge="RESTRICTED CLINICAL RECORD"
+      headingRef={headingRef}
+      id={EhrSectionType.Safeguarding}
+      title="Safeguarding"
+    >
+      <div className="border-l-4 border-[#6b2d7c] bg-[#f4edf7] px-3 py-2 text-[11px] leading-5 text-[#4b1a5c]">
+        This view contains explicitly authored safeguarding information from the
+        durable Patient Profile. It does not infer a concern from diagnoses,
+        family circumstances, risk factors or catalogue tags.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Recorded safeguarding information</ClinicalPrompt>
+        {safeguardingRecords.length ? (
+          <div className="space-y-3">
+            {safeguardingRecords.map((record) => (
+              <article
+                className="overflow-hidden rounded-[3px] border border-[#d6b9df] bg-white"
+                key={record.id}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#dccde2] bg-[#eee3f2] px-3 py-2">
+                  <h3 className="text-xs font-bold text-[#4b1a5c]">
+                    {record.summary}
+                  </h3>
+                  {record.sensitivity === 'restricted' ? (
+                    <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] text-[#92400e]">
+                      Restricted
+                    </span>
+                  ) : null}
+                </div>
+                <div className="px-3 py-3">
+                  <FieldLabel>Safeguarding record detail</FieldLabel>
+                  <p
+                    className={`mt-1 text-[11px] leading-5 ${record.details ? 'text-[#1c2b4a]' : 'italic text-[#6b7280]'}`}
+                  >
+                    {record.details ?? 'No additional detail recorded'}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="border-l-4 border-[#6b7280] bg-[#f3f4f6] px-3 py-3 text-[11px] leading-5 text-[#374151]">
+            <strong>
+              No durable safeguarding information is recorded in this base
+              Patient Profile.
+            </strong>{' '}
+            This does not assert that safeguarding has been assessed, that no
+            concern exists or that a scenario contains no safeguarding activity.
+          </div>
+        )}
+      </div>
+    </EhrSection>
+  );
+}
+
+function EndOfLifeAndEmergencyCarePlanningSection({
+  headingRef,
+  patient,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  patient: PatientEhrPreviewViewModel;
+}) {
+  const plans = patient.historyEntries.filter(
+    (
+      entry,
+    ): entry is Extract<
+      PatientHistoryEntry,
+      { type: PatientHistoryEntryType.CarePlan }
+    > =>
+      entry.type === PatientHistoryEntryType.CarePlan &&
+      entry.category ===
+        PatientHistoricalCarePlanCategory.AdvanceAndEmergencyCare,
+  );
+
+  return (
+    <EhrSection
+      badge="PATIENT PROFILE"
+      headingRef={headingRef}
+      id={EhrSectionType.EndOfLifeAndEmergencyCarePlanning}
+      title="End-of-life and emergency care planning"
+    >
+      <div className="border-l-4 border-[#6b2d7c] bg-[#f4edf7] px-3 py-2 text-[11px] leading-5 text-[#4b1a5c]">
+        This view contains authored advance, end-of-life and emergency care
+        plans that exist at the Patient Profile boundary. A scenario may layer
+        later decisions or a specialist plan view onto this record.
+      </div>
+
+      <div>
+        <ClinicalPrompt>Recorded plans and recommendations</ClinicalPrompt>
+        {plans.length ? (
+          <div className="space-y-3">
+            {plans.map((plan) => (
+              <article
+                className="overflow-hidden rounded-[3px] border border-[#ccb4d4] bg-white"
+                key={plan.id}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2 border-b border-[#dccde2] bg-[#eee3f2] px-3 py-2">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#6b2d7c]">
+                      Advance and emergency care plan
+                    </p>
+                    <h3 className="mt-0.5 text-xs font-bold text-[#4b1a5c]">
+                      {plan.summary}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CarePlanStatus status={plan.status} />
+                    {plan.sensitivity === 'restricted' ? (
+                      <span className="rounded-sm bg-[#fef3c7] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#92400e]">
+                        Restricted
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="space-y-4 px-3 py-3">
+                  {plan.details ? (
+                    <p className="text-[11px] leading-5 text-[#374151]">
+                      {plan.details}
+                    </p>
+                  ) : null}
+                  <div>
+                    <FieldLabel>Planning context and identified need</FieldLabel>
+                    <p className="text-[11px] leading-5 text-[#1c2b4a]">
+                      {plan.need}
+                    </p>
+                  </div>
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <CarePlanList
+                      emptyLabel="No goals or priorities recorded"
+                      items={plan.goals}
+                      label="Goals and priorities"
+                    />
+                    <CarePlanList
+                      emptyLabel="No planned actions recorded"
+                      items={plan.interventions}
+                      label="Agreed actions and emergency planning"
+                    />
+                  </div>
+                  <div
+                    className={`border-l-4 px-3 py-2 ${
+                      plan.evaluation
+                        ? 'border-[#d97706] bg-[#fffbeb]'
+                        : 'border-[#6b7280] bg-[#f3f4f6]'
+                    }`}
+                  >
+                    <FieldLabel>
+                      Current status, review and emergency recommendations
+                    </FieldLabel>
+                    <p
+                      className={`mt-1 text-[11px] leading-5 ${plan.evaluation ? 'text-[#78350f]' : 'italic text-[#6b7280]'}`}
+                    >
+                      {plan.evaluation ?? 'No review or recommendation recorded'}
+                    </p>
+                  </div>
+                  <HistoricalRecordMeta entry={plan} />
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="border-l-4 border-[#6b7280] bg-[#f3f4f6] px-3 py-3 text-[11px] leading-5 text-[#374151]">
+            <strong>
+              No durable end-of-life or emergency care plan is recorded in this
+              base Patient Profile.
+            </strong>{' '}
+            This is an absence of a recorded plan, not a clinical conclusion
+            about need, resuscitation status or treatment escalation.
+          </div>
+        )}
+      </div>
+    </EhrSection>
   );
 }
 
@@ -811,7 +1240,9 @@ function CareAndSupportPlanningSection({
     ): entry is Extract<
       PatientHistoryEntry,
       { type: PatientHistoryEntryType.CarePlan }
-    > => entry.type === PatientHistoryEntryType.CarePlan,
+    > =>
+      entry.type === PatientHistoryEntryType.CarePlan &&
+      entry.category === PatientHistoricalCarePlanCategory.CareAndSupport,
   );
 
   return (

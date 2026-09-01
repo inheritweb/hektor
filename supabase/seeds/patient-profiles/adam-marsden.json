@@ -231,6 +231,7 @@
       {
         "id": "enhanced-cpa-plan",
         "type": "care_plan",
+        "category": "care_and_support",
         "summary": "Enhanced Care Programme Approach plan is active.",
         "status": "active_at_boundary",
         "need": "Coordinated community treatment, recovery support and risk management.",

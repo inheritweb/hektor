@@ -266,6 +266,7 @@
       {
         "id": "advance-care-plan",
         "type": "care_plan",
+        "category": "advance_and_emergency_care",
         "summary": "Children and Young People's Advance Care Plan is in progress.",
         "status": "active_at_boundary",
         "need": "Parallel planning for supportive and palliative care needs.",
