@@ -5,11 +5,17 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { PlatformRole } from '../users';
-import { PatientAllergyRecordStatus } from '../patient-profiles';
+import {
+  PatientAllergyRecordStatus,
+  PatientClinicalStatus,
+  PatientProfileLayerCollectionPath,
+  PatientProfileLayerOperationType,
+} from '../patient-profiles';
 import {
   getAdminPatientProfileContract,
   listAdminPatientProfilesContract,
   patientProfileDocumentV1Schema,
+  patientProfileLayerOperationSchema,
 } from './patient-profiles';
 
 const repositoryRoot = resolve(
@@ -172,5 +178,34 @@ describe('patientProfileDocumentV1Schema', () => {
     expect(patientProfileDocumentV1Schema.safeParse(document).success).toBe(
       false,
     );
+  });
+});
+
+describe('patient profile layer contracts', () => {
+  it('keeps collection paths and operation values compatible', () => {
+    expect(
+      patientProfileLayerOperationSchema.safeParse({
+        operation: PatientProfileLayerOperationType.Add,
+        path: PatientProfileLayerCollectionPath.Problems,
+        value: {
+          id: 'acute-ischaemic-stroke',
+          problem: { display: 'Acute ischaemic stroke' },
+          clinicalStatus: PatientClinicalStatus.Active,
+        },
+      }).success,
+    ).toBe(true);
+
+    expect(
+      patientProfileLayerOperationSchema.safeParse({
+        operation: PatientProfileLayerOperationType.Add,
+        path: PatientProfileLayerCollectionPath.Problems,
+        value: {
+          id: 'not-a-problem',
+          name: 'Tasha Jenkins',
+          relationship: { display: 'Daughter' },
+          roles: [],
+        },
+      }).success,
+    ).toBe(false);
   });
 });

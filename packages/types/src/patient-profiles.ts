@@ -595,3 +595,80 @@ export interface PatientProfileNavigation {
   previous?: PatientProfileNavigationItem;
   next?: PatientProfileNavigationItem;
 }
+
+export enum PatientProfileLayerOperationType {
+  Add = 'add',
+  Replace = 'replace',
+  Remove = 'remove',
+  Set = 'set',
+  Clear = 'clear',
+}
+
+export enum PatientProfileLayerCollectionPath {
+  Relationships = 'relationships',
+  Background = 'background',
+  Problems = 'problems',
+  Allergies = 'allergies',
+  BaselineMedications = 'baselineMedications',
+  HistoryEntries = 'history.entries',
+}
+
+export enum PatientProfileLayerSetPath {
+  AllergyRecordStatus = 'allergyRecordStatus',
+  Contact = 'contact',
+}
+
+export enum PatientProfileLayerClearPath {
+  Contact = 'contact',
+}
+
+export type PatientProfileLayerCollectionItem =
+  | PatientRelationship
+  | PatientBackgroundFact
+  | PatientProblem
+  | PatientAllergy
+  | PatientBaselineMedication
+  | PatientHistoryEntry;
+
+export type PatientProfileLayerOperation =
+  | {
+      operation: PatientProfileLayerOperationType.Add;
+      path: PatientProfileLayerCollectionPath;
+      value: PatientProfileLayerCollectionItem;
+    }
+  | {
+      operation: PatientProfileLayerOperationType.Replace;
+      path: PatientProfileLayerCollectionPath;
+      itemId: string;
+      value: PatientProfileLayerCollectionItem;
+    }
+  | {
+      operation: PatientProfileLayerOperationType.Remove;
+      path: PatientProfileLayerCollectionPath;
+      itemId: string;
+    }
+  | {
+      operation: PatientProfileLayerOperationType.Set;
+      path: PatientProfileLayerSetPath.AllergyRecordStatus;
+      value: PatientAllergyRecordStatus;
+    }
+  | {
+      operation: PatientProfileLayerOperationType.Set;
+      path: PatientProfileLayerSetPath.Contact;
+      value: PatientContact;
+    }
+  | {
+      operation: PatientProfileLayerOperationType.Clear;
+      path: PatientProfileLayerClearPath.Contact;
+    };
+
+export interface PatientProfileLayer {
+  id: string;
+  patientProfileId: string;
+  title: string;
+  description?: string;
+  schemaVersion: 1;
+  operations: PatientProfileLayerOperation[];
+  sourceReference?: string;
+  sourceRevision?: string;
+}

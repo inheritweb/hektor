@@ -709,6 +709,53 @@ export type Database = {
         };
         Relationships: [];
       };
+      patient_profile_layers: {
+        Row: {
+          created_at: string;
+          description: string | null;
+          id: string;
+          operations: Json;
+          patient_profile_id: string;
+          schema_version: number;
+          source_reference: string | null;
+          source_revision: string | null;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          operations: Json;
+          patient_profile_id: string;
+          schema_version: number;
+          source_reference?: string | null;
+          source_revision?: string | null;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          operations?: Json;
+          patient_profile_id?: string;
+          schema_version?: number;
+          source_reference?: string | null;
+          source_revision?: string | null;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'patient_profile_layers_patient_profile_id_fkey';
+            columns: ['patient_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'patient_profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       patient_profile_versions: {
         Row: {
           authored_by: string | null;
@@ -844,6 +891,139 @@ export type Database = {
           {
             foreignKeyName: 'patient_profiles_source_version_lineage_fkey';
             columns: ['source_version_id', 'source_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'patient_profile_versions';
+            referencedColumns: ['id', 'patient_profile_id'];
+          },
+        ];
+      };
+      patient_scenario_steps: {
+        Row: {
+          created_at: string;
+          description: string | null;
+          ehr_changes: Json;
+          id: string;
+          kind: Database['public']['Enums']['patient_scenario_step_kind'];
+          patient_profile_id: string;
+          patient_profile_layer_id: string;
+          position: number;
+          scenario_id: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          description?: string | null;
+          ehr_changes?: Json;
+          id?: string;
+          kind: Database['public']['Enums']['patient_scenario_step_kind'];
+          patient_profile_id: string;
+          patient_profile_layer_id: string;
+          position: number;
+          scenario_id: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string | null;
+          ehr_changes?: Json;
+          id?: string;
+          kind?: Database['public']['Enums']['patient_scenario_step_kind'];
+          patient_profile_id?: string;
+          patient_profile_layer_id?: string;
+          position?: number;
+          scenario_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'patient_scenario_steps_patient_profile_layer_id_patient_pr_fkey';
+            columns: ['patient_profile_layer_id', 'patient_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'patient_profile_layers';
+            referencedColumns: ['id', 'patient_profile_id'];
+          },
+          {
+            foreignKeyName: 'patient_scenario_steps_scenario_id_patient_profile_id_fkey';
+            columns: ['scenario_id', 'patient_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'patient_scenarios';
+            referencedColumns: ['id', 'patient_profile_id'];
+          },
+        ];
+      };
+      patient_scenarios: {
+        Row: {
+          archived_at: string | null;
+          care_setting: string;
+          created_at: string;
+          description: string;
+          id: string;
+          intended_clinical_audiences: string[];
+          organisation_id: string | null;
+          patient_profile_id: string;
+          patient_profile_version_id: string;
+          scope: Database['public']['Enums']['patient_scenario_scope'];
+          slug: string;
+          status: Database['public']['Enums']['patient_scenario_status'];
+          title: string;
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          archived_at?: string | null;
+          care_setting: string;
+          created_at?: string;
+          description: string;
+          id?: string;
+          intended_clinical_audiences?: string[];
+          organisation_id?: string | null;
+          patient_profile_id: string;
+          patient_profile_version_id: string;
+          scope: Database['public']['Enums']['patient_scenario_scope'];
+          slug: string;
+          status?: Database['public']['Enums']['patient_scenario_status'];
+          title: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          archived_at?: string | null;
+          care_setting?: string;
+          created_at?: string;
+          description?: string;
+          id?: string;
+          intended_clinical_audiences?: string[];
+          organisation_id?: string | null;
+          patient_profile_id?: string;
+          patient_profile_version_id?: string;
+          scope?: Database['public']['Enums']['patient_scenario_scope'];
+          slug?: string;
+          status?: Database['public']['Enums']['patient_scenario_status'];
+          title?: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'patient_scenarios_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'patient_scenarios_patient_profile_id_fkey';
+            columns: ['patient_profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'patient_profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'patient_scenarios_patient_profile_version_id_patient_profi_fkey';
+            columns: ['patient_profile_version_id', 'patient_profile_id'];
             isOneToOne: false;
             referencedRelation: 'patient_profile_versions';
             referencedColumns: ['id', 'patient_profile_id'];
@@ -1344,6 +1524,9 @@ export type Database = {
       patient_profile_status: 'active' | 'archived';
       patient_profile_version_state:
         'draft' | 'in_review' | 'published' | 'superseded' | 'withdrawn';
+      patient_scenario_scope: 'system' | 'user' | 'organisation';
+      patient_scenario_status: 'draft' | 'published' | 'archived';
+      patient_scenario_step_kind: 'beginning' | 'progression';
       provisioning_method: 'scim' | 'csv' | 'manual';
       provisioning_status:
         'pending' | 'linked' | 'inactive' | 'revoked' | 'failed';
@@ -1491,6 +1674,9 @@ export const Constants = {
         'superseded',
         'withdrawn',
       ],
+      patient_scenario_scope: ['system', 'user', 'organisation'],
+      patient_scenario_status: ['draft', 'published', 'archived'],
+      patient_scenario_step_kind: ['beginning', 'progression'],
       provisioning_method: ['scim', 'csv', 'manual'],
       provisioning_status: [
         'pending',

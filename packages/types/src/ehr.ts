@@ -24,3 +24,43 @@ export interface EhrSectionConfiguration {
 export interface EhrConfiguration {
   sections: EhrSectionConfiguration[];
 }
+
+export const defaultPatientProfileEhrConfiguration: EhrConfiguration = {
+  sections: Object.values(EhrSectionType).map((type, index) => ({
+    id: type,
+    order: (index + 1) * 10,
+    type,
+  })),
+};
+
+export enum EhrConfigurationChangeType {
+  Insert = 'insert',
+  Configure = 'configure',
+  Hide = 'hide',
+  Reveal = 'reveal',
+  Move = 'move',
+}
+
+export type EhrConfigurationChange =
+  | {
+      operation: EhrConfigurationChangeType.Insert;
+      section: EhrSectionConfiguration;
+    }
+  | {
+      operation: EhrConfigurationChangeType.Configure;
+      sectionId: string;
+      label: string;
+    }
+  | {
+      operation: EhrConfigurationChangeType.Hide;
+      sectionId: string;
+    }
+  | {
+      operation: EhrConfigurationChangeType.Reveal;
+      sectionId: string;
+    }
+  | {
+      operation: EhrConfigurationChangeType.Move;
+      sectionId: string;
+      order: number;
+    };

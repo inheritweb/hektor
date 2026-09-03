@@ -4,6 +4,7 @@ import {
   useAdminPatientProfile,
   useAdminPatientProfileVersion,
 } from '@hektor/query/patient-profiles';
+import { useAdminPatientScenarios } from '@hektor/query/patient-scenarios';
 import { PatientProfileDetailPage } from '@hektor/ui/pages';
 import { useRouter } from 'next/navigation';
 
@@ -24,6 +25,13 @@ export function AdminPatientProfileDetailScreen({
     { enabled: Boolean(versionId) },
   );
   const profile = versionId ? selectedVersion : currentProfile;
+  const scenarios = useAdminPatientScenarios(
+    {
+      params: { profileId },
+      query: { versionId: profile.data?.data.versionId ?? profileId },
+    },
+    { enabled: profile.isSuccess },
+  );
   if (profile.isPending)
     return (
       <div
@@ -67,6 +75,12 @@ export function AdminPatientProfileDetailScreen({
       }
       previewHref={`/ehr/patients/${profile.data.data.slug}/version/${profile.data.data.versionId}`}
       profile={profile.data.data}
+      scenarios={scenarios.data?.data.map((scenario) => ({
+        ...scenario,
+        previewHref: `/ehr/scenarios/${encodeURIComponent(scenario.slug)}`,
+      }))}
+      scenariosError={scenarios.error?.message}
+      scenariosLoading={scenarios.isPending}
     />
   );
 }

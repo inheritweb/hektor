@@ -1,4 +1,4 @@
-import { LuArrowLeft, LuArrowRight, LuDoorOpen } from 'react-icons/lu';
+import { LuArrowLeft, LuArrowRight, LuCheck, LuDoorOpen } from 'react-icons/lu';
 
 import {
   buttonVariants,
@@ -13,6 +13,18 @@ export interface SimulationToolsProps {
   nextPreview?: SimulationPreviewNavigationItem;
   previousPreview?: SimulationPreviewNavigationItem;
   previewLabel?: string;
+  scenario?: {
+    title: string;
+    status: string;
+    currentStepTitle: string;
+    currentStepId: string;
+    steps: readonly {
+      id: string;
+      kind: string;
+      title: string;
+    }[];
+  };
+  onScenarioStepChange?: (stepId: string) => void;
 }
 
 export interface SimulationPreviewNavigationItem {
@@ -25,6 +37,8 @@ export function SimulationTools({
   nextPreview,
   previousPreview,
   previewLabel = 'Preview mode',
+  scenario,
+  onScenarioStepChange,
 }: SimulationToolsProps) {
   return (
     <div className="pr-8">
@@ -32,6 +46,59 @@ export function SimulationTools({
       <p className="mt-1 text-sm text-muted-foreground">
         {previewLabel}. These controls sit outside the simulated EHR.
       </p>
+      {scenario ? (
+        <div className="mt-6 border-t border-border pt-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Scenario · {scenario.status.replaceAll('_', ' ')}
+          </p>
+          <h3 className="mt-2 text-sm font-semibold">{scenario.title}</h3>
+          <p className="mt-3 text-xs font-semibold text-muted-foreground">
+            {scenario.steps.findIndex(
+              ({ id }) => id === scenario.currentStepId,
+            ) === 0
+              ? 'Beginning'
+              : `Step ${scenario.steps.findIndex(({ id }) => id === scenario.currentStepId) + 1}`}
+          </p>
+          <p className="mt-1 text-sm">{scenario.currentStepTitle}</p>
+          <ol aria-label="Scenario timeline" className="mt-4 space-y-2">
+            {scenario.steps.map((step, index) => {
+              const selected = step.id === scenario.currentStepId;
+              const stepLabel =
+                step.kind === 'beginning' ? 'Beginning' : `Step ${index + 1}`;
+              return (
+                <li key={step.id}>
+                  <button
+                    aria-current={selected ? 'step' : undefined}
+                    aria-label={`${stepLabel}: ${step.title}`}
+                    className={`flex w-full cursor-pointer items-start gap-2 rounded-md border px-3 py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 ${
+                      selected
+                        ? 'border-primary bg-accent/40'
+                        : 'border-border hover:bg-accent/30'
+                    }`}
+                    disabled={selected}
+                    onClick={() => onScenarioStepChange?.(step.id)}
+                    type="button"
+                  >
+                    <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center">
+                      {selected ? (
+                        <LuCheck aria-hidden="true" className="size-4" />
+                      ) : (
+                        <span aria-hidden="true">{index + 1}</span>
+                      )}
+                    </span>
+                    <span>
+                      <span className="block text-xs font-semibold text-muted-foreground">
+                        {stepLabel}
+                      </span>
+                      <span className="mt-0.5 block">{step.title}</span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      ) : null}
       {previousPreview || nextPreview ? (
         <div className="mt-6 border-t border-border pt-5">
           <h3 className="text-sm font-semibold">Browse patient EHRs</h3>

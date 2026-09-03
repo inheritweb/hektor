@@ -24,7 +24,7 @@ export function SimulationTemplate({
 
   return (
     <div
-      className={`grid min-h-dvh bg-background text-foreground transition-[grid-template-columns] duration-200 motion-reduce:transition-none ${
+      className={`grid min-h-dvh w-full max-w-full overflow-x-clip bg-background text-foreground transition-[grid-template-columns] duration-200 motion-reduce:transition-none ${
         toolsOpen
           ? 'grid-cols-[minmax(0,1fr)_min(22rem,70vw)]'
           : 'grid-cols-[minmax(0,1fr)_0rem]'

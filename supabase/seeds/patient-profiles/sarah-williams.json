@@ -21,7 +21,10 @@
   ],
   "demographics": {
     "ethnicity": { "status": "known", "value": { "display": "White British" } },
-    "faithOrBelief": { "status": "known", "value": { "display": "No religion" } },
+    "faithOrBelief": {
+      "status": "known",
+      "value": { "display": "No religion" }
+    },
     "nationality": { "status": "unknown" }
   },
   "communication": {
@@ -125,7 +128,9 @@
   "problems": [
     {
       "id": "breast-cancer",
-      "problem": { "display": "Right breast invasive ductal carcinoma, Stage IIA" },
+      "problem": {
+        "display": "Right breast invasive ductal carcinoma, Stage IIA"
+      },
       "clinicalStatus": "active",
       "onsetDate": "2025-05-28",
       "details": "ER positive, PR positive, HER2 negative, Grade 2, pT2N0M0; primary treatment completed and ongoing adjuvant endocrine therapy and surveillance continue."
@@ -139,7 +144,9 @@
     },
     {
       "id": "right-shoulder-restriction",
-      "problem": { "display": "Right shoulder restriction following breast surgery and radiotherapy" },
+      "problem": {
+        "display": "Right shoulder restriction following breast surgery and radiotherapy"
+      },
       "clinicalStatus": "active",
       "onsetDate": "2026-01-05",
       "details": "Includes axillary web syndrome, scar adherence and improving restricted movement."
@@ -159,7 +166,9 @@
     },
     {
       "id": "fear-of-recurrence",
-      "problem": { "display": "Fear of cancer recurrence with anxiety and low mood" },
+      "problem": {
+        "display": "Fear of cancer recurrence with anxiety and low mood"
+      },
       "clinicalStatus": "active",
       "details": "Symptoms are most prominent before appointments and contribute to poor sleep."
     }
@@ -256,7 +265,9 @@
         "id": "breast-cancer-diagnosis",
         "type": "assessment",
         "summary": "Breast MDT confirmed right invasive ductal carcinoma following screening and core biopsy.",
-        "assessment": { "display": "Breast multidisciplinary diagnostic review" },
+        "assessment": {
+          "display": "Breast multidisciplinary diagnostic review"
+        },
         "outcome": "Grade 2 ER-positive, PR-positive, HER2-negative invasive ductal carcinoma confirmed; surgery recommended.",
         "occurred": { "start": { "value": "2025-05-28", "precision": "day" } },
         "sensitivity": "restricted"
@@ -265,7 +276,9 @@
         "id": "wide-local-excision",
         "type": "procedure",
         "summary": "Right wide local excision and sentinel lymph node biopsy completed.",
-        "procedure": { "display": "Right wide local excision with sentinel lymph node biopsy" },
+        "procedure": {
+          "display": "Right wide local excision with sentinel lymph node biopsy"
+        },
         "indication": "Screen-detected right breast carcinoma.",
         "outcome": "Margins clear; no metastatic disease in three sentinel nodes.",
         "occurred": { "start": { "value": "2025-06-30", "precision": "day" } },
@@ -314,7 +327,9 @@
         "id": "rehabilitation-observations-visit-1",
         "type": "assessment",
         "summary": "Baseline rehabilitation observations and pain measurements.",
-        "assessment": { "display": "Breast cancer rehabilitation observations" },
+        "assessment": {
+          "display": "Breast cancer rehabilitation observations"
+        },
         "outcome": "Weight 68.9 kg; BMI 25.3 kg/m²; blood pressure 122/78 mmHg; pulse 82 bpm; pain 4/10 at rest and 7/10 on movement.",
         "occurred": { "start": { "value": "2026-04-15", "precision": "day" } },
         "sensitivity": "restricted"
@@ -323,7 +338,9 @@
         "id": "rehabilitation-observations-visit-2",
         "type": "assessment",
         "summary": "Second rehabilitation visit observations and pain measurements.",
-        "assessment": { "display": "Breast cancer rehabilitation observations" },
+        "assessment": {
+          "display": "Breast cancer rehabilitation observations"
+        },
         "outcome": "Weight 70.3 kg; BMI 25.8 kg/m²; blood pressure 124/80 mmHg; pulse 80 bpm; pain 3/10 at rest and 6/10 on movement.",
         "occurred": { "start": { "value": "2026-06-10", "precision": "day" } },
         "sensitivity": "restricted"
@@ -332,7 +349,9 @@
         "id": "rehabilitation-observations-visit-3",
         "type": "assessment",
         "summary": "Third rehabilitation visit observations and pain measurements.",
-        "assessment": { "display": "Breast cancer rehabilitation observations" },
+        "assessment": {
+          "display": "Breast cancer rehabilitation observations"
+        },
         "outcome": "Blood pressure 128/82 mmHg; pulse 78 bpm regular; respiratory rate 16/min; temperature 36.6 °C; SpO₂ 98% on room air; weight 71.4 kg; height 165 cm; BMI 26.2 kg/m²; pain 3/10 at rest and 5/10 on movement; NEWS2 0.",
         "occurred": { "start": { "value": "2026-08-04", "precision": "day" } },
         "sensitivity": "restricted"
@@ -345,25 +364,144 @@
         "investigation": { "display": "Blood test panel" },
         "status": "final",
         "results": [
-          { "id": "haemoglobin", "observation": { "display": "Haemoglobin" }, "value": { "type": "quantity", "value": 124, "unit": "g/L" }, "referenceRange": "120–150 g/L", "interpretation": "normal" },
-          { "id": "white-cell-count", "observation": { "display": "White blood cell count" }, "value": { "type": "quantity", "value": 5.8, "unit": "×10⁹/L" }, "referenceRange": "4.0–11.0 ×10⁹/L", "interpretation": "normal" },
-          { "id": "neutrophils", "observation": { "display": "Neutrophils" }, "value": { "type": "quantity", "value": 3.2, "unit": "×10⁹/L" }, "referenceRange": "2.0–7.5 ×10⁹/L", "interpretation": "normal" },
-          { "id": "platelets", "observation": { "display": "Platelets" }, "value": { "type": "quantity", "value": 261, "unit": "×10⁹/L" }, "referenceRange": "150–400 ×10⁹/L", "interpretation": "normal" },
-          { "id": "mcv", "observation": { "display": "Mean cell volume" }, "value": { "type": "quantity", "value": 89, "unit": "fL" }, "referenceRange": "80–100 fL", "interpretation": "normal" },
-          { "id": "sodium", "observation": { "display": "Sodium" }, "value": { "type": "quantity", "value": 139, "unit": "mmol/L" }, "referenceRange": "133–146 mmol/L", "interpretation": "normal" },
-          { "id": "potassium", "observation": { "display": "Potassium" }, "value": { "type": "quantity", "value": 4.4, "unit": "mmol/L" }, "referenceRange": "3.5–5.3 mmol/L", "interpretation": "normal" },
-          { "id": "urea", "observation": { "display": "Urea" }, "value": { "type": "quantity", "value": 4.9, "unit": "mmol/L" }, "referenceRange": "2.5–7.8 mmol/L", "interpretation": "normal" },
-          { "id": "creatinine", "observation": { "display": "Creatinine" }, "value": { "type": "quantity", "value": 68, "unit": "µmol/L" }, "referenceRange": "45–90 µmol/L", "interpretation": "normal" },
-          { "id": "egfr", "observation": { "display": "Estimated glomerular filtration rate" }, "value": { "type": "text", "value": "Greater than 90 mL/min/1.73m²" }, "referenceRange": "Greater than 90 mL/min/1.73m²", "interpretation": "normal" },
-          { "id": "alt", "observation": { "display": "Alanine aminotransferase" }, "value": { "type": "quantity", "value": 24, "unit": "U/L" }, "referenceRange": "Less than 33 U/L", "interpretation": "normal" },
-          { "id": "alp", "observation": { "display": "Alkaline phosphatase" }, "value": { "type": "quantity", "value": 88, "unit": "U/L" }, "referenceRange": "35–104 U/L", "interpretation": "normal" },
-          { "id": "bilirubin", "observation": { "display": "Bilirubin" }, "value": { "type": "quantity", "value": 9, "unit": "µmol/L" }, "referenceRange": "Less than 21 µmol/L", "interpretation": "normal" },
-          { "id": "albumin", "observation": { "display": "Albumin" }, "value": { "type": "quantity", "value": 41, "unit": "g/L" }, "referenceRange": "35–50 g/L", "interpretation": "normal" },
-          { "id": "corrected-calcium", "observation": { "display": "Corrected calcium" }, "value": { "type": "quantity", "value": 2.31, "unit": "mmol/L" }, "referenceRange": "2.2–2.6 mmol/L", "interpretation": "normal" },
-          { "id": "phosphate", "observation": { "display": "Phosphate" }, "value": { "type": "quantity", "value": 1.1, "unit": "mmol/L" }, "referenceRange": "0.8–1.5 mmol/L", "interpretation": "normal" },
-          { "id": "vitamin-d", "observation": { "display": "25-OH vitamin D" }, "value": { "type": "quantity", "value": 38, "unit": "nmol/L" }, "referenceRange": "Above 50 nmol/L sufficient; 25–50 insufficient; below 25 deficient", "interpretation": "low" },
-          { "id": "crp", "observation": { "display": "C-reactive protein" }, "value": { "type": "quantity", "value": 3, "unit": "mg/L" }, "referenceRange": "Less than 5 mg/L", "interpretation": "normal" },
-          { "id": "hba1c", "observation": { "display": "HbA1c" }, "value": { "type": "quantity", "value": 41, "unit": "mmol/mol" }, "referenceRange": "Below 42 normal; 42–47 pre-diabetes; 48 or above diabetes", "interpretation": "normal" }
+          {
+            "id": "haemoglobin",
+            "observation": { "display": "Haemoglobin" },
+            "value": { "type": "quantity", "value": 124, "unit": "g/L" },
+            "referenceRange": "120–150 g/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "white-cell-count",
+            "observation": { "display": "White blood cell count" },
+            "value": { "type": "quantity", "value": 5.8, "unit": "×10⁹/L" },
+            "referenceRange": "4.0–11.0 ×10⁹/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "neutrophils",
+            "observation": { "display": "Neutrophils" },
+            "value": { "type": "quantity", "value": 3.2, "unit": "×10⁹/L" },
+            "referenceRange": "2.0–7.5 ×10⁹/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "platelets",
+            "observation": { "display": "Platelets" },
+            "value": { "type": "quantity", "value": 261, "unit": "×10⁹/L" },
+            "referenceRange": "150–400 ×10⁹/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "mcv",
+            "observation": { "display": "Mean cell volume" },
+            "value": { "type": "quantity", "value": 89, "unit": "fL" },
+            "referenceRange": "80–100 fL",
+            "interpretation": "normal"
+          },
+          {
+            "id": "sodium",
+            "observation": { "display": "Sodium" },
+            "value": { "type": "quantity", "value": 139, "unit": "mmol/L" },
+            "referenceRange": "133–146 mmol/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "potassium",
+            "observation": { "display": "Potassium" },
+            "value": { "type": "quantity", "value": 4.4, "unit": "mmol/L" },
+            "referenceRange": "3.5–5.3 mmol/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "urea",
+            "observation": { "display": "Urea" },
+            "value": { "type": "quantity", "value": 4.9, "unit": "mmol/L" },
+            "referenceRange": "2.5–7.8 mmol/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "creatinine",
+            "observation": { "display": "Creatinine" },
+            "value": { "type": "quantity", "value": 68, "unit": "µmol/L" },
+            "referenceRange": "45–90 µmol/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "egfr",
+            "observation": {
+              "display": "Estimated glomerular filtration rate"
+            },
+            "value": {
+              "type": "text",
+              "value": "Greater than 90 mL/min/1.73m²"
+            },
+            "referenceRange": "Greater than 90 mL/min/1.73m²",
+            "interpretation": "normal"
+          },
+          {
+            "id": "alt",
+            "observation": { "display": "Alanine aminotransferase" },
+            "value": { "type": "quantity", "value": 24, "unit": "U/L" },
+            "referenceRange": "Less than 33 U/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "alp",
+            "observation": { "display": "Alkaline phosphatase" },
+            "value": { "type": "quantity", "value": 88, "unit": "U/L" },
+            "referenceRange": "35–104 U/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "bilirubin",
+            "observation": { "display": "Bilirubin" },
+            "value": { "type": "quantity", "value": 9, "unit": "µmol/L" },
+            "referenceRange": "Less than 21 µmol/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "albumin",
+            "observation": { "display": "Albumin" },
+            "value": { "type": "quantity", "value": 41, "unit": "g/L" },
+            "referenceRange": "35–50 g/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "corrected-calcium",
+            "observation": { "display": "Corrected calcium" },
+            "value": { "type": "quantity", "value": 2.31, "unit": "mmol/L" },
+            "referenceRange": "2.2–2.6 mmol/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "phosphate",
+            "observation": { "display": "Phosphate" },
+            "value": { "type": "quantity", "value": 1.1, "unit": "mmol/L" },
+            "referenceRange": "0.8–1.5 mmol/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "vitamin-d",
+            "observation": { "display": "25-OH vitamin D" },
+            "value": { "type": "quantity", "value": 38, "unit": "nmol/L" },
+            "referenceRange": "Above 50 nmol/L sufficient; 25–50 insufficient; below 25 deficient",
+            "interpretation": "low"
+          },
+          {
+            "id": "crp",
+            "observation": { "display": "C-reactive protein" },
+            "value": { "type": "quantity", "value": 3, "unit": "mg/L" },
+            "referenceRange": "Less than 5 mg/L",
+            "interpretation": "normal"
+          },
+          {
+            "id": "hba1c",
+            "observation": { "display": "HbA1c" },
+            "value": { "type": "quantity", "value": 41, "unit": "mmol/mol" },
+            "referenceRange": "Below 42 normal; 42–47 pre-diabetes; 48 or above diabetes",
+            "interpretation": "normal"
+          }
         ],
         "conclusion": "Vitamin D was insufficient at 38 nmol/L. HbA1c was at the upper end of the normal range; the remaining reported results were within their stated reference ranges.",
         "occurred": { "start": { "value": "2026-07-28", "precision": "day" } },
@@ -374,15 +512,36 @@
         "type": "investigation",
         "summary": "Mammography and ultrasound identified and sampled a suspicious right breast mass.",
         "kind": "imaging",
-        "investigation": { "display": "Diagnostic mammography and breast ultrasound" },
+        "investigation": {
+          "display": "Diagnostic mammography and breast ultrasound"
+        },
         "status": "final",
         "results": [
-          { "id": "right-breast-mass", "observation": { "display": "Right breast mass" }, "value": { "type": "text", "value": "M5 mammographic mass; U5 irregular hypoechoic mass at 10 o'clock measuring 24 × 19 × 22 mm" }, "interpretation": "abnormal" },
-          { "id": "right-axilla", "observation": { "display": "Right axillary lymph nodes" }, "value": { "type": "text", "value": "Three morphologically normal nodes with preserved fatty hila" }, "interpretation": "normal" }
+          {
+            "id": "right-breast-mass",
+            "observation": { "display": "Right breast mass" },
+            "value": {
+              "type": "text",
+              "value": "M5 mammographic mass; U5 irregular hypoechoic mass at 10 o'clock measuring 24 × 19 × 22 mm"
+            },
+            "interpretation": "abnormal"
+          },
+          {
+            "id": "right-axilla",
+            "observation": { "display": "Right axillary lymph nodes" },
+            "value": {
+              "type": "text",
+              "value": "Three morphologically normal nodes with preserved fatty hila"
+            },
+            "interpretation": "normal"
+          }
         ],
         "conclusion": "Highly suspicious right breast mass; ultrasound-guided core biopsy performed. Axilla sonographically normal.",
         "occurred": { "start": { "value": "2025-05-19", "precision": "day" } },
-        "author": { "name": "Dr Helen Osei", "role": "Consultant Breast Radiologist" },
+        "author": {
+          "name": "Dr Helen Osei",
+          "role": "Consultant Breast Radiologist"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -393,8 +552,24 @@
         "investigation": { "display": "Breast MRI and staging CT" },
         "status": "final",
         "results": [
-          { "id": "breast-mri", "observation": { "display": "Breast MRI" }, "value": { "type": "text", "value": "Unifocal 27 mm enhancing right upper-outer-quadrant mass; no contralateral lesion or pathological nodal enhancement" }, "interpretation": "abnormal" },
-          { "id": "staging-ct", "observation": { "display": "CT chest, abdomen and pelvis" }, "value": { "type": "text", "value": "No radiological evidence of distant metastatic disease" }, "interpretation": "normal" }
+          {
+            "id": "breast-mri",
+            "observation": { "display": "Breast MRI" },
+            "value": {
+              "type": "text",
+              "value": "Unifocal 27 mm enhancing right upper-outer-quadrant mass; no contralateral lesion or pathological nodal enhancement"
+            },
+            "interpretation": "abnormal"
+          },
+          {
+            "id": "staging-ct",
+            "observation": { "display": "CT chest, abdomen and pelvis" },
+            "value": {
+              "type": "text",
+              "value": "No radiological evidence of distant metastatic disease"
+            },
+            "interpretation": "normal"
+          }
         ],
         "conclusion": "Findings supported breast-conserving surgery; clinical distant stage M0.",
         "occurred": { "start": { "value": "2025-06-10", "precision": "day" } },
@@ -405,28 +580,81 @@
         "type": "investigation",
         "summary": "Definitive surgical histopathology established tumour type, grade, receptors, margins and pathological stage.",
         "kind": "histopathology",
-        "investigation": { "display": "Right breast wide local excision histopathology" },
+        "investigation": {
+          "display": "Right breast wide local excision histopathology"
+        },
         "status": "final",
         "results": [
-          { "id": "tumour", "observation": { "display": "Invasive tumour" }, "value": { "type": "text", "value": "28 mm invasive ductal carcinoma of no special type, Nottingham Grade 2" }, "interpretation": "abnormal" },
-          { "id": "margins", "observation": { "display": "Excision margins" }, "value": { "type": "text", "value": "Clear; closest deep margin 4 mm" }, "interpretation": "normal" },
-          { "id": "nodes", "observation": { "display": "Sentinel lymph nodes" }, "value": { "type": "text", "value": "0 of 3 involved" }, "interpretation": "normal" },
-          { "id": "er", "observation": { "display": "Oestrogen receptor" }, "value": { "type": "text", "value": "Positive, Allred 8/8" }, "interpretation": "abnormal" },
-          { "id": "pr", "observation": { "display": "Progesterone receptor" }, "value": { "type": "text", "value": "Positive, Allred 7/8" }, "interpretation": "abnormal" },
-          { "id": "her2", "observation": { "display": "HER2" }, "value": { "type": "text", "value": "Negative, IHC 1+" }, "interpretation": "normal" },
-          { "id": "ki67", "observation": { "display": "Ki-67 proliferation index" }, "value": { "type": "quantity", "value": 18, "unit": "%" } },
-          { "id": "oncotype", "observation": { "display": "Oncotype DX recurrence score" }, "value": { "type": "quantity", "value": 24, "unit": "score" }, "interpretation": "abnormal" }
+          {
+            "id": "tumour",
+            "observation": { "display": "Invasive tumour" },
+            "value": {
+              "type": "text",
+              "value": "28 mm invasive ductal carcinoma of no special type, Nottingham Grade 2"
+            },
+            "interpretation": "abnormal"
+          },
+          {
+            "id": "margins",
+            "observation": { "display": "Excision margins" },
+            "value": {
+              "type": "text",
+              "value": "Clear; closest deep margin 4 mm"
+            },
+            "interpretation": "normal"
+          },
+          {
+            "id": "nodes",
+            "observation": { "display": "Sentinel lymph nodes" },
+            "value": { "type": "text", "value": "0 of 3 involved" },
+            "interpretation": "normal"
+          },
+          {
+            "id": "er",
+            "observation": { "display": "Oestrogen receptor" },
+            "value": { "type": "text", "value": "Positive, Allred 8/8" },
+            "interpretation": "abnormal"
+          },
+          {
+            "id": "pr",
+            "observation": { "display": "Progesterone receptor" },
+            "value": { "type": "text", "value": "Positive, Allred 7/8" },
+            "interpretation": "abnormal"
+          },
+          {
+            "id": "her2",
+            "observation": { "display": "HER2" },
+            "value": { "type": "text", "value": "Negative, IHC 1+" },
+            "interpretation": "normal"
+          },
+          {
+            "id": "ki67",
+            "observation": { "display": "Ki-67 proliferation index" },
+            "value": { "type": "quantity", "value": 18, "unit": "%" }
+          },
+          {
+            "id": "oncotype",
+            "observation": { "display": "Oncotype DX recurrence score" },
+            "value": { "type": "quantity", "value": 24, "unit": "score" },
+            "interpretation": "abnormal"
+          }
         ],
         "conclusion": "Grade 2 ER-positive, PR-positive, HER2-negative invasive ductal carcinoma, pT2N0M0, Stage IIA, completely excised.",
         "occurred": { "start": { "value": "2025-07-14", "precision": "day" } },
-        "author": { "name": "Dr Amara Osei-Nkrumah", "role": "Consultant Histopathologist", "service": "Jean McFarlane Trust" },
+        "author": {
+          "name": "Dr Amara Osei-Nkrumah",
+          "role": "Consultant Histopathologist",
+          "service": "Jean McFarlane Trust"
+        },
         "sensitivity": "restricted"
       },
       {
         "id": "rehabilitation-outcome-measures-visit-3",
         "type": "assessment",
         "summary": "Third-visit rehabilitation outcome measures recorded improving function with ongoing fatigue, distress, anxiety and sleep difficulty.",
-        "assessment": { "display": "Breast cancer rehabilitation outcome measures" },
+        "assessment": {
+          "display": "Breast cancer rehabilitation outcome measures"
+        },
         "outcome": "QuickDASH 34.1/100 (visit 1: 61.4; visit 2: 43.2); FACIT-Fatigue 22/52; Distress Thermometer 5/10 (visit 1: 7; visit 2: 6); PHQ-9 10/27, moderate; GAD-7 13/21, moderate.",
         "components": [
           "EORTC QLQ-C30 global health 58.3/100 (visit 1: 41.7; visit 2: 50.0)",
@@ -465,7 +693,11 @@
           "Marked visit-1 scapular hitching and trunk compensation was much reduced, but delayed upward rotation persisted under load"
         ],
         "occurred": { "start": { "value": "2026-08-04", "precision": "day" } },
-        "author": { "name": "Tom Aldridge", "role": "Senior Oncology Physiotherapist", "service": "Breast Cancer Rehabilitation Clinic" },
+        "author": {
+          "name": "Tom Aldridge",
+          "role": "Senior Oncology Physiotherapist",
+          "service": "Breast Cancer Rehabilitation Clinic"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -499,7 +731,11 @@
           "Phased return remains three mornings weekly with restrictions on overhead, heavy and sustained tasks"
         ],
         "occurred": { "start": { "value": "2026-08-04", "precision": "day" } },
-        "author": { "name": "Naomi Clarke", "role": "Occupational Therapist", "service": "Breast Cancer Rehabilitation Service" },
+        "author": {
+          "name": "Naomi Clarke",
+          "role": "Occupational Therapist",
+          "service": "Breast Cancer Rehabilitation Service"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -525,7 +761,9 @@
         "id": "lymphoedema-risk-assessment-visit-3",
         "type": "assessment",
         "summary": "Serial bilateral arm measurements remained below diagnostic thresholds for lymphoedema.",
-        "assessment": { "display": "Lymphoedema risk and limb measurement assessment" },
+        "assessment": {
+          "display": "Lymphoedema risk and limb measurement assessment"
+        },
         "outcome": "The right arm remains at risk after sentinel node biopsy and radiotherapy, but right-left differences remained below 2 cm and did not meet diagnostic criteria. Sarah continued to restrict arm use because of fear of lymphoedema.",
         "components": [
           "Wrist right/left: visit 1 16.0/16.0 cm; visit 2 16.0/16.0; visit 3 16.1/16.0",
@@ -542,7 +780,9 @@
         "id": "psychosocial-and-sexual-wellbeing-assessment",
         "type": "assessment",
         "summary": "Consent-based holistic review documented fear of recurrence, body-image concerns and tamoxifen-associated sexual symptoms.",
-        "assessment": { "display": "Psychological and sexual wellbeing assessment" },
+        "assessment": {
+          "display": "Psychological and sexual wellbeing assessment"
+        },
         "outcome": "Mood fluctuated with fatigue and appointments; persistent fear of recurrence affected sleep. Sarah denied self-harm or suicidal thoughts. Vaginal dryness, dyspareunia, reduced libido and body-image concerns affected intimacy with her husband.",
         "components": [
           "Checks for lumps most weeks and experiences increased anxiety before appointments",
@@ -553,14 +793,20 @@
           "Sarah wished to consider referral and received direct CNS self-referral details"
         ],
         "occurred": { "start": { "value": "2026-08-04", "precision": "day" } },
-        "author": { "name": "Sandra Whitfield", "role": "Breast Care Clinical Nurse Specialist", "service": "Breast Cancer Rehabilitation Clinic" },
+        "author": {
+          "name": "Sandra Whitfield",
+          "role": "Breast Care Clinical Nurse Specialist",
+          "service": "Breast Cancer Rehabilitation Clinic"
+        },
         "sensitivity": "restricted"
       },
       {
         "id": "self-management-assessment-visit-3",
         "type": "assessment",
         "summary": "Review documented good regular-medicine adherence but low confidence and inconsistent rehabilitation exercise.",
-        "assessment": { "display": "Self-management and patient activation assessment" },
+        "assessment": {
+          "display": "Self-management and patient activation assessment"
+        },
         "score": 2,
         "scale": "Clinician-rated activation level 1–4",
         "outcome": "Aware but struggling: Sarah understood the intended rehabilitation behaviours but had difficulty sustaining them independently. Walking improved, but her home shoulder programme remained less frequent than prescribed because of fatigue and fear of lymphoedema.",
@@ -577,7 +823,9 @@
         "id": "medicines-adherence-review-visit-3",
         "type": "assessment",
         "summary": "Patient-reported seven-day medicines diary reviewed adherence and PRN medicine use.",
-        "assessment": { "display": "Medicines reconciliation and adherence review" },
+        "assessment": {
+          "display": "Medicines reconciliation and adherence review"
+        },
         "outcome": "Tamoxifen and ramipril were taken every day. One vitamin D dose was forgotten. Ibuprofen was used on six days, codeine on three nights and macrogol on two days.",
         "components": [
           "Monday: regular medicines taken; one evening ibuprofen dose",
@@ -599,7 +847,11 @@
         "summary": "Breast surgeon wrote to primary care with final histology, staging and the oncology referral plan.",
         "body": "Dear Dr Marsh, final histopathology after right wide local excision confirms a 28 mm Grade 2 invasive ductal carcinoma with clear margins and no metastatic disease in three sentinel nodes. The tumour is ER and PR positive and HER2 negative, with final stage pT2N0M0, Stage IIA. The Breast MDT recommends Clinical Oncology review for adjuvant treatment. The wound is healing well and Sarah has received shoulder-mobility advice and Breast Care CNS contact details.",
         "recordedOn": { "value": "2025-07-14", "precision": "day" },
-        "author": { "name": "Mr Jonathan Reeves", "role": "Consultant Oncoplastic Breast Surgeon", "service": "Jean McFarlane Trust Breast Unit" },
+        "author": {
+          "name": "Mr Jonathan Reeves",
+          "role": "Consultant Oncoplastic Breast Surgeon",
+          "service": "Jean McFarlane Trust Breast Unit"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -610,7 +862,11 @@
         "summary": "Clinical Oncology updated primary care after chemotherapy and before radiotherapy.",
         "body": "Dear Dr Marsh, Sarah has completed six cycles of adjuvant FEC-T chemotherapy. Expected toxicities included grade 2 neutropenia, alopecia and cumulative fatigue, without febrile neutropenia. She is fit to proceed to right-breast radiotherapy. After radiotherapy she will start tamoxifen 20 mg daily and will be referred for shoulder, functional and holistic rehabilitation.",
         "recordedOn": { "value": "2026-01-05", "precision": "day" },
-        "author": { "name": "Dr Priya Chandran", "role": "Consultant Clinical Oncologist", "service": "Jean McFarlane Trust Clinical Oncology" },
+        "author": {
+          "name": "Dr Priya Chandran",
+          "role": "Consultant Clinical Oncologist",
+          "service": "Jean McFarlane Trust Clinical Oncology"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -621,7 +877,11 @@
         "summary": "The Breast Care CNS referred Sarah for multidisciplinary rehabilitation.",
         "body": "Dear colleagues, Sarah completed radiotherapy on 30 January 2026. Her Holistic Needs Assessment identified fatigue, right shoulder stiffness, anxiety about recurrence, menopausal symptoms and practical concerns about returning to work. She consented to referral and information sharing for physiotherapy, occupational therapy and ongoing CNS support.",
         "recordedOn": { "value": "2026-02-03", "precision": "day" },
-        "author": { "name": "Sandra Whitfield", "role": "Breast Care Clinical Nurse Specialist", "service": "Jean McFarlane Trust Breast Care Team" },
+        "author": {
+          "name": "Sandra Whitfield",
+          "role": "Breast Care Clinical Nurse Specialist",
+          "service": "Jean McFarlane Trust Breast Care Team"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -632,7 +892,11 @@
         "summary": "Primary care requested oncology advice about tamoxifen-associated symptoms.",
         "body": "Dear Dr Chandran, Sarah reports worsening hot flushes, night sweats, sleep disruption, low mood, vaginal dryness and dyspareunia since starting tamoxifen. Non-hormonal options have been discussed and HRT has been advised against. Please advise on oncology-specific management and appropriate specialist support, and share the concern with the rehabilitation team.",
         "recordedOn": { "value": "2026-03-20", "precision": "day" },
-        "author": { "name": "Dr Fiona Marsh", "role": "General Practitioner", "service": "Cheadle Hulme Medical Practice" },
+        "author": {
+          "name": "Dr Fiona Marsh",
+          "role": "General Practitioner",
+          "service": "Cheadle Hulme Medical Practice"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -643,7 +907,11 @@
         "summary": "Physiotherapy documented shoulder restriction, axillary web syndrome and the rehabilitation plan.",
         "body": "Dear Dr Marsh, initial assessment found restricted right shoulder flexion and abduction, pain at end range, axillary web syndrome and adherent scar tissue. Sarah was avoiding exercise because she feared provoking lymphoedema. Evidence-based education was provided and a graded programme of cording release, scar mobilisation, range-of-motion work and strengthening was started.",
         "recordedOn": { "value": "2026-04-15", "precision": "day" },
-        "author": { "name": "Tom Aldridge", "role": "Senior Oncology Physiotherapist", "service": "Breast Cancer Rehabilitation Clinic" },
+        "author": {
+          "name": "Tom Aldridge",
+          "role": "Senior Oncology Physiotherapist",
+          "service": "Breast Cancer Rehabilitation Clinic"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -654,7 +922,11 @@
         "summary": "Occupational Therapy documented functional limitations and recommended a paced return to work.",
         "body": "Dear Dr Marsh, Sarah remains on a phased return of three mornings weekly and reports pressure for a fixed full-time return date. Fatigue and shoulder restriction continue to affect overhead and sustained tasks. Occupational Health referral and temporary workplace adjustments are recommended while rehabilitation continues, with the return paced to clinical readiness.",
         "recordedOn": { "value": "2026-06-10", "precision": "day" },
-        "author": { "name": "Naomi Clarke", "role": "Occupational Therapist", "service": "Breast Cancer Rehabilitation Service" },
+        "author": {
+          "name": "Naomi Clarke",
+          "role": "Occupational Therapist",
+          "service": "Breast Cancer Rehabilitation Service"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -665,7 +937,11 @@
         "summary": "CNS completed the third holistic rehabilitation review.",
         "body": "Physical progress is good, but fear of recurrence remains prominent before appointments. Tamoxifen-associated vaginal dryness and dyspareunia were discussed with consent; written advice and a psychosexual self-referral route were offered. Sleep remains disrupted by vasomotor symptoms and rumination. Continue rehabilitation and consider psychology or psychosexual referral if concerns persist.",
         "recordedOn": { "value": "2026-08-04", "precision": "day" },
-        "author": { "name": "Sandra Whitfield", "role": "Breast Care Clinical Nurse Specialist", "service": "Breast Cancer Rehabilitation Clinic" },
+        "author": {
+          "name": "Sandra Whitfield",
+          "role": "Breast Care Clinical Nurse Specialist",
+          "service": "Breast Cancer Rehabilitation Clinic"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -676,7 +952,11 @@
         "summary": "Physiotherapy recorded improving movement with continuing exercise concerns.",
         "body": "Right shoulder movement and cording have improved substantially since the first visit. Home exercises are still completed less often than prescribed because of concern about lymphoedema. Measurement trends were used to reinforce safe progressive activity. Progress to resisted strengthening and review for community exercise discharge.",
         "recordedOn": { "value": "2026-08-04", "precision": "day" },
-        "author": { "name": "Tom Aldridge", "role": "Senior Oncology Physiotherapist", "service": "Breast Cancer Rehabilitation Clinic" },
+        "author": {
+          "name": "Tom Aldridge",
+          "role": "Senior Oncology Physiotherapist",
+          "service": "Breast Cancer Rehabilitation Clinic"
+        },
         "sensitivity": "restricted"
       },
       {
@@ -687,7 +967,11 @@
         "summary": "Occupational Therapy reviewed function and the unresolved return-to-work plan.",
         "body": "Sarah remains on three mornings weekly and continues to face pressure for a fixed full-time return date. Overhead and heavy tasks remain limited, and low mood is linked to reduced contribution at home. Pacing and graded occupational demand were reviewed. Await Occupational Health and contact the school with consent to reinforce a clinically paced return.",
         "recordedOn": { "value": "2026-08-04", "precision": "day" },
-        "author": { "name": "Naomi Clarke", "role": "Occupational Therapist", "service": "Breast Cancer Rehabilitation Service" },
+        "author": {
+          "name": "Naomi Clarke",
+          "role": "Occupational Therapist",
+          "service": "Breast Cancer Rehabilitation Service"
+        },
         "sensitivity": "restricted"
       }
     ]

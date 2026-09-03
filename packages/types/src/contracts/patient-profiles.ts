@@ -52,8 +52,15 @@ import {
   PatientObservationValueType,
   type PatientProblem,
   type PatientProfileDocumentV1,
+  PatientProfileLayerClearPath,
+  PatientProfileLayerCollectionPath,
+  type PatientProfileLayer,
+  PatientProfileLayerOperationType,
+  type PatientProfileLayerOperation,
+  PatientProfileLayerSetPath,
   type PatientProfileVersionNavigationItem,
   PatientProfileTag,
+  type PatientProfileVersion,
   PatientProfileVersionState,
   PatientRelationshipRole,
   PatientReferralStatus,
@@ -571,6 +578,104 @@ export const patientProfileDocumentV1Schema = z
     message: 'Patient profile document exceeds 100 KB',
   })
   .superRefine(uniqueIds) satisfies z.ZodType<PatientProfileDocumentV1>;
+
+const patientProfileLayerCollectionValueSchemas = {
+  [PatientProfileLayerCollectionPath.Relationships]: patientRelationshipSchema,
+  [PatientProfileLayerCollectionPath.Background]: patientBackgroundFactSchema,
+  [PatientProfileLayerCollectionPath.Problems]: patientProblemSchema,
+  [PatientProfileLayerCollectionPath.Allergies]: patientAllergySchema,
+  [PatientProfileLayerCollectionPath.BaselineMedications]:
+    patientBaselineMedicationSchema,
+  [PatientProfileLayerCollectionPath.HistoryEntries]: patientHistoryEntrySchema,
+} as const;
+
+const patientProfileLayerCollectionOperationSchemas = Object.entries(
+  patientProfileLayerCollectionValueSchemas,
+).flatMap(([path, valueSchema]) => [
+  z
+    .object({
+      operation: z.literal(PatientProfileLayerOperationType.Add),
+      path: z.literal(path as PatientProfileLayerCollectionPath),
+      value: valueSchema,
+    })
+    .strict(),
+  z
+    .object({
+      operation: z.literal(PatientProfileLayerOperationType.Replace),
+      path: z.literal(path as PatientProfileLayerCollectionPath),
+      itemId: itemIdSchema,
+      value: valueSchema,
+    })
+    .strict(),
+  z
+    .object({
+      operation: z.literal(PatientProfileLayerOperationType.Remove),
+      path: z.literal(path as PatientProfileLayerCollectionPath),
+      itemId: itemIdSchema,
+    })
+    .strict(),
+]);
+
+export const patientProfileLayerOperationSchema = z.union([
+  ...patientProfileLayerCollectionOperationSchemas,
+  z
+    .object({
+      operation: z.literal(PatientProfileLayerOperationType.Set),
+      path: z.literal(PatientProfileLayerSetPath.AllergyRecordStatus),
+      value: z.enum(PatientAllergyRecordStatus),
+    })
+    .strict(),
+  z
+    .object({
+      operation: z.literal(PatientProfileLayerOperationType.Set),
+      path: z.literal(PatientProfileLayerSetPath.Contact),
+      value: patientContactSchema,
+    })
+    .strict(),
+  z
+    .object({
+      operation: z.literal(PatientProfileLayerOperationType.Clear),
+      path: z.literal(PatientProfileLayerClearPath.Contact),
+    })
+    .strict(),
+]) satisfies z.ZodType<PatientProfileLayerOperation>;
+
+export const patientProfileLayerSchema = z
+  .object({
+    id: z.uuid(),
+    patientProfileId: z.uuid(),
+    title: plainText(200),
+    description: plainText(1000).optional(),
+    schemaVersion: z.literal(1),
+    operations: z.array(patientProfileLayerOperationSchema).min(1).max(500),
+    sourceReference: plainText(500).optional(),
+    sourceRevision: plainText(200).optional(),
+  })
+  .strict() satisfies z.ZodType<PatientProfileLayer>;
+
+export const patientProfileVersionSchema = z
+  .object({
+    id: z.uuid(),
+    patientProfileId: z.uuid(),
+    versionNumber: z.number().int().positive(),
+    state: z.enum(PatientProfileVersionState),
+    schemaVersion: z.literal(1),
+    document: patientProfileDocumentV1Schema,
+    contentHash: plainText(200),
+    changeSummary: plainText(1000),
+    authoredBy: z.uuid().optional(),
+    sourceReference: plainText(500).optional(),
+    sourceRevision: plainText(200).optional(),
+    reviewedBy: z.uuid().optional(),
+    publishedBy: z.uuid().optional(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    submittedAt: z.iso.datetime().optional(),
+    reviewedAt: z.iso.datetime().optional(),
+    publishedAt: z.iso.datetime().optional(),
+    withdrawnAt: z.iso.datetime().optional(),
+  })
+  .strict() satisfies z.ZodType<PatientProfileVersion>;
 
 export const patientProfileCatalogueItemSchema = z.object({
   id: z.uuid(),

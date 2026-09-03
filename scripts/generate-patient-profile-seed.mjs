@@ -7,10 +7,16 @@ const profilesDirectory = resolve(
   repositoryRoot,
   'supabase/seeds/patient-profiles',
 );
+const scenariosDirectory = resolve(
+  repositoryRoot,
+  'supabase/seeds/patient-scenarios',
+);
 const outputPath = resolve(repositoryRoot, 'supabase/seeds/production.sql');
 const generatedAt = '2026-08-30T00:00:00.000Z';
 const sourceReference = 'https://github.com/DNMSW/epr-unified';
 const sourceRevision = '03c7f12';
+
+const sqlText = (value) => `'${value.replaceAll("'", "''")}'`;
 
 const identities = {
   'adebayo-omolade': {
@@ -159,12 +165,178 @@ end;
 $verify_version_${slug.replaceAll('-', '_')}$;`;
 });
 
+const scenarioFiles = readdirSync(scenariosDirectory)
+  .filter((file) => file.endsWith('.json'))
+  .sort();
+
+const scenarioStatements = scenarioFiles.map((file) => {
+  const scenario = JSON.parse(
+    readFileSync(resolve(scenariosDirectory, file), 'utf8'),
+  );
+  const profileIdentity = identities[scenario.patientProfileSlug];
+  if (!profileIdentity)
+    throw new Error(
+      `No patient profile configured for scenario ${scenario.slug}`,
+    );
+  if (scenario.patientProfileVersionNumber !== 1)
+    throw new Error(`Unsupported patient profile version for ${scenario.slug}`);
+  if (!Array.isArray(scenario.steps) || scenario.steps.length === 0)
+    throw new Error(`Scenario ${scenario.slug} requires at least one step`);
+
+  const scenarioTag = scenario.slug.replaceAll('-', '_');
+  const layerStatements = scenario.steps.map((step) => {
+    const layer = step.patientProfileLayer;
+    const operations = JSON.stringify(layer.operations, null, 2);
+    return `insert into public.patient_profile_layers (
+  id,
+  patient_profile_id,
+  title,
+  description,
+  schema_version,
+  operations,
+  source_reference,
+  source_revision,
+  created_at,
+  updated_at
+) values (
+  '${layer.id}',
+  '${profileIdentity.profileId}',
+  ${sqlText(layer.title)},
+  ${layer.description ? sqlText(layer.description) : 'null'},
+  ${layer.schemaVersion},
+  $layer_operations_${layer.id.replaceAll('-', '_')}$
+${operations}
+$layer_operations_${layer.id.replaceAll('-', '_')}$::jsonb,
+  ${layer.sourceReference ? sqlText(layer.sourceReference) : 'null'},
+  ${layer.sourceRevision ? sqlText(layer.sourceRevision) : 'null'},
+  '${generatedAt}',
+  '${generatedAt}'
+) on conflict (id) do update
+set
+  title = excluded.title,
+  description = excluded.description,
+  schema_version = excluded.schema_version,
+  operations = excluded.operations,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_layers.patient_profile_id = excluded.patient_profile_id;`;
+  });
+
+  const stepStatements = scenario.steps.map((step) => {
+    const ehrChanges = JSON.stringify(step.ehrChanges, null, 2);
+    return `insert into public.patient_scenario_steps (
+  id,
+  scenario_id,
+  patient_profile_id,
+  position,
+  kind,
+  title,
+  description,
+  patient_profile_layer_id,
+  ehr_changes,
+  created_at,
+  updated_at
+) select
+  '${step.id}',
+  scenario.id,
+  '${profileIdentity.profileId}',
+  ${step.position},
+  ${sqlText(step.kind)},
+  ${sqlText(step.title)},
+  ${step.description ? sqlText(step.description) : 'null'},
+  '${step.patientProfileLayer.id}',
+  $ehr_changes_${step.id.replaceAll('-', '_')}$
+${ehrChanges}
+$ehr_changes_${step.id.replaceAll('-', '_')}$::jsonb,
+  '${generatedAt}',
+  '${generatedAt}'
+from public.patient_scenarios scenario
+where scenario.scope = 'system'
+  and scenario.slug = '${scenario.slug}'
+on conflict (id) do update
+set
+  position = excluded.position,
+  kind = excluded.kind,
+  title = excluded.title,
+  description = excluded.description,
+  patient_profile_layer_id = excluded.patient_profile_layer_id,
+  ehr_changes = excluded.ehr_changes,
+  updated_at = excluded.updated_at
+where patient_scenario_steps.scenario_id = excluded.scenario_id
+  and patient_scenario_steps.patient_profile_id = excluded.patient_profile_id;`;
+  });
+
+  return `insert into public.patient_scenarios (
+  id,
+  scope,
+  slug,
+  status,
+  patient_profile_id,
+  patient_profile_version_id,
+  title,
+  description,
+  care_setting,
+  intended_clinical_audiences,
+  created_at,
+  updated_at
+) values (
+  '${scenario.id}',
+  ${sqlText(scenario.scope)},
+  ${sqlText(scenario.slug)},
+  ${sqlText(scenario.status)},
+  '${profileIdentity.profileId}',
+  '${profileIdentity.versionId}',
+  ${sqlText(scenario.title)},
+  ${sqlText(scenario.description)},
+  ${sqlText(scenario.careSetting)},
+  array[${scenario.intendedClinicalAudiences.map((audience) => sqlText(audience)).join(', ')}]::text[],
+  '${generatedAt}',
+  '${generatedAt}'
+) on conflict (slug) where scope = 'system' do update
+set
+  status = excluded.status,
+  patient_profile_id = excluded.patient_profile_id,
+  patient_profile_version_id = excluded.patient_profile_version_id,
+  title = excluded.title,
+  description = excluded.description,
+  care_setting = excluded.care_setting,
+  intended_clinical_audiences = excluded.intended_clinical_audiences,
+  updated_at = excluded.updated_at
+where patient_scenarios.status = 'draft';
+
+${layerStatements.join('\n\n')}
+
+${stepStatements.join('\n\n')}
+
+do $verify_scenario_${scenarioTag}$
+declare
+  stored_step_count integer;
+begin
+  select count(*)
+  into stored_step_count
+  from public.patient_scenario_steps step
+  join public.patient_scenarios scenario on scenario.id = step.scenario_id
+  where scenario.scope = 'system'
+    and scenario.slug = '${scenario.slug}'
+    and scenario.patient_profile_id = '${profileIdentity.profileId}'
+    and scenario.patient_profile_version_id = '${profileIdentity.versionId}';
+
+  if stored_step_count <> ${scenario.steps.length} then
+    raise exception 'production_patient_scenario_drift:${scenario.slug}';
+  end if;
+end;
+$verify_scenario_${scenarioTag}$;`;
+});
+
 const output = `-- Generated by scripts/generate-patient-profile-seed.mjs.
 -- Edit the validated JSON sources, then run yarn seed:generate.
 
 begin;
 
 ${statements.join('\n\n')}
+
+${scenarioStatements.join('\n\n')}
 
 commit;
 `;

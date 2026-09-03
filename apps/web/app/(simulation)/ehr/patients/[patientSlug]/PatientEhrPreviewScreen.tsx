@@ -8,6 +8,7 @@ import {
 import {
   PatientBackgroundCategory,
   PatientRelationshipRole,
+  type ResolvedPatientScenarioStep,
 } from '@hektor/types';
 import { buttonVariants } from '@hektor/ui/atoms';
 import { NavigationLink } from '@hektor/ui/context';
@@ -62,20 +63,25 @@ export function PatientEhrPreviewScreen({
   );
 }
 
-function ResolvedPatientEhrPreview({
+export function ResolvedPatientEhrPreview({
   expectedVersionId,
   nextPatient,
   previousPatient,
   profileId,
+  scenarioPreview,
+  onScenarioStepChange,
 }: {
   expectedVersionId?: string;
   nextPatient?: { href: string; label: string };
   previousPatient?: { href: string; label: string };
   profileId: string;
+  scenarioPreview?: ResolvedPatientScenarioStep;
+  onScenarioStepChange?: (stepId: string) => void;
 }) {
   const currentProfile = useAdminPatientProfile(
     { params: { profileId } },
     {
+      enabled: !scenarioPreview && !expectedVersionId,
       placeholderData: (previousProfile) => previousProfile,
     },
   );
@@ -86,24 +92,42 @@ function ResolvedPatientEhrPreview({
         versionId: expectedVersionId ?? profileId,
       },
     },
-    { enabled: Boolean(expectedVersionId) },
+    { enabled: !scenarioPreview && Boolean(expectedVersionId) },
   );
   const profile = expectedVersionId ? selectedVersion : currentProfile;
-  const exitHref = expectedVersionId
-    ? `/admin/patient-profiles/${profileId}/version/${expectedVersionId}`
+  const pinnedVersionId =
+    scenarioPreview?.context.scenario.patientProfile.id ?? expectedVersionId;
+  const exitHref = pinnedVersionId
+    ? `/admin/patient-profiles/${profileId}/version/${pinnedVersionId}`
     : `/admin/patient-profiles/${profileId}`;
 
-  if (profile.isPending) return <PreviewLoading />;
+  if (!scenarioPreview && profile.isPending) return <PreviewLoading />;
 
-  if (profile.isError)
+  if (!scenarioPreview && profile.isError)
     return <PreviewError exitHref={exitHref} message={profile.error.message} />;
 
-  const patient = profile.data.data;
+  const patient = scenarioPreview
+    ? {
+        dateOfBirth: scenarioPreview.patient.identity.dateOfBirth,
+        displayName: scenarioPreview.patient.identity.preferredName
+          ? `${scenarioPreview.patient.identity.preferredName} ${scenarioPreview.patient.identity.familyName}`
+          : [
+              ...scenarioPreview.patient.identity.givenNames,
+              scenarioPreview.patient.identity.familyName,
+            ].join(' '),
+        document: scenarioPreview.patient,
+        versionNumber:
+          scenarioPreview.context.scenario.patientProfile.versionNumber,
+        versionState: scenarioPreview.context.scenario.patientProfile.state,
+      }
+    : profile.data!.data;
 
   return (
     <PatientEhrPreviewPage
+      ehrConfiguration={scenarioPreview?.ehr}
       exitHref={exitHref}
       nextPatient={nextPatient}
+      onScenarioStepChange={onScenarioStepChange}
       patient={{
         allergyRecordStatus: patient.document.allergyRecordStatus,
         allergies: patient.document.allergies.map((allergy) => ({
@@ -283,7 +307,9 @@ function ResolvedPatientEhrPreview({
           problem: problem.problem.display,
           resolvedDate: problem.resolvedDate,
         })),
-        recordContext: 'Electronic Patient Record — Base profile preview',
+        recordContext: scenarioPreview
+          ? `Electronic Patient Record — ${scenarioPreview.context.scenario.title}`
+          : 'Electronic Patient Record — Base profile preview',
         relationships: patient.document.relationships.map((relationship) => ({
           email: relationship.contact?.email,
           id: relationship.id,
@@ -297,6 +323,19 @@ function ResolvedPatientEhrPreview({
         versionState: patient.versionState,
       }}
       previousPatient={previousPatient}
+      scenarioPreview={
+        scenarioPreview
+          ? {
+              currentStepId: scenarioPreview.context.currentStep.id,
+              currentStepTitle: scenarioPreview.context.currentStep.title,
+              status: scenarioPreview.context.scenario.status,
+              steps: scenarioPreview.context.scenario.steps
+                .toSorted((left, right) => left.position - right.position)
+                .map(({ id, kind, title }) => ({ id, kind, title })),
+              title: scenarioPreview.context.scenario.title,
+            }
+          : undefined
+      }
     />
   );
 }

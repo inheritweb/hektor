@@ -7,6 +7,24 @@ const meta = {
   component: PatientProfileDetailPage,
   args: {
     previewHref: '#ehr-preview',
+    scenarios: [
+      {
+        id: 'e1cd82e8-745b-4f25-b828-a62d98a9fc2d',
+        title: 'Acute ischaemic stroke admission',
+        description:
+          'Esther is admitted to the stroke unit following sudden left-sided weakness, facial droop and slurred speech.',
+        careSetting: 'acute_inpatient',
+        intendedClinicalAudiences: [
+          'nursing',
+          'pharmacy',
+          'medicine',
+          'allied_health',
+        ],
+        status: 'draft',
+        patientProfileVersion: { versionNumber: 1 },
+        beginningStep: { title: 'Admission to the stroke unit' },
+      },
+    ],
     profile: {
       displayName: 'Amina Warsame',
       dateOfBirth: '1948-04-12',

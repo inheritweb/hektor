@@ -25,6 +25,10 @@
       "types": "./src/patient-profiles.ts",
       "import": "./src/patient-profiles.ts"
     },
+    "./patient-scenarios": {
+      "types": "./src/patient-scenarios.ts",
+      "import": "./src/patient-scenarios.ts"
+    },
     "./statistics": {
       "types": "./src/statistics.ts",
       "import": "./src/statistics.ts"

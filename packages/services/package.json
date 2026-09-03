@@ -25,6 +25,10 @@
       "types": "./src/patient-profiles/index.ts",
       "import": "./src/patient-profiles/index.ts"
     },
+    "./patient-scenarios": {
+      "types": "./src/patient-scenarios/index.ts",
+      "import": "./src/patient-scenarios/index.ts"
+    },
     "./simulator": {
       "types": "./src/simulator/index.ts",
       "import": "./src/simulator/index.ts"

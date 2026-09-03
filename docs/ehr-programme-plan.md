@@ -193,10 +193,14 @@ general enrichment pass was sufficient evidence of content completeness.
    add persisted generic EHR configuration until a concrete variation requires
    it.
    The next increment is specified in `docs/ehr-ui-slice-2-plan.md`.
-4. **Implement scenario mechanics.** Add `PatientScenario`,
+4. **Implement scenario mechanics — planned.** Add `PatientScenario`,
    `PatientScenarioStep` and `PatientProfileLayer` to the contracts, database and
    platform-admin experience. A scenario pins a profile version and its steps
-   order the layers applied over that base.
+   order the layers applied over that base. Begin with a read-only Esther acute
+   stroke scenario: scenario pods below the patient-profile title/description,
+   then a cumulative step-aware EHR preview in the persistent simulation-tools
+   drawer. The bitesize delivery plan is in
+   `docs/patient-scenario-preview-plan.md`.
 5. **Consider the tutor experience.** Design tutor browsing, preview and later
    assignment workflows against working base-profile and scenario EHR previews.
 

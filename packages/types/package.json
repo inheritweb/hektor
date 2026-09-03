@@ -28,6 +28,10 @@
       "types": "./src/contracts/base.ts",
       "import": "./src/contracts/base.ts"
     },
+    "./contracts/ehr": {
+      "types": "./src/contracts/ehr.ts",
+      "import": "./src/contracts/ehr.ts"
+    },
     "./contracts/organisations": {
       "types": "./src/contracts/organisations.ts",
       "import": "./src/contracts/organisations.ts"
@@ -35,6 +39,10 @@
     "./contracts/patient-profiles": {
       "types": "./src/contracts/patient-profiles.ts",
       "import": "./src/contracts/patient-profiles.ts"
+    },
+    "./contracts/patient-scenarios": {
+      "types": "./src/contracts/patient-scenarios.ts",
+      "import": "./src/contracts/patient-scenarios.ts"
     },
     "./contracts/statistics": {
       "types": "./src/contracts/statistics.ts",

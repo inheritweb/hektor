@@ -189,6 +189,22 @@ export interface PatientProfileDetailViewModel {
   };
 }
 
+export interface PatientScenarioSummaryViewModel {
+  id: string;
+  title: string;
+  description: string;
+  careSetting: string;
+  intendedClinicalAudiences: readonly string[];
+  status: string;
+  patientProfileVersion: {
+    versionNumber: number;
+  };
+  beginningStep: {
+    title: string;
+  };
+  previewHref?: string;
+}
+
 type HistoryEntry =
   PatientProfileDetailViewModel['document']['history']['entries'][number];
 
@@ -215,6 +231,9 @@ export function PatientProfileDetailPage({
   nextProfile,
   previousProfile,
   previewHref,
+  scenarios = [],
+  scenariosError,
+  scenariosLoading = false,
   onVersionChange,
 }: {
   profile: PatientProfileDetailViewModel;
@@ -222,6 +241,9 @@ export function PatientProfileDetailPage({
   nextProfile?: { href: string; label: string };
   previousProfile?: { href: string; label: string };
   previewHref?: string;
+  scenarios?: readonly PatientScenarioSummaryViewModel[];
+  scenariosError?: string;
+  scenariosLoading?: boolean;
   onVersionChange?: (versionId: string) => void;
 }) {
   const { document } = profile;
@@ -324,6 +346,89 @@ export function PatientProfileDetailPage({
           ) : null}
         </div>
       </header>
+
+      <section aria-labelledby="patient-scenarios-heading">
+        <div>
+          <h2 className="text-xl font-bold" id="patient-scenarios-heading">
+            Scenarios
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Presentations authored for this exact patient-profile version.
+          </p>
+        </div>
+        {scenariosLoading ? (
+          <div
+            aria-label="Loading patient scenarios"
+            className="mt-4 h-36 animate-pulse rounded-lg bg-accent/40"
+          />
+        ) : scenariosError ? (
+          <p className="mt-4 text-sm text-destructive" role="alert">
+            {scenariosError}
+          </p>
+        ) : scenarios.length ? (
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {scenarios.map((scenario) => (
+              <article
+                className="flex min-h-64 flex-col rounded-lg border border-border bg-surface p-5 shadow-sm"
+                key={scenario.id}
+              >
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                  <span className="bg-accent/50 px-2 py-1 capitalize">
+                    {scenario.status === 'draft'
+                      ? 'Draft preview'
+                      : scenario.status}
+                  </span>
+                  <span className="text-muted-foreground">
+                    Profile version{' '}
+                    {scenario.patientProfileVersion.versionNumber}
+                  </span>
+                </div>
+                <h3 className="mt-4 text-lg font-bold">{scenario.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {scenario.description}
+                </p>
+                <dl className="mt-4 grid gap-3 text-sm">
+                  <div>
+                    <dt className="font-semibold">Beginning</dt>
+                    <dd className="text-muted-foreground">
+                      {scenario.beginningStep.title}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Care setting</dt>
+                    <dd className="capitalize text-muted-foreground">
+                      {scenario.careSetting.replaceAll('_', ' ')}
+                    </dd>
+                  </div>
+                </dl>
+                <div className="mt-auto pt-5">
+                  {scenario.previewHref ? (
+                    <NavigationLink
+                      className={buttonVariants({ variant: 'outline' })}
+                      href={scenario.previewHref}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Preview scenario in EHR
+                    </NavigationLink>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      EHR preview coming next
+                    </span>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-lg border border-dashed border-border p-6">
+            <p className="font-semibold">No scenarios for this version</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              The base patient profile can still be previewed in the EHR.
+            </p>
+          </div>
+        )}
+      </section>
 
       {profile.versionState === 'draft' ? (
         <aside className="flex gap-3 border-l-4 border-primary bg-accent/20 p-4 text-sm">

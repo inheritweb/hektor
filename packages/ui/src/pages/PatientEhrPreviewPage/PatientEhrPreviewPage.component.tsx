@@ -6,11 +6,13 @@ import {
   PatientHistoricalCarePlanCategory,
   PatientHistoryEntryType,
   type EhrSectionConfiguration,
+  type EhrConfiguration,
   type PatientHistoryEntry,
   PatientAllergyRecordStatus,
 } from '@hektor/types';
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -126,21 +128,26 @@ export interface PatientEhrPreviewViewModel {
 }
 
 export interface PatientEhrPreviewPageProps {
+  ehrConfiguration?: EhrConfiguration;
   exitHref: string;
   initialSection?: EhrSectionType;
   nextPatient?: PatientEhrPreviewNavigationItem;
   patient: PatientEhrPreviewViewModel;
   previousPatient?: PatientEhrPreviewNavigationItem;
+  scenarioPreview?: {
+    title: string;
+    status: string;
+    currentStepTitle: string;
+    currentStepId: string;
+    steps: readonly { id: string; kind: string; title: string }[];
+  };
+  onScenarioStepChange?: (stepId: string) => void;
 }
 
 export interface PatientEhrPreviewNavigationItem {
   href: string;
   label: string;
 }
-
-const recordSections = resolveEhrSections(
-  defaultPatientProfileEhrConfiguration,
-);
 
 function authoredDetailLabel(detail: PatientEhrAuthoredDetail) {
   if (detail.status === 'known') return detail.value ?? 'Not recorded';
@@ -163,11 +170,14 @@ function patientAge(dateOfBirth: string) {
 }
 
 export function PatientEhrPreviewPage({
+  ehrConfiguration = defaultPatientProfileEhrConfiguration,
   exitHref,
   initialSection = EhrSectionType.DemographicAndAdministrative,
   nextPatient,
   patient,
   previousPatient,
+  scenarioPreview,
+  onScenarioStepChange,
 }: PatientEhrPreviewPageProps) {
   const [activeSection, setActiveSection] = useState(initialSection);
   const sectionHeading = useRef<HTMLHeadingElement>(null);
@@ -175,6 +185,10 @@ export function PatientEhrPreviewPage({
   const primaryIdentifier = patient.identifiers[0];
   const activeAllergies = patient.allergies.filter(
     ({ clinicalStatus }) => clinicalStatus === 'active',
+  );
+  const recordSections = useMemo(
+    () => resolveEhrSections(ehrConfiguration),
+    [ehrConfiguration],
   );
 
   useEffect(() => {
@@ -203,14 +217,20 @@ export function PatientEhrPreviewPage({
           exitHref={exitHref}
           nextPreview={nextPatient}
           previousPreview={previousPatient}
-          previewLabel="Platform-admin patient-profile preview"
+          previewLabel={
+            scenarioPreview
+              ? 'Platform-admin scenario preview'
+              : 'Platform-admin patient-profile preview'
+          }
+          scenario={scenarioPreview}
+          onScenarioStepChange={onScenarioStepChange}
         />
       }
     >
-      <div className="flex min-h-[calc(100dvh-10rem)] w-full bg-[#eef1f6] font-[Arial,'Segoe_UI',sans-serif] text-[13px] text-[#1a1a2e] max-md:flex-col">
+      <div className="flex h-[calc(100dvh-10rem)] min-h-[32rem] w-full min-w-0 overflow-hidden bg-[#eef1f6] font-[Arial,'Segoe_UI',sans-serif] text-[13px] text-[#1a1a2e] max-md:h-auto max-md:min-h-0 max-md:flex-col max-md:overflow-visible">
         <nav
           aria-label="Patient record sections"
-          className="w-[210px] shrink-0 border-r-2 border-[#c1d3ec] bg-[#f3f7fd] max-md:w-full max-md:overflow-x-auto max-md:border-r-0 max-md:border-b-2"
+          className="h-full w-[210px] shrink-0 overflow-hidden border-r-2 border-[#c1d3ec] bg-[#f3f7fd] max-md:h-auto max-md:w-full max-md:overflow-x-auto max-md:border-r-0 max-md:border-b-2"
         >
           <div className="bg-[#1460aa] px-2.5 py-2 text-[10px] font-bold uppercase tracking-[0.05em] text-white max-md:hidden">
             Navigation
@@ -234,7 +254,7 @@ export function PatientEhrPreviewPage({
           </div>
         </nav>
 
-        <div className="min-w-0 flex-1 p-2.5 sm:p-4">
+        <div className="h-full min-w-0 flex-1 overflow-y-auto p-2.5 sm:p-4 max-md:h-auto max-md:overflow-visible">
           {activeSection === EhrSectionType.DemographicAndAdministrative ? (
             <DemographicAndAdministrativeSection
               headingRef={sectionHeading}
@@ -665,7 +685,9 @@ function EndOfLifeAndEmergencyCarePlanningSection({
                     </p>
                   ) : null}
                   <div>
-                    <FieldLabel>Planning context and identified need</FieldLabel>
+                    <FieldLabel>
+                      Planning context and identified need
+                    </FieldLabel>
                     <p className="text-[11px] leading-5 text-[#1c2b4a]">
                       {plan.need}
                     </p>
@@ -695,7 +717,8 @@ function EndOfLifeAndEmergencyCarePlanningSection({
                     <p
                       className={`mt-1 text-[11px] leading-5 ${plan.evaluation ? 'text-[#78350f]' : 'italic text-[#6b7280]'}`}
                     >
-                      {plan.evaluation ?? 'No review or recommendation recorded'}
+                      {plan.evaluation ??
+                        'No review or recommendation recorded'}
                     </p>
                   </div>
                   <HistoricalRecordMeta entry={plan} />

@@ -17,7 +17,7 @@ import {
 } from '@hektor/types';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   PatientEhrPreviewPage,
@@ -676,9 +676,7 @@ describe('PatientEhrPreviewPage', () => {
       />,
     );
 
-    expect(
-      screen.getByRole('heading', { name: 'Safeguarding' }),
-    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Safeguarding' })).toBeTruthy();
     expect(
       screen.getByText('Vulnerability to exploitation is recorded.'),
     ).toBeTruthy();
@@ -807,7 +805,9 @@ describe('PatientEhrPreviewPage', () => {
     ).toBeTruthy();
     expect(screen.getByText('Oncology end-of-treatment letter')).toBeTruthy();
     expect(
-      screen.getByText('End-of-treatment oncology letter sent to primary care.'),
+      screen.getByText(
+        'End-of-treatment oncology letter sent to primary care.',
+      ),
     ).toBeTruthy();
     expect(screen.getByText(/Dear Dr Marsh/)).toBeTruthy();
     expect(screen.getByText(/Dr Priya Chandran/)).toBeTruthy();
@@ -828,6 +828,73 @@ describe('PatientEhrPreviewPage', () => {
         'No durable document or correspondence is recorded in this base Patient Profile.',
       ),
     ).toBeTruthy();
-    expect(screen.getByText(/A scenario may add current referral letters/)).toBeTruthy();
+    expect(
+      screen.getByText(/A scenario may add current referral letters/),
+    ).toBeTruthy();
+  });
+
+  it('uses resolved scenario section labels and identifies the current step', async () => {
+    const user = userEvent.setup();
+    const onScenarioStepChange = vi.fn();
+    render(
+      <PatientEhrPreviewPage
+        ehrConfiguration={{
+          sections: [
+            {
+              id: EhrSectionType.StandardisedAssessmentsAndRiskScreening,
+              label: 'Presenting history and neurological assessment',
+              order: 10,
+              type: EhrSectionType.StandardisedAssessmentsAndRiskScreening,
+            },
+          ],
+        }}
+        exitHref="#exit"
+        onScenarioStepChange={onScenarioStepChange}
+        patient={patient}
+        scenarioPreview={{
+          currentStepId: '563b99e4-6af4-49e4-90b8-e16eb676d27e',
+          currentStepTitle: 'Admission to the stroke unit',
+          status: 'draft',
+          steps: [
+            {
+              id: '563b99e4-6af4-49e4-90b8-e16eb676d27e',
+              kind: 'beginning',
+              title: 'Admission to the stroke unit',
+            },
+            {
+              id: 'fc7c473b-78cb-4b38-9e5d-06a9e17437e1',
+              kind: 'progression',
+              title: 'Swallowing and communication review',
+            },
+          ],
+          title: 'Acute ischaemic stroke admission',
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', {
+        name: /Presenting history and neurological assessment/,
+      }),
+    ).toBeTruthy();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Open simulation tools' }),
+    );
+    expect(screen.getByText('Acute ischaemic stroke admission')).toBeTruthy();
+    expect(
+      screen.getAllByText('Admission to the stroke unit').length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText('Beginning').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Step 10')).toBeNull();
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Step 2: Swallowing and communication review',
+      }),
+    );
+    expect(onScenarioStepChange).toHaveBeenCalledWith(
+      'fc7c473b-78cb-4b38-9e5d-06a9e17437e1',
+    );
   });
 });

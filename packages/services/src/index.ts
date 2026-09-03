@@ -9,6 +9,8 @@ export * from './organisations/index';
 
 export * from './patient-profiles/index';
 
+export * from './patient-scenarios/index';
+
 export type { DatabaseClient } from './database';
 
 export { getHealthCheck } from './system/index';

@@ -6657,4 +6657,793 @@ $patient_document_sarah_williams$::jsonb::text, 'UTF8')),
 end;
 $verify_version_sarah_williams$;
 
+insert into public.patient_scenarios (
+  id,
+  scope,
+  slug,
+  status,
+  patient_profile_id,
+  patient_profile_version_id,
+  title,
+  description,
+  care_setting,
+  intended_clinical_audiences,
+  created_at,
+  updated_at
+) values (
+  'e1cd82e8-745b-4f25-b828-a62d98a9fc2d',
+  'system',
+  'esther-acute-ischaemic-stroke',
+  'draft',
+  '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+  '016a3ade-5634-4773-9c08-5c7984af3cec',
+  'Acute ischaemic stroke admission',
+  'Esther is admitted to the stroke unit following sudden left-sided weakness, facial droop and slurred speech.',
+  'acute_inpatient',
+  array['nursing', 'pharmacy', 'medicine', 'allied_health']::text[],
+  '2026-08-30T00:00:00.000Z',
+  '2026-08-30T00:00:00.000Z'
+) on conflict (slug) where scope = 'system' do update
+set
+  status = excluded.status,
+  patient_profile_id = excluded.patient_profile_id,
+  patient_profile_version_id = excluded.patient_profile_version_id,
+  title = excluded.title,
+  description = excluded.description,
+  care_setting = excluded.care_setting,
+  intended_clinical_audiences = excluded.intended_clinical_audiences,
+  updated_at = excluded.updated_at
+where patient_scenarios.status = 'draft';
+
+insert into public.patient_profile_layers (
+  id,
+  patient_profile_id,
+  title,
+  description,
+  schema_version,
+  operations,
+  source_reference,
+  source_revision,
+  created_at,
+  updated_at
+) values (
+  'a46a8867-6607-4829-8454-72631b647ab2',
+  '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+  'Acute stroke admission',
+  'Presenting condition, admission context and completed episode records available at the scenario boundary.',
+  1,
+  $layer_operations_a46a8867_6607_4829_8454_72631b647ab2$
+[
+  {
+    "operation": "add",
+    "path": "problems",
+    "value": {
+      "id": "acute-ischaemic-stroke",
+      "problem": {
+        "display": "Acute right middle cerebral artery ischaemic stroke"
+      },
+      "clinicalStatus": "active",
+      "onsetDate": "2026-07-17",
+      "details": "Presented with left facial droop, left-arm weakness and slurred speech; residual left facial and arm weakness and altered sensation remained on admission."
+    }
+  },
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "stroke-symptom-onset",
+      "type": "encounter",
+      "encounterType": "other",
+      "summary": "Sudden focal neurological symptoms began at home while Esther was with her daughter.",
+      "reason": "Esther felt funny; Tasha observed left facial droop, slurred speech and inability to move the left arm properly. Water spilled from the left side of Esther's mouth.",
+      "outcome": "Speech returned to normal, but left facial and arm weakness, impaired grip and numb altered sensation persisted.",
+      "occurred": {
+        "start": {
+          "value": "2026-07-17",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "standard"
+    }
+  },
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "acute-stroke-admission",
+      "type": "encounter",
+      "encounterType": "admission",
+      "careSetting": "acute_inpatient",
+      "service": "Stroke Medicine, Stroke Unit",
+      "summary": "Brought to the Emergency Department by her daughter and transferred to the stroke unit at 11:40.",
+      "reason": "FAST-positive event with left facial droop, left-arm weakness and resolved slurred speech.",
+      "outcome": "Admitted for acute stroke care and multidisciplinary assessment.",
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "standard"
+    }
+  },
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "admission-neurological-assessment",
+      "type": "assessment",
+      "summary": "Patient-reported neurological position at admission.",
+      "assessment": {
+        "display": "Admission neurological assessment"
+      },
+      "outcome": "Residual left facial and arm weakness, left-hand grip impairment and numb altered left-arm sensation. Speech had returned to normal. Esther remained alert, orientated and able to recall the event.",
+      "components": [
+        "No current or onset headache",
+        "No visual change, dizziness, nausea, vomiting or head injury",
+        "Right arm and both legs felt normal; no reported walking difficulty",
+        "No reported concentration or memory difficulty"
+      ],
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "standard"
+    }
+  },
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "admission-anthropometry",
+      "type": "assessment",
+      "summary": "Height, weight and calculated BMI recorded on admission.",
+      "assessment": {
+        "display": "Admission anthropometric assessment"
+      },
+      "outcome": "Height 163 cm; weight 77 kg; BMI 29.0 kg/m².",
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "standard"
+    }
+  },
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "stroke-unit-observation-trend",
+      "type": "assessment",
+      "summary": "Four-hourly observations remained stable across the recorded stroke-unit shift.",
+      "assessment": {
+        "display": "Stroke-unit observation trend"
+      },
+      "outcome": "NEWS2 remained 0 and GCS 15/alert at all six observations. Blood pressure ranged 128–142/76–86 mmHg; irregular pulse 70–82 bpm; respiratory rate 16–18/min; temperature 36.3–36.7 °C; oxygen saturation 96–98% on air.",
+      "components": [
+        "Pulse remained irregular in keeping with known atrial fibrillation and was rate controlled",
+        "Left facial droop and arm weakness were unchanged",
+        "No new focal neurological deficit was recorded"
+      ],
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "standard"
+    }
+  },
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "admission-blood-tests",
+      "type": "investigation",
+      "kind": "laboratory",
+      "investigation": {
+        "display": "Emergency Department admission blood tests"
+      },
+      "status": "final",
+      "summary": "Admission blood tests showed mildly reduced eGFR and raised total and LDL cholesterol.",
+      "results": [
+        {
+          "id": "haemoglobin",
+          "observation": {
+            "display": "Haemoglobin"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 128,
+            "unit": "g/L"
+          },
+          "referenceRange": "120–150 g/L",
+          "interpretation": "normal"
+        },
+        {
+          "id": "white-cell-count",
+          "observation": {
+            "display": "White cell count"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 7.2,
+            "unit": "×10⁹/L"
+          },
+          "referenceRange": "4.0–11.0 ×10⁹/L",
+          "interpretation": "normal"
+        },
+        {
+          "id": "platelets",
+          "observation": {
+            "display": "Platelets"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 245,
+            "unit": "×10⁹/L"
+          },
+          "referenceRange": "150–400 ×10⁹/L",
+          "interpretation": "normal"
+        },
+        {
+          "id": "sodium",
+          "observation": {
+            "display": "Sodium"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 138,
+            "unit": "mmol/L"
+          },
+          "referenceRange": "135–145 mmol/L",
+          "interpretation": "normal"
+        },
+        {
+          "id": "potassium",
+          "observation": {
+            "display": "Potassium"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 4.2,
+            "unit": "mmol/L"
+          },
+          "referenceRange": "3.5–5.0 mmol/L",
+          "interpretation": "normal"
+        },
+        {
+          "id": "urea",
+          "observation": {
+            "display": "Urea"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 5.8,
+            "unit": "mmol/L"
+          },
+          "referenceRange": "2.5–7.8 mmol/L",
+          "interpretation": "normal"
+        },
+        {
+          "id": "creatinine",
+          "observation": {
+            "display": "Creatinine"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 72,
+            "unit": "µmol/L"
+          },
+          "referenceRange": "45–84 µmol/L",
+          "interpretation": "normal"
+        },
+        {
+          "id": "egfr",
+          "observation": {
+            "display": "Estimated glomerular filtration rate"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 68,
+            "unit": "mL/min/1.73m²"
+          },
+          "referenceRange": "Above 90 mL/min/1.73m²",
+          "interpretation": "low"
+        },
+        {
+          "id": "random-glucose",
+          "observation": {
+            "display": "Random glucose"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 6.8,
+            "unit": "mmol/L"
+          },
+          "referenceRange": "4.0–7.8 mmol/L",
+          "interpretation": "normal"
+        },
+        {
+          "id": "hba1c",
+          "observation": {
+            "display": "HbA1c"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 39,
+            "unit": "mmol/mol"
+          },
+          "referenceRange": "Below 42 mmol/mol",
+          "interpretation": "normal"
+        },
+        {
+          "id": "total-cholesterol",
+          "observation": {
+            "display": "Total cholesterol"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 5.4,
+            "unit": "mmol/L"
+          },
+          "referenceRange": "Below 5.0 mmol/L",
+          "interpretation": "high"
+        },
+        {
+          "id": "ldl-cholesterol",
+          "observation": {
+            "display": "LDL cholesterol"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 3.2,
+            "unit": "mmol/L"
+          },
+          "referenceRange": "Below 3.0 mmol/L",
+          "interpretation": "high"
+        }
+      ],
+      "conclusion": "Mildly reduced renal filtration and raised total and LDL cholesterol; remaining reported values were within their stated ranges.",
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "standard"
+    }
+  },
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "admission-ecg",
+      "type": "investigation",
+      "kind": "other",
+      "investigation": {
+        "display": "Admission electrocardiogram"
+      },
+      "status": "final",
+      "summary": "Admission ECG demonstrated rate-controlled atrial fibrillation.",
+      "results": [
+        {
+          "id": "rhythm",
+          "observation": {
+            "display": "Cardiac rhythm"
+          },
+          "value": {
+            "type": "text",
+            "value": "Atrial fibrillation"
+          },
+          "interpretation": "abnormal"
+        },
+        {
+          "id": "ventricular-rate",
+          "observation": {
+            "display": "Ventricular rate"
+          },
+          "value": {
+            "type": "quantity",
+            "value": 78,
+            "unit": "bpm"
+          }
+        },
+        {
+          "id": "acute-st-t-change",
+          "observation": {
+            "display": "Acute ST-segment or T-wave change"
+          },
+          "value": {
+            "type": "boolean",
+            "value": false
+          },
+          "interpretation": "normal"
+        }
+      ],
+      "conclusion": "Findings consistent with known atrial fibrillation; no acute ischaemic ECG changes.",
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "standard"
+    }
+  },
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "admission-ct-head",
+      "type": "investigation",
+      "kind": "imaging",
+      "investigation": {
+        "display": "Non-contrast CT head"
+      },
+      "status": "final",
+      "summary": "Admission CT confirmed an acute right middle cerebral artery territory infarct.",
+      "results": [
+        {
+          "id": "acute-infarct",
+          "observation": {
+            "display": "Acute cerebral infarct"
+          },
+          "value": {
+            "type": "text",
+            "value": "Acute cortical and subcortical right middle cerebral artery territory infarct"
+          },
+          "interpretation": "abnormal"
+        },
+        {
+          "id": "intracranial-haemorrhage",
+          "observation": {
+            "display": "Intracranial haemorrhage or haemorrhagic transformation"
+          },
+          "value": {
+            "type": "boolean",
+            "value": false
+          },
+          "interpretation": "normal"
+        },
+        {
+          "id": "midline-shift",
+          "observation": {
+            "display": "Midline shift"
+          },
+          "value": {
+            "type": "boolean",
+            "value": false
+          },
+          "interpretation": "normal"
+        },
+        {
+          "id": "small-vessel-change",
+          "observation": {
+            "display": "Chronic small-vessel ischaemic change"
+          },
+          "value": {
+            "type": "text",
+            "value": "Mild chronic small-vessel ischaemic change"
+          }
+        }
+      ],
+      "conclusion": "Acute right-MCA ischaemic stroke without haemorrhage or midline shift; findings correlate with the left-sided clinical signs.",
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "standard"
+    }
+  }
+]
+$layer_operations_a46a8867_6607_4829_8454_72631b647ab2$::jsonb,
+  'https://github.com/DNMSW/epr-unified/blob/03c7f12/acute/esther-jenkins.html',
+  '03c7f12',
+  '2026-08-30T00:00:00.000Z',
+  '2026-08-30T00:00:00.000Z'
+) on conflict (id) do update
+set
+  title = excluded.title,
+  description = excluded.description,
+  schema_version = excluded.schema_version,
+  operations = excluded.operations,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_layers.patient_profile_id = excluded.patient_profile_id;
+
+insert into public.patient_profile_layers (
+  id,
+  patient_profile_id,
+  title,
+  description,
+  schema_version,
+  operations,
+  source_reference,
+  source_revision,
+  created_at,
+  updated_at
+) values (
+  '8d764a79-889c-40cd-8285-c70abdc1e0ad',
+  '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+  'Swallowing and communication review',
+  'Patient-reported dysphagia symptoms and the observed communication position documented in the prototype.',
+  1,
+  $layer_operations_8d764a79_889c_40cd_8285_c70abdc1e0ad$
+[
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "post-stroke-swallowing-history",
+      "type": "assessment",
+      "summary": "New swallowing and chewing symptoms were reported after the stroke.",
+      "assessment": {
+        "display": "Post-stroke swallowing and communication history"
+      },
+      "outcome": "Difficulty chewing dry or sticky foods, one left-cheek bite and coughing on drinks once or twice daily, usually while reclined. An early bedside water test was performed but Esther could not recall its result. Speech and language were currently functionally normal.",
+      "components": [
+        "No swallowing difficulty before the event",
+        "No recent chest infection or perceived weight loss",
+        "Slurred speech at onset had resolved",
+        "Articulate full-sentence communication with no observed expressive or receptive language difficulty"
+      ],
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "restricted"
+    }
+  }
+]
+$layer_operations_8d764a79_889c_40cd_8285_c70abdc1e0ad$::jsonb,
+  'https://github.com/DNMSW/epr-unified/blob/03c7f12/acute/esther-jenkins.html#L625-L684',
+  '03c7f12',
+  '2026-08-30T00:00:00.000Z',
+  '2026-08-30T00:00:00.000Z'
+) on conflict (id) do update
+set
+  title = excluded.title,
+  description = excluded.description,
+  schema_version = excluded.schema_version,
+  operations = excluded.operations,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_layers.patient_profile_id = excluded.patient_profile_id;
+
+insert into public.patient_profile_layers (
+  id,
+  patient_profile_id,
+  title,
+  description,
+  schema_version,
+  operations,
+  source_reference,
+  source_revision,
+  created_at,
+  updated_at
+) values (
+  'df124cbb-07ca-4111-a593-d88125f02a4a',
+  '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+  'Functional and psychological review',
+  'Patient-reported functional and psychological facts documented in the prototype; student-completed assessments and proposed actions are excluded.',
+  1,
+  $layer_operations_df124cbb_07ca_4111_a593_d88125f02a4a$
+[
+  {
+    "operation": "add",
+    "path": "history.entries",
+    "value": {
+      "id": "post-stroke-functional-wellbeing",
+      "type": "assessment",
+      "summary": "Stroke-related functional and psychological effects were reported during admission.",
+      "assessment": {
+        "display": "Post-stroke functional and psychological assessment"
+      },
+      "outcome": "Left-arm and hand weakness impaired buttons, clasps and other two-handed tasks. Esther was anxious about recurrence, self-conscious about facial appearance and sleeping only three to four hours because of worry. She denied hopelessness and self-harm thoughts.",
+      "components": [
+        "Fully independent with personal care and dressing before admission",
+        "Increasing low mood over preceding months had not previously been disclosed",
+        "A friend's recent death after a major stroke increased fear of recurrence",
+        "No hallucinations or delusions"
+      ],
+      "occurred": {
+        "start": {
+          "value": "2026-07-19",
+          "precision": "day"
+        }
+      },
+      "sensitivity": "restricted"
+    }
+  }
+]
+$layer_operations_df124cbb_07ca_4111_a593_d88125f02a4a$::jsonb,
+  'https://github.com/DNMSW/epr-unified/blob/03c7f12/acute/esther-jenkins.html#L685-L728',
+  '03c7f12',
+  '2026-08-30T00:00:00.000Z',
+  '2026-08-30T00:00:00.000Z'
+) on conflict (id) do update
+set
+  title = excluded.title,
+  description = excluded.description,
+  schema_version = excluded.schema_version,
+  operations = excluded.operations,
+  source_reference = excluded.source_reference,
+  source_revision = excluded.source_revision,
+  updated_at = excluded.updated_at
+where patient_profile_layers.patient_profile_id = excluded.patient_profile_id;
+
+insert into public.patient_scenario_steps (
+  id,
+  scenario_id,
+  patient_profile_id,
+  position,
+  kind,
+  title,
+  description,
+  patient_profile_layer_id,
+  ehr_changes,
+  created_at,
+  updated_at
+) select
+  '563b99e4-6af4-49e4-90b8-e16eb676d27e',
+  scenario.id,
+  '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+  10,
+  'beginning',
+  'Admission to the stroke unit',
+  'The beginning state of Esther''s acute stroke scenario.',
+  'a46a8867-6607-4829-8454-72631b647ab2',
+  $ehr_changes_563b99e4_6af4_49e4_90b8_e16eb676d27e$
+[
+  {
+    "operation": "configure",
+    "sectionId": "care_encounters_and_transitions",
+    "label": "Patient details and admission"
+  },
+  {
+    "operation": "configure",
+    "sectionId": "standardised_assessments_and_risk_screening",
+    "label": "Presenting history and neurological assessment"
+  },
+  {
+    "operation": "configure",
+    "sectionId": "observations_investigations_and_procedures",
+    "label": "Observations, investigations and results"
+  },
+  {
+    "operation": "configure",
+    "sectionId": "care_and_support_planning",
+    "label": "Home circumstances and discharge support"
+  }
+]
+$ehr_changes_563b99e4_6af4_49e4_90b8_e16eb676d27e$::jsonb,
+  '2026-08-30T00:00:00.000Z',
+  '2026-08-30T00:00:00.000Z'
+from public.patient_scenarios scenario
+where scenario.scope = 'system'
+  and scenario.slug = 'esther-acute-ischaemic-stroke'
+on conflict (id) do update
+set
+  position = excluded.position,
+  kind = excluded.kind,
+  title = excluded.title,
+  description = excluded.description,
+  patient_profile_layer_id = excluded.patient_profile_layer_id,
+  ehr_changes = excluded.ehr_changes,
+  updated_at = excluded.updated_at
+where patient_scenario_steps.scenario_id = excluded.scenario_id
+  and patient_scenario_steps.patient_profile_id = excluded.patient_profile_id;
+
+insert into public.patient_scenario_steps (
+  id,
+  scenario_id,
+  patient_profile_id,
+  position,
+  kind,
+  title,
+  description,
+  patient_profile_layer_id,
+  ehr_changes,
+  created_at,
+  updated_at
+) select
+  'fc7c473b-78cb-4b38-9e5d-06a9e17437e1',
+  scenario.id,
+  '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+  20,
+  'progression',
+  'Swallowing and communication review',
+  'Esther''s patient-reported swallowing symptoms and current communication are recorded after the initial admission assessment.',
+  '8d764a79-889c-40cd-8285-c70abdc1e0ad',
+  $ehr_changes_fc7c473b_78cb_4b38_9e5d_06a9e17437e1$
+[]
+$ehr_changes_fc7c473b_78cb_4b38_9e5d_06a9e17437e1$::jsonb,
+  '2026-08-30T00:00:00.000Z',
+  '2026-08-30T00:00:00.000Z'
+from public.patient_scenarios scenario
+where scenario.scope = 'system'
+  and scenario.slug = 'esther-acute-ischaemic-stroke'
+on conflict (id) do update
+set
+  position = excluded.position,
+  kind = excluded.kind,
+  title = excluded.title,
+  description = excluded.description,
+  patient_profile_layer_id = excluded.patient_profile_layer_id,
+  ehr_changes = excluded.ehr_changes,
+  updated_at = excluded.updated_at
+where patient_scenario_steps.scenario_id = excluded.scenario_id
+  and patient_scenario_steps.patient_profile_id = excluded.patient_profile_id;
+
+insert into public.patient_scenario_steps (
+  id,
+  scenario_id,
+  patient_profile_id,
+  position,
+  kind,
+  title,
+  description,
+  patient_profile_layer_id,
+  ehr_changes,
+  created_at,
+  updated_at
+) select
+  'ad82b43b-9649-4884-a865-4d80ccc18dc8',
+  scenario.id,
+  '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+  30,
+  'progression',
+  'Functional and psychological review',
+  'Esther''s patient-reported functional change, mood, anxiety and sleep are recorded after her swallowing and communication review.',
+  'df124cbb-07ca-4111-a593-d88125f02a4a',
+  $ehr_changes_ad82b43b_9649_4884_a865_4d80ccc18dc8$
+[]
+$ehr_changes_ad82b43b_9649_4884_a865_4d80ccc18dc8$::jsonb,
+  '2026-08-30T00:00:00.000Z',
+  '2026-08-30T00:00:00.000Z'
+from public.patient_scenarios scenario
+where scenario.scope = 'system'
+  and scenario.slug = 'esther-acute-ischaemic-stroke'
+on conflict (id) do update
+set
+  position = excluded.position,
+  kind = excluded.kind,
+  title = excluded.title,
+  description = excluded.description,
+  patient_profile_layer_id = excluded.patient_profile_layer_id,
+  ehr_changes = excluded.ehr_changes,
+  updated_at = excluded.updated_at
+where patient_scenario_steps.scenario_id = excluded.scenario_id
+  and patient_scenario_steps.patient_profile_id = excluded.patient_profile_id;
+
+do $verify_scenario_esther_acute_ischaemic_stroke$
+declare
+  stored_step_count integer;
+begin
+  select count(*)
+  into stored_step_count
+  from public.patient_scenario_steps step
+  join public.patient_scenarios scenario on scenario.id = step.scenario_id
+  where scenario.scope = 'system'
+    and scenario.slug = 'esther-acute-ischaemic-stroke'
+    and scenario.patient_profile_id = '37ea1fbc-d47c-4b75-b918-19af6184bb3b'
+    and scenario.patient_profile_version_id = '016a3ade-5634-4773-9c08-5c7984af3cec';
+
+  if stored_step_count <> 3 then
+    raise exception 'production_patient_scenario_drift:esther-acute-ischaemic-stroke';
+  end if;
+end;
+$verify_scenario_esther_acute_ischaemic_stroke$;
+
 commit;

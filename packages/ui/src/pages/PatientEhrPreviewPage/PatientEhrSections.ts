@@ -1,4 +1,5 @@
 import {
+  defaultPatientProfileEhrConfiguration,
   EhrSectionType,
   type EhrConfiguration,
   type EhrSectionConfiguration,
@@ -64,13 +65,7 @@ export const ehrSectionRegistry = {
   },
 } satisfies Record<EhrSectionType, EhrSectionDefinition>;
 
-export const defaultPatientProfileEhrConfiguration: EhrConfiguration = {
-  sections: Object.values(EhrSectionType).map((type, index) => ({
-    id: type,
-    order: (index + 1) * 10,
-    type,
-  })),
-};
+export { defaultPatientProfileEhrConfiguration };
 
 export function resolveEhrSections(
   configuration: EhrConfiguration,

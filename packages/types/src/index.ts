@@ -1,8 +1,12 @@
 export * from './contracts/base';
 
+export * from './contracts/ehr';
+
 export * from './contracts/organisations';
 
 export * from './contracts/patient-profiles';
+
+export * from './contracts/patient-scenarios';
 
 export * from './contracts/system';
 
@@ -13,6 +17,8 @@ export * from './organisations';
 export * from './ehr';
 
 export * from './patient-profiles';
+
+export * from './patient-scenarios';
 
 export * from './scim';
 
