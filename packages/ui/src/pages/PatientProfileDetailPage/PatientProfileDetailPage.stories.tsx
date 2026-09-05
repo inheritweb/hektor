@@ -6,6 +6,7 @@ const meta = {
   title: 'Pages/PatientProfileDetailPage',
   component: PatientProfileDetailPage,
   args: {
+    createScenarioHref: '#create-scenario',
     previewHref: '#ehr-preview',
     scenarios: [
       {
@@ -23,6 +24,7 @@ const meta = {
         status: 'draft',
         patientProfileVersion: { versionNumber: 1 },
         beginningStep: { title: 'Admission to the stroke unit' },
+        editHref: '#edit-scenario',
       },
     ],
     profile: {

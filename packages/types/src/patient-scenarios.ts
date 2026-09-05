@@ -35,6 +35,7 @@ export interface PatientScenario {
   careSetting: PatientCareSetting;
   intendedClinicalAudiences: PatientScenarioClinicalAudience[];
   status: PatientScenarioStatus;
+  updatedAt: string;
   steps: PatientScenarioStep[];
 }
 
@@ -64,6 +65,22 @@ export interface PatientScenarioSummary {
     id: string;
     title: string;
   };
+}
+
+export interface CreatePatientScenarioDraftInput {
+  title: string;
+  slug: string;
+  description: string;
+  careSetting: PatientCareSetting;
+  intendedClinicalAudiences: PatientScenarioClinicalAudience[];
+  beginningStep: {
+    title: string;
+    description?: string;
+  };
+}
+
+export interface UpdatePatientScenarioDraftInput extends CreatePatientScenarioDraftInput {
+  expectedUpdatedAt: string;
 }
 
 export interface ResolvedPatientScenarioStep {

@@ -47,6 +47,7 @@ export function AdminPatientProfileDetailScreen({
     );
   return (
     <PatientProfileDetailPage
+      createScenarioHref={`/admin/patient-profiles/${profileId}/version/${profile.data.data.versionId}/scenarios/new`}
       editHref={
         profile.data.data.versionState === 'draft'
           ? `/admin/patient-profiles/${profileId}/edit`
@@ -77,6 +78,10 @@ export function AdminPatientProfileDetailScreen({
       profile={profile.data.data}
       scenarios={scenarios.data?.data.map((scenario) => ({
         ...scenario,
+        editHref:
+          scenario.status === 'draft'
+            ? `/admin/patient-scenarios/${scenario.id}/edit`
+            : undefined,
         previewHref: `/ehr/scenarios/${encodeURIComponent(scenario.slug)}`,
       }))}
       scenariosError={scenarios.error?.message}

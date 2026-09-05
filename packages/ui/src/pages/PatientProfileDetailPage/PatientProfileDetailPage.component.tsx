@@ -202,6 +202,7 @@ export interface PatientScenarioSummaryViewModel {
   beginningStep: {
     title: string;
   };
+  editHref?: string;
   previewHref?: string;
 }
 
@@ -227,6 +228,7 @@ const observationValue = (value: NonNullable<HistoryEntry['value']>) => {
 
 export function PatientProfileDetailPage({
   profile,
+  createScenarioHref,
   editHref,
   nextProfile,
   previousProfile,
@@ -237,6 +239,7 @@ export function PatientProfileDetailPage({
   onVersionChange,
 }: {
   profile: PatientProfileDetailViewModel;
+  createScenarioHref?: string;
   editHref?: string;
   nextProfile?: { href: string; label: string };
   previousProfile?: { href: string; label: string };
@@ -348,13 +351,23 @@ export function PatientProfileDetailPage({
       </header>
 
       <section aria-labelledby="patient-scenarios-heading">
-        <div>
-          <h2 className="text-xl font-bold" id="patient-scenarios-heading">
-            Scenarios
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Presentations authored for this exact patient-profile version.
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold" id="patient-scenarios-heading">
+              Scenarios
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Presentations authored for this exact patient-profile version.
+            </p>
+          </div>
+          {createScenarioHref ? (
+            <NavigationLink
+              className={buttonVariants({ variant: 'outline' })}
+              href={createScenarioHref}
+            >
+              Create scenario
+            </NavigationLink>
+          ) : null}
         </div>
         {scenariosLoading ? (
           <div
@@ -401,7 +414,15 @@ export function PatientProfileDetailPage({
                     </dd>
                   </div>
                 </dl>
-                <div className="mt-auto pt-5">
+                <div className="mt-auto flex flex-wrap gap-2 pt-5">
+                  {scenario.editHref ? (
+                    <NavigationLink
+                      className={buttonVariants({ variant: 'outline' })}
+                      href={scenario.editHref}
+                    >
+                      Edit scenario
+                    </NavigationLink>
+                  ) : null}
                   {scenario.previewHref ? (
                     <NavigationLink
                       className={buttonVariants({ variant: 'outline' })}

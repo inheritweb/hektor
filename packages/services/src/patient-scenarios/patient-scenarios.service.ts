@@ -3,9 +3,11 @@ import {
   PatientProfileScope,
   PatientScenarioStatus,
   PatientScenarioStepKind,
+  type CreatePatientScenarioDraftInput,
   type PatientScenario,
   type PatientScenarioSummary,
   type ResolvedPatientScenarioStep,
+  type UpdatePatientScenarioDraftInput,
 } from '@hektor/types';
 import { HektorErrorCode } from '@hektor/types/contracts';
 import { patientScenarioSummarySchema } from '@hektor/types/contracts/patient-scenarios';
@@ -24,6 +26,63 @@ function databaseFailure(message: string, error: { message: string }): never {
 }
 
 export function createPatientScenariosService(client: DatabaseClient) {
+  async function listAdminPatientScenarioCatalogue(): Promise<
+    PatientScenario[]
+  > {
+    const scenarios = await client
+      .from('patient_scenarios')
+      .select('id')
+      .eq('scope', PatientProfileScope.System)
+      .in('status', [
+        PatientScenarioStatus.Draft,
+        PatientScenarioStatus.Published,
+      ])
+      .order('title');
+    if (scenarios.error)
+      databaseFailure('Unable to load patient scenarios', scenarios.error);
+
+    return Promise.all(
+      scenarios.data.map(({ id }) => getAdminPatientScenarioBy('id', id)),
+    );
+  }
+
+  async function createAdminPatientScenarioDraft(
+    patientProfileId: string,
+    patientProfileVersionId: string,
+    input: CreatePatientScenarioDraftInput,
+  ): Promise<PatientScenario> {
+    const creation = await client.rpc('create_system_patient_scenario_draft', {
+      p_patient_profile_id: patientProfileId,
+      p_patient_profile_version_id: patientProfileVersionId,
+      p_slug: input.slug,
+      p_title: input.title,
+      p_description: input.description,
+      p_care_setting: input.careSetting,
+      p_intended_clinical_audiences: input.intendedClinicalAudiences,
+      p_beginning_step_title: input.beginningStep.title,
+      ...(input.beginningStep.description
+        ? { p_beginning_step_description: input.beginningStep.description }
+        : {}),
+    });
+    if (creation.error) {
+      if (creation.error.code === '23505')
+        throw createServiceError(HektorErrorCode.Conflict, {
+          message: 'A system scenario already uses this slug',
+          data: { slug: 'Choose a different slug' },
+          internalMessage: creation.error.message,
+          cause: creation.error,
+        });
+      if (creation.error.code === 'P0002')
+        throw createServiceError(HektorErrorCode.NotFound, {
+          message: 'Patient profile version not found',
+          cause: creation.error,
+        });
+      databaseFailure('Unable to create patient scenario', creation.error);
+    }
+
+    return getAdminPatientScenarioBy('id', creation.data);
+  }
+
   async function listAdminPatientScenarios(
     patientProfileId: string,
     patientProfileVersionId: string,
@@ -165,6 +224,51 @@ export function createPatientScenariosService(client: DatabaseClient) {
     return getAdminPatientScenarioBy('id', scenarioId);
   }
 
+  async function updateAdminPatientScenarioDraft(
+    scenarioId: string,
+    input: UpdatePatientScenarioDraftInput,
+  ): Promise<PatientScenario> {
+    const update = await client.rpc('update_system_patient_scenario_draft', {
+      p_scenario_id: scenarioId,
+      p_expected_updated_at: input.expectedUpdatedAt,
+      p_slug: input.slug,
+      p_title: input.title,
+      p_description: input.description,
+      p_care_setting: input.careSetting,
+      p_intended_clinical_audiences: input.intendedClinicalAudiences,
+      p_beginning_step_title: input.beginningStep.title,
+      ...(input.beginningStep.description
+        ? { p_beginning_step_description: input.beginningStep.description }
+        : {}),
+    });
+    if (update.error) {
+      if (update.error.code === '23505')
+        throw createServiceError(HektorErrorCode.Conflict, {
+          message: 'A system scenario already uses this slug',
+          data: { slug: 'Choose a different slug' },
+          internalMessage: update.error.message,
+          cause: update.error,
+        });
+      if (update.error.code === 'P0002')
+        throw createServiceError(HektorErrorCode.NotFound, {
+          message: 'Patient scenario not found',
+          cause: update.error,
+        });
+      if (update.error.code === 'P0001')
+        throw createServiceError(HektorErrorCode.Conflict, {
+          message:
+            update.error.message ===
+            'Patient scenario has changed since it was loaded'
+              ? 'This scenario changed after you opened it. Refresh and try again.'
+              : update.error.message,
+          cause: update.error,
+        });
+      databaseFailure('Unable to update patient scenario', update.error);
+    }
+
+    return getAdminPatientScenarioBy('id', update.data);
+  }
+
   async function getAdminPatientScenarioResolvedRecord(
     scenarioSlug: string,
     selectedStepId?: string,
@@ -187,8 +291,11 @@ export function createPatientScenariosService(client: DatabaseClient) {
   }
 
   return {
+    listAdminPatientScenarioCatalogue,
+    createAdminPatientScenarioDraft,
     getAdminPatientScenario,
     listAdminPatientScenarios,
     getAdminPatientScenarioResolvedRecord,
+    updateAdminPatientScenarioDraft,
   };
 }

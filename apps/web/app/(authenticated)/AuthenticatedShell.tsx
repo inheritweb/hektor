@@ -7,6 +7,7 @@ import {
   LuHouse,
   LuLayers3,
   LuFileHeart,
+  LuGitBranch,
   LuUsers,
 } from 'react-icons/lu';
 import { usePathname, useRouter } from 'next/navigation';
@@ -34,6 +35,7 @@ import {
   useGetOrganisationUserProvision,
 } from '@hektor/query/organisations';
 import { useGetCurrentUser } from '@hektor/query/users';
+import { useAdminPatientScenario } from '@hektor/query/patient-scenarios';
 
 export function breadcrumbsForPath(
   pathname: string,
@@ -42,6 +44,7 @@ export function breadcrumbsForPath(
   groupName = 'Group',
   provisionName = 'Provisioned user',
   membershipName = 'Organisation user',
+  scenarioName = 'Patient scenario',
 ): GlobalToolbarBreadcrumb[] {
   if (pathname === '/') return [];
 
@@ -144,6 +147,53 @@ export function breadcrumbsForPath(
 
   if (pathname === '/admin/patient-profiles') {
     return [home, { label: 'Learning' }, { label: 'Patient profiles' }];
+  }
+
+  if (pathname === '/admin/patient-scenarios') {
+    return [home, { label: 'Learning' }, { label: 'Scenarios' }];
+  }
+
+  const newPatientScenarioMatch = pathname.match(
+    /^\/admin\/patient-profiles\/([^/]+)\/version\/([^/]+)\/scenarios\/new$/,
+  );
+  if (newPatientScenarioMatch) {
+    const [, profileId, versionId] = newPatientScenarioMatch;
+    const patientProfileHref = `/admin/patient-profiles/${profileId}`;
+    const versionHref = `${patientProfileHref}/version/${versionId}`;
+    return [
+      home,
+      { label: 'Learning' },
+      { label: 'Patient profiles', href: '/admin/patient-profiles' },
+      { label: 'Patient profile', href: patientProfileHref },
+      { label: 'Version', href: versionHref },
+      { label: 'Add scenario' },
+    ];
+  }
+
+  const patientProfileVersionMatch = pathname.match(
+    /^\/admin\/patient-profiles\/([^/]+)\/version\/[^/]+$/,
+  );
+  if (patientProfileVersionMatch) {
+    const [, profileId] = patientProfileVersionMatch;
+    return [
+      home,
+      { label: 'Learning' },
+      { label: 'Patient profiles', href: '/admin/patient-profiles' },
+      {
+        label: 'Patient profile',
+        href: `/admin/patient-profiles/${profileId}`,
+      },
+      { label: 'Version' },
+    ];
+  }
+
+  if (pathname.match(/^\/admin\/patient-scenarios\/[^/]+\/edit$/)) {
+    return [
+      home,
+      { label: 'Scenarios', href: '/admin/patient-scenarios' },
+      { label: scenarioName },
+      { label: 'Edit' },
+    ];
   }
 
   if (pathname.match(/^\/admin\/patient-profiles\/[^/]+\/edit$/)) {
@@ -432,6 +482,9 @@ export function AuthenticatedShell({
     /\/(?:provisioned-users|provisions)\/([^/]+)$/,
   )?.[1];
   const membershipId = pathname.match(/\/users\/([^/]+)(?:\/edit)?$/)?.[1];
+  const scenarioId = pathname.match(
+    /^\/admin\/patient-scenarios\/([^/]+)\/edit$/,
+  )?.[1];
   const breadcrumbOrganisation = useAdminGetOrganisation(
     { params: { organisationId: resolvedOrganisationId ?? '' } },
     { enabled: Boolean(resolvedOrganisationId) },
@@ -476,6 +529,15 @@ export function AuthenticatedShell({
     },
     { enabled: Boolean(resolvedOrganisationId && membershipId) },
   );
+  const breadcrumbScenario = useAdminPatientScenario(
+    { params: { scenarioIdentifier: scenarioId ?? '' } },
+    { enabled: Boolean(scenarioId) },
+  );
+  const scenario = breadcrumbScenario.data?.data;
+  const scenarioPatientFirstName = scenario
+    ? (scenario.patientProfile.document.identity.preferredName ??
+      scenario.patientProfile.document.identity.givenNames[0])
+    : undefined;
   const breadcrumbs = breadcrumbsForPath(
     pathname,
     breadcrumbOrganisation.data?.data.name,
@@ -486,6 +548,9 @@ export function AuthenticatedShell({
       breadcrumbTenantProvision.data?.data.provisionedDisplayName ??
       breadcrumbTenantProvision.data?.data.provisionedUserName,
     breadcrumbMembership.data?.data.user.displayName,
+    scenario
+      ? `${scenario.title}${scenarioPatientFirstName ? ` (${scenarioPatientFirstName})` : ''}`
+      : undefined,
   );
   const currentUser = useGetCurrentUser();
   const currentContextId = useSyncExternalStore(
@@ -550,6 +615,12 @@ export function AuthenticatedShell({
                 icon: LuFileHeart,
                 href: '/admin/patient-profiles',
                 active: pathname.startsWith('/admin/patient-profiles'),
+              },
+              {
+                label: 'Scenarios',
+                icon: LuGitBranch,
+                href: '/admin/patient-scenarios',
+                active: pathname.startsWith('/admin/patient-scenarios'),
               },
             ],
           },

@@ -6,6 +6,11 @@ import { fileURLToPath } from 'node:url';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import {
+  PatientCareSetting,
+  PatientScenarioClinicalAudience,
+} from '@hektor/types';
+
 import { mapPatientScenarioAggregate } from './patient-scenario.mapper';
 import { createPatientScenariosService } from './patient-scenarios.service';
 
@@ -26,6 +31,8 @@ const scenarioId = 'e1cd82e8-745b-4f25-b828-a62d98a9fc2d';
 const adminClient = createIntegrationDatabaseClient();
 
 const createdUserIds: string[] = [];
+
+const createdScenarioIds: string[] = [];
 
 function applyProductionSeed() {
   execFileSync(
@@ -75,9 +82,150 @@ describe('patient scenario database foundation', () => {
   beforeAll(() => applyProductionSeed());
 
   afterAll(async () => {
+    if (createdScenarioIds.length) {
+      const steps = await adminClient
+        .from('patient_scenario_steps')
+        .select('patient_profile_layer_id')
+        .in('scenario_id', createdScenarioIds);
+      await adminClient
+        .from('patient_scenario_steps')
+        .delete()
+        .in('scenario_id', createdScenarioIds);
+      if (steps.data?.length)
+        await adminClient
+          .from('patient_profile_layers')
+          .delete()
+          .in(
+            'id',
+            steps.data.map(({ patient_profile_layer_id: id }) => id),
+          );
+      await adminClient
+        .from('patient_scenarios')
+        .delete()
+        .in('id', createdScenarioIds);
+    }
     for (const userId of createdUserIds)
       await adminClient.auth.admin.deleteUser(userId);
   });
+
+  it('atomically creates and updates a version-pinned draft scenario shell', async () => {
+    const service = createPatientScenariosService(adminClient);
+    const slug = `integration-draft-${randomUUID()}`;
+    const input = {
+      title: 'Integration draft scenario',
+      slug,
+      description: 'A draft scenario created by the integration test.',
+      careSetting: PatientCareSetting.AcuteInpatient,
+      intendedClinicalAudiences: [PatientScenarioClinicalAudience.Nursing],
+      beginningStep: {
+        title: 'Initial presentation',
+        description: 'The empty beginning state.',
+      },
+    };
+    const scenario = await service.createAdminPatientScenarioDraft(
+      '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+      '016a3ade-5634-4773-9c08-5c7984af3cec',
+      input,
+    );
+    createdScenarioIds.push(scenario.id);
+
+    expect(scenario.slug).toBe(slug);
+    expect(scenario.status).toBe('draft');
+    expect(scenario.patientProfile.id).toBe(
+      '016a3ade-5634-4773-9c08-5c7984af3cec',
+    );
+    expect(scenario.steps).toHaveLength(1);
+    expect(scenario.steps[0]).toMatchObject({
+      title: 'Initial presentation',
+      position: 10,
+      kind: 'beginning',
+      ehrChanges: [],
+      patientProfileLayer: { operations: [] },
+    });
+
+    await expect(
+      service.createAdminPatientScenarioDraft(
+        '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+        '016a3ade-5634-4773-9c08-5c7984af3cec',
+        input,
+      ),
+    ).rejects.toMatchObject({
+      code: 409,
+      data: { slug: 'Choose a different slug' },
+    });
+
+    const records = await adminClient
+      .from('patient_scenarios')
+      .select('id', { count: 'exact' })
+      .eq('slug', slug);
+    expect(records.count).toBe(1);
+
+    const updated = await service.updateAdminPatientScenarioDraft(scenario.id, {
+      ...input,
+      title: 'Updated integration draft',
+      slug: `${slug}-updated`,
+      description: 'Updated metadata without clinical changes.',
+      careSetting: PatientCareSetting.Community,
+      beginningStep: {
+        title: 'Updated beginning',
+        description: 'Updated beginning narrative.',
+      },
+      expectedUpdatedAt: scenario.updatedAt,
+    });
+    expect(updated).toMatchObject({
+      id: scenario.id,
+      title: 'Updated integration draft',
+      slug: `${slug}-updated`,
+      careSetting: PatientCareSetting.Community,
+      patientProfile: {
+        id: scenario.patientProfile.id,
+        patientProfileId: scenario.patientProfile.patientProfileId,
+      },
+    });
+    expect(updated.steps[0]).toMatchObject({
+      title: 'Updated beginning',
+      ehrChanges: [],
+      patientProfileLayer: {
+        title: 'Updated beginning',
+        operations: [],
+      },
+    });
+
+    await expect(
+      service.updateAdminPatientScenarioDraft(scenario.id, {
+        ...input,
+        slug: `${slug}-stale`,
+        expectedUpdatedAt: scenario.updatedAt,
+      }),
+    ).rejects.toMatchObject({ code: 409 });
+
+    await expect(
+      service.updateAdminPatientScenarioDraft(scenario.id, {
+        ...input,
+        slug: 'esther-acute-ischaemic-stroke',
+        expectedUpdatedAt: updated.updatedAt,
+      }),
+    ).rejects.toMatchObject({
+      code: 409,
+      data: { slug: 'Choose a different slug' },
+    });
+
+    await adminClient
+      .from('patient_scenarios')
+      .update({ status: 'published' })
+      .eq('id', scenario.id);
+    await expect(
+      service.updateAdminPatientScenarioDraft(scenario.id, {
+        ...input,
+        slug: `${slug}-published`,
+        expectedUpdatedAt: updated.updatedAt,
+      }),
+    ).rejects.toMatchObject({ code: 409 });
+    await adminClient
+      .from('patient_scenarios')
+      .update({ status: 'draft' })
+      .eq('id', scenario.id);
+  }, 20_000);
 
   it('loads and composes the deterministic Esther scenario', async () => {
     const scenario = await adminClient
@@ -138,10 +286,10 @@ describe('patient scenario database foundation', () => {
       '016a3ade-5634-4773-9c08-5c7984af3cec',
     );
 
-    expect(scenarios).toHaveLength(1);
-    expect(scenarios[0]?.beginningStep.title).toBe(
-      'Admission to the stroke unit',
-    );
+    expect(
+      scenarios.find(({ slug }) => slug === 'esther-acute-ischaemic-stroke')
+        ?.beginningStep.title,
+    ).toBe('Admission to the stroke unit');
     expect(
       await service.listAdminPatientScenarios(
         '37ea1fbc-d47c-4b75-b918-19af6184bb3b',

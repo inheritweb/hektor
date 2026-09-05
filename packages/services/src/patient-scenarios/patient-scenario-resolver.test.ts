@@ -189,6 +189,7 @@ const scenario: PatientScenario = {
     PatientScenarioClinicalAudience.Medicine,
   ],
   status: PatientScenarioStatus.Draft,
+  updatedAt: '2026-09-02T06:00:00.000Z',
   steps,
 };
 

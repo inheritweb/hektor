@@ -72,6 +72,7 @@ export function mapPatientScenarioAggregate(
     careSetting: scenario.care_setting,
     intendedClinicalAudiences: scenario.intended_clinical_audiences,
     status: scenario.status,
+    updatedAt: new Date(scenario.updated_at).toISOString(),
     steps: aggregate.steps
       .toSorted((left, right) => left.step.position - right.step.position)
       .map(({ patientProfileLayer, step }) => ({

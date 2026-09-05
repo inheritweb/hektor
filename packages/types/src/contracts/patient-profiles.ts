@@ -647,7 +647,7 @@ export const patientProfileLayerSchema = z
     title: plainText(200),
     description: plainText(1000).optional(),
     schemaVersion: z.literal(1),
-    operations: z.array(patientProfileLayerOperationSchema).min(1).max(500),
+    operations: z.array(patientProfileLayerOperationSchema).max(500),
     sourceReference: plainText(500).optional(),
     sourceRevision: plainText(200).optional(),
   })

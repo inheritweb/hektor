@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
 import {
+  type CreatePatientScenarioDraftInput,
   type PatientScenario,
   PatientScenarioClinicalAudience,
   type PatientScenarioSummary,
   type ResolvedPatientScenarioStep,
+  type UpdatePatientScenarioDraftInput,
   type PatientScenarioStep,
   PatientScenarioStatus,
   PatientScenarioStepKind,
@@ -58,6 +60,7 @@ export const patientScenarioSchema = z
       .array(z.enum(PatientScenarioClinicalAudience))
       .max(20),
     status: z.enum(PatientScenarioStatus),
+    updatedAt: z.iso.datetime(),
     steps: z.array(patientScenarioStepSchema).min(1).max(100),
   })
   .strict()
@@ -142,6 +145,59 @@ export const listAdminPatientScenariosContract = defineContract({
   params: z.object({ profileId: z.uuid() }),
   query: z.object({ versionId: z.uuid() }),
   output: hektorResponseSchema(z.array(patientScenarioSummarySchema)),
+});
+
+export const listAdminPatientScenarioCatalogueContract = defineContract({
+  method: 'GET',
+  path: '/api/admin/patient-scenarios',
+  access: adminPatientScenarioAccess,
+  output: hektorResponseSchema(z.array(patientScenarioSchema)),
+});
+
+export const createPatientScenarioDraftInputSchema = z
+  .object({
+    title: plainText(200),
+    slug: itemIdSchema,
+    description: plainText(1000),
+    careSetting: z.enum(PatientCareSetting),
+    intendedClinicalAudiences: z
+      .array(z.enum(PatientScenarioClinicalAudience))
+      .max(20)
+      .refine(
+        (audiences) => new Set(audiences).size === audiences.length,
+        'Clinical audiences must be unique',
+      ),
+    beginningStep: z
+      .object({
+        title: plainText(200),
+        description: plainText(1000).optional(),
+      })
+      .strict(),
+  })
+  .strict() satisfies z.ZodType<CreatePatientScenarioDraftInput>;
+
+export const createAdminPatientScenarioDraftContract = defineContract({
+  method: 'POST',
+  path: '/api/admin/patient-profiles/:profileId/scenarios',
+  access: adminPatientScenarioAccess,
+  params: z.object({ profileId: z.uuid() }),
+  query: z.object({ versionId: z.uuid() }),
+  body: createPatientScenarioDraftInputSchema,
+  output: hektorResponseSchema(patientScenarioSchema),
+});
+
+export const updatePatientScenarioDraftInputSchema =
+  createPatientScenarioDraftInputSchema.extend({
+    expectedUpdatedAt: z.iso.datetime(),
+  }) satisfies z.ZodType<UpdatePatientScenarioDraftInput>;
+
+export const updateAdminPatientScenarioDraftContract = defineContract({
+  method: 'PATCH',
+  path: '/api/admin/patient-scenarios/:scenarioIdentifier',
+  access: adminPatientScenarioAccess,
+  params: z.object({ scenarioIdentifier: z.uuid() }),
+  body: updatePatientScenarioDraftInputSchema,
+  output: hektorResponseSchema(patientScenarioSchema),
 });
 
 export const getAdminPatientScenarioContract = defineContract({

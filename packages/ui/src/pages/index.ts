@@ -57,3 +57,7 @@ export * from './PatientProfilesPage';
 export * from './PatientProfileDetailPage';
 
 export * from './PatientEhrPreviewPage';
+
+export * from './AdminPatientScenarioFormPage';
+
+export * from './AdminPatientScenariosPage';

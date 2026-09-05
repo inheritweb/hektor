@@ -75,7 +75,7 @@ create table public.patient_profile_layers (
   schema_version integer not null check (schema_version = 1),
   operations jsonb not null check (
     jsonb_typeof(operations) = 'array' and
-    jsonb_array_length(operations) between 1 and 500
+    jsonb_array_length(operations) <= 500
   ),
   source_reference text check (
     source_reference is null or char_length(trim(source_reference)) between 1 and 500
@@ -163,3 +163,230 @@ for each row execute function public.set_updated_at();
 create trigger patient_scenario_steps_set_updated_at
 before update on public.patient_scenario_steps
 for each row execute function public.set_updated_at();
+
+create function public.create_system_patient_scenario_draft(
+  p_patient_profile_id uuid,
+  p_patient_profile_version_id uuid,
+  p_slug text,
+  p_title text,
+  p_description text,
+  p_care_setting text,
+  p_intended_clinical_audiences text[],
+  p_beginning_step_title text,
+  p_beginning_step_description text default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_scenario_id uuid := gen_random_uuid();
+  v_layer_id uuid := gen_random_uuid();
+begin
+  if not exists (
+    select 1
+    from public.patient_profiles profile
+    join public.patient_profile_versions version
+      on version.patient_profile_id = profile.id
+    where profile.id = p_patient_profile_id
+      and profile.status = 'active'
+      and version.id = p_patient_profile_version_id
+  ) then
+    raise exception using
+      errcode = 'P0002',
+      message = 'Patient profile version not found';
+  end if;
+
+  insert into public.patient_scenarios (
+    id,
+    scope,
+    slug,
+    status,
+    patient_profile_id,
+    patient_profile_version_id,
+    title,
+    description,
+    care_setting,
+    intended_clinical_audiences
+  ) values (
+    v_scenario_id,
+    'system',
+    p_slug,
+    'draft',
+    p_patient_profile_id,
+    p_patient_profile_version_id,
+    p_title,
+    p_description,
+    p_care_setting,
+    p_intended_clinical_audiences
+  );
+
+  insert into public.patient_profile_layers (
+    id,
+    patient_profile_id,
+    title,
+    description,
+    schema_version,
+    operations
+  ) values (
+    v_layer_id,
+    p_patient_profile_id,
+    p_beginning_step_title,
+    p_beginning_step_description,
+    1,
+    '[]'::jsonb
+  );
+
+  insert into public.patient_scenario_steps (
+    scenario_id,
+    patient_profile_id,
+    position,
+    kind,
+    title,
+    description,
+    patient_profile_layer_id,
+    ehr_changes
+  ) values (
+    v_scenario_id,
+    p_patient_profile_id,
+    10,
+    'beginning',
+    p_beginning_step_title,
+    p_beginning_step_description,
+    v_layer_id,
+    '[]'::jsonb
+  );
+
+  return v_scenario_id;
+end;
+$$;
+
+revoke all on function public.create_system_patient_scenario_draft(
+  uuid,
+  uuid,
+  text,
+  text,
+  text,
+  text,
+  text[],
+  text,
+  text
+) from public, anon, authenticated;
+
+grant execute on function public.create_system_patient_scenario_draft(
+  uuid,
+  uuid,
+  text,
+  text,
+  text,
+  text,
+  text[],
+  text,
+  text
+) to service_role;
+
+create function public.update_system_patient_scenario_draft(
+  p_scenario_id uuid,
+  p_expected_updated_at timestamptz,
+  p_slug text,
+  p_title text,
+  p_description text,
+  p_care_setting text,
+  p_intended_clinical_audiences text[],
+  p_beginning_step_title text,
+  p_beginning_step_description text default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_scenario public.patient_scenarios%rowtype;
+  v_beginning_step public.patient_scenario_steps%rowtype;
+begin
+  select * into v_scenario
+  from public.patient_scenarios
+  where id = p_scenario_id
+  for update;
+
+  if not found then
+    raise exception using
+      errcode = 'P0002',
+      message = 'Patient scenario not found';
+  end if;
+
+  if v_scenario.scope <> 'system' or v_scenario.status <> 'draft' then
+    raise exception using
+      errcode = 'P0001',
+      message = 'Only system-owned draft scenarios can be edited';
+  end if;
+
+  if date_trunc('milliseconds', v_scenario.updated_at) <>
+     p_expected_updated_at then
+    raise exception using
+      errcode = 'P0001',
+      message = 'Patient scenario has changed since it was loaded';
+  end if;
+
+  select * into strict v_beginning_step
+  from public.patient_scenario_steps
+  where scenario_id = p_scenario_id
+    and kind = 'beginning';
+
+  update public.patient_scenarios
+  set slug = p_slug,
+      title = p_title,
+      description = p_description,
+      care_setting = p_care_setting,
+      intended_clinical_audiences = p_intended_clinical_audiences
+  where id = p_scenario_id;
+
+  update public.patient_scenario_steps
+  set title = p_beginning_step_title,
+      description = p_beginning_step_description
+  where id = v_beginning_step.id;
+
+  update public.patient_profile_layers
+  set title = p_beginning_step_title,
+      description = p_beginning_step_description
+  where id = v_beginning_step.patient_profile_layer_id
+    and jsonb_array_length(operations) = 0;
+
+  return p_scenario_id;
+exception
+  when no_data_found then
+    raise exception using
+      errcode = 'P0001',
+      message = 'Patient scenario does not have exactly one beginning step';
+  when too_many_rows then
+    raise exception using
+      errcode = 'P0001',
+      message = 'Patient scenario does not have exactly one beginning step';
+end;
+$$;
+
+revoke all on function public.update_system_patient_scenario_draft(
+  uuid,
+  timestamptz,
+  text,
+  text,
+  text,
+  text,
+  text[],
+  text,
+  text
+) from public, anon, authenticated;
+
+grant execute on function public.update_system_patient_scenario_draft(
+  uuid,
+  timestamptz,
+  text,
+  text,
+  text,
+  text,
+  text[],
+  text,
+  text
+) to service_role;

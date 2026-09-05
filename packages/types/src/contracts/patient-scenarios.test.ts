@@ -16,7 +16,11 @@ import {
   PatientScenarioStatus,
   PatientScenarioStepKind,
 } from '../patient-scenarios';
-import { patientScenarioSchema } from './patient-scenarios';
+import {
+  createPatientScenarioDraftInputSchema,
+  patientScenarioSchema,
+  updatePatientScenarioDraftInputSchema,
+} from './patient-scenarios';
 
 const repositoryRoot = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -24,6 +28,66 @@ const repositoryRoot = resolve(
 );
 
 describe('patient scenario contracts', () => {
+  it('validates bounded draft creation input', () => {
+    expect(
+      createPatientScenarioDraftInputSchema.parse({
+        title: ' A simple scenario ',
+        slug: 'a-simple-scenario',
+        description: ' A deliberately empty scenario shell. ',
+        careSetting: PatientCareSetting.AcuteInpatient,
+        intendedClinicalAudiences: [PatientScenarioClinicalAudience.Nursing],
+        beginningStep: { title: ' Initial presentation ' },
+      }),
+    ).toEqual({
+      title: 'A simple scenario',
+      slug: 'a-simple-scenario',
+      description: 'A deliberately empty scenario shell.',
+      careSetting: PatientCareSetting.AcuteInpatient,
+      intendedClinicalAudiences: [PatientScenarioClinicalAudience.Nursing],
+      beginningStep: { title: 'Initial presentation' },
+    });
+
+    expect(
+      createPatientScenarioDraftInputSchema.safeParse({
+        title: 'Duplicate audience',
+        slug: 'duplicate-audience',
+        description: 'Invalid duplicate audience values.',
+        careSetting: PatientCareSetting.AcuteInpatient,
+        intendedClinicalAudiences: [
+          PatientScenarioClinicalAudience.Nursing,
+          PatientScenarioClinicalAudience.Nursing,
+        ],
+        beginningStep: { title: 'Beginning' },
+      }).success,
+    ).toBe(false);
+  });
+
+  it('requires concurrency and rejects identity changes when editing', () => {
+    const input = {
+      title: 'Updated scenario',
+      slug: 'updated-scenario',
+      description: 'Updated scenario metadata.',
+      careSetting: PatientCareSetting.Community,
+      intendedClinicalAudiences: [PatientScenarioClinicalAudience.Nursing],
+      beginningStep: { title: 'Updated beginning' },
+      expectedUpdatedAt: '2026-09-04T06:00:00.000Z',
+    };
+
+    expect(updatePatientScenarioDraftInputSchema.parse(input)).toEqual(input);
+    expect(
+      updatePatientScenarioDraftInputSchema.safeParse({
+        ...input,
+        patientProfileId: '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
+      }).success,
+    ).toBe(false);
+    expect(
+      updatePatientScenarioDraftInputSchema.safeParse({
+        ...input,
+        expectedUpdatedAt: undefined,
+      }).success,
+    ).toBe(false);
+  });
+
   it('validates a scenario aggregate with its patient version, steps and layers', () => {
     const document = JSON.parse(
       readFileSync(
@@ -57,6 +121,7 @@ describe('patient scenario contracts', () => {
         careSetting: PatientCareSetting.AcuteInpatient,
         intendedClinicalAudiences: [PatientScenarioClinicalAudience.Nursing],
         status: PatientScenarioStatus.Draft,
+        updatedAt: '2026-09-02T06:00:00.000Z',
         steps: [
           {
             id: '563b99e4-6af4-49e4-90b8-e16eb676d27e',
@@ -68,17 +133,7 @@ describe('patient scenario contracts', () => {
               patientProfileId: '37ea1fbc-d47c-4b75-b918-19af6184bb3b',
               title: 'Acute stroke admission',
               schemaVersion: 1,
-              operations: [
-                {
-                  operation: PatientProfileLayerOperationType.Add,
-                  path: PatientProfileLayerCollectionPath.Problems,
-                  value: {
-                    id: 'acute-ischaemic-stroke',
-                    problem: { display: 'Acute ischaemic stroke' },
-                    clinicalStatus: 'active',
-                  },
-                },
-              ],
+              operations: [],
             },
             ehrChanges: [],
           },
@@ -118,6 +173,7 @@ describe('patient scenario contracts', () => {
       careSetting: PatientCareSetting.AcuteInpatient,
       intendedClinicalAudiences: [],
       status: PatientScenarioStatus.Draft,
+      updatedAt: '2026-09-02T06:00:00.000Z',
       steps: [
         {
           id: '563b99e4-6af4-49e4-90b8-e16eb676d27e',

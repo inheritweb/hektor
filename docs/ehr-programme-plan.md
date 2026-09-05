@@ -183,25 +183,25 @@ general enrichment pass was sufficient evidence of content completeness.
    disposition: patient profile, future profile layer, teaching/UI content,
    duplicate, or deliberate omission. Every profile fact must be represented in
    the V1 document and visible in platform admin.
-2. **Roll the reconciliation process out to the other four profiles — completed.** Use the
-   same evidence and acceptance criteria, extending the contract only when an
-   actual source fact cannot be represented faithfully.
-3. **Add platform-admin “View in EHR” — in progress.** Completed the first
-   increment: CTA, shell-free full-screen preview route, reusable simulation
-   template, patient header metadata and corner simulation-tools drawer. Continue
-   with a deterministic, read-only projection of base-profile sections. Do not
-   add persisted generic EHR configuration until a concrete variation requires
-   it.
-   The next increment is specified in `docs/ehr-ui-slice-2-plan.md`.
-4. **Implement scenario mechanics — planned.** Add `PatientScenario`,
-   `PatientScenarioStep` and `PatientProfileLayer` to the contracts, database and
-   platform-admin experience. A scenario pins a profile version and its steps
-   order the layers applied over that base. Begin with a read-only Esther acute
-   stroke scenario: scenario pods below the patient-profile title/description,
-   then a cumulative step-aware EHR preview in the persistent simulation-tools
-   drawer. The bitesize delivery plan is in
-   `docs/patient-scenario-preview-plan.md`.
-5. **Consider the tutor experience.** Design tutor browsing, preview and later
+2. **Roll the reconciliation process out to the initial profile set — completed.**
+   Six production profiles now use the same evidence and acceptance criteria,
+   with the contract extended only where a source fact could not otherwise be
+   represented faithfully.
+3. **Add platform-admin “View in EHR” — completed.** The version-pinned,
+   full-screen preview projects the patient profile through the controlled
+   thirteen-module EHR composition and provides persistent simulation tools.
+4. **Implement scenario mechanics and preview — completed.** The contracts,
+   database, cumulative resolver, Esther production scenario, admin pods and
+   stable-URL timeline preview are implemented. The bitesize delivery plan and
+   remaining domain review are in `docs/patient-scenario-preview-plan.md`.
+5. **Add minimal platform-admin scenario authoring — completed.** A platform
+   administrator can create a valid, version-pinned draft shell with one empty
+   beginning layer. Progression steps, clinical operations and EHR configuration
+   editors remain separate slices.
+6. **Add draft scenario overview editing — completed.** Establish the reusable
+   edit workspace, optimistic concurrency and bounded metadata/beginning-step
+   editing before adding clinical authoring tools.
+7. **Consider the tutor experience.** Design tutor browsing, preview and later
    assignment workflows against working base-profile and scenario EHR previews.
 
 A profile is source-complete only when every patient-specific prototype
@@ -225,7 +225,7 @@ completeness.
 
 ### Phase 1 — platform patient-profile foundation — in progress
 
-- Completed: schema migration, production-safe seed, five representative system
+- Completed: schema migration, production-safe seed, six representative system
   profiles, platform-admin catalogue/detail views and structured draft editing.
 - Outstanding: search/filter controls, create/archive/publication workflow,
   clinical review UI, assets and fuller automated/browser coverage.
@@ -253,16 +253,13 @@ and an interprofessional case.
 The detailed plan is in `docs/patient-profile-history-slice-plan.md`. This slice
 ensures the EHR consumes the patient's past rather than owning or duplicating it.
 
-### Phase 3 — read-only EHR projection and tutor preview — in progress
+### Phase 3 — read-only EHR projection and platform-admin scenario preview — substantially complete
 
 - The prototype remains authoritative evidence of clinical workflows and
   patient-specific variation, but no single prototype patient's navigation is
   the generic EHR information architecture.
-- Current next slice: establish the controlled thirteen-module core EHR
-  composition, its registry and deterministic sparse ordering, then render the
-  first module across the five current profiles. It does not implement clinical
-  audiences or scenarios. The bounded plan is in
-  `docs/ehr-generic-sections-slice-plan.md`.
+- Completed: the controlled thirteen-module core EHR composition, its registry,
+  deterministic sparse ordering and profile-driven rendering.
 - Patient-specific presenting-history and specialty assessment sections will be
   added later as scenario-selected modules rather than universal navigation.
 - Learner-entered clinical documentation remains in the EHR when it represents
@@ -278,6 +275,11 @@ ensures the EHR consumes the patient's past rather than owning or duplicating it
   distinction between generic record sections, scenario/specialty modules and
   learning activity. It is now an input to the abstraction rather than the
   universal target navigation.
+- Completed: Esther's three-step acute-stroke scenario proves cumulative patient
+  layers and EHR changes in a stable-URL platform-admin preview.
+- Completed: minimal platform-admin creation of a system-owned scenario draft
+  and its empty beginning step. Detailed scope is in
+  `docs/patient-scenario-preview-plan.md`.
 - Define a versioned EHR projection over a published system patient-profile
   version.
 - Build the reusable EHR shell and the smallest useful read-only section set

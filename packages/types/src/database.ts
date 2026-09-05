@@ -1203,6 +1203,20 @@ export type Database = {
           reconciled_provision_id: string;
         }[];
       };
+      create_system_patient_scenario_draft: {
+        Args: {
+          p_beginning_step_description?: string;
+          p_beginning_step_title: string;
+          p_care_setting: string;
+          p_description: string;
+          p_intended_clinical_audiences: string[];
+          p_patient_profile_id: string;
+          p_patient_profile_version_id: string;
+          p_slug: string;
+          p_title: string;
+        };
+        Returns: string;
+      };
       has_organisation_role: {
         Args: {
           allowed_roles: Database['public']['Enums']['organisation_role'][];
@@ -1513,6 +1527,20 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      update_system_patient_scenario_draft: {
+        Args: {
+          p_beginning_step_description?: string;
+          p_beginning_step_title: string;
+          p_care_setting: string;
+          p_description: string;
+          p_expected_updated_at: string;
+          p_intended_clinical_audiences: string[];
+          p_scenario_id: string;
+          p_slug: string;
+          p_title: string;
+        };
+        Returns: string;
       };
     };
     Enums: {

@@ -27,6 +27,59 @@ describe('breadcrumbsForPath', () => {
       },
       { label: 'Edit' },
     ]);
+    expect(
+      breadcrumbsForPath(
+        '/admin/patient-profiles/profile-id/version/version-id',
+      ),
+    ).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Learning' },
+      { label: 'Patient profiles', href: '/admin/patient-profiles' },
+      {
+        label: 'Patient profile',
+        href: '/admin/patient-profiles/profile-id',
+      },
+      { label: 'Version' },
+    ]);
+    expect(
+      breadcrumbsForPath(
+        '/admin/patient-profiles/profile-id/version/version-id/scenarios/new',
+      ),
+    ).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Learning' },
+      { label: 'Patient profiles', href: '/admin/patient-profiles' },
+      {
+        label: 'Patient profile',
+        href: '/admin/patient-profiles/profile-id',
+      },
+      {
+        label: 'Version',
+        href: '/admin/patient-profiles/profile-id/version/version-id',
+      },
+      { label: 'Add scenario' },
+    ]);
+    expect(
+      breadcrumbsForPath(
+        '/admin/patient-scenarios/scenario-id/edit',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'Acute ischaemic stroke (Esther)',
+      ),
+    ).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Scenarios', href: '/admin/patient-scenarios' },
+      { label: 'Acute ischaemic stroke (Esther)' },
+      { label: 'Edit' },
+    ]);
+    expect(breadcrumbsForPath('/admin/patient-scenarios')).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Learning' },
+      { label: 'Scenarios' },
+    ]);
     expect(breadcrumbsForPath('/users/provisions')).toEqual([
       { label: 'Home', href: '/' },
       { label: 'Users', href: '/users' },

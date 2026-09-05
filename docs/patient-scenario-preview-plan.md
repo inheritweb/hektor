@@ -1,6 +1,7 @@
 # Patient scenario and EHR preview plan
 
-Status: implementation in progress. Slices 1 through 5 are complete.
+Status: preview milestone and minimal platform-admin authoring shell complete.
+The domain-expert review in Slice 6 can happen independently.
 
 ## Outcome
 
@@ -319,6 +320,202 @@ the remaining prototype sections arbitrarily.
 - record clinical-content provenance and review status; and
 - decide what scenario authoring needs to exist before designing edit APIs or
   forms.
+
+The domain-expert content review is still required, but it does not block the
+technical authoring-shell slice below. Findings from that review may change
+Esther's authored content without changing the scenario creation workflow.
+
+### Slice 7 — minimal scenario authoring shell — completed
+
+This slice lets a platform administrator create a valid system-owned draft
+scenario against the exact patient-profile version they are viewing. It does
+not yet edit clinical layer operations or EHR configuration.
+
+#### User journey
+
+1. The **Scenarios** region on a patient-profile detail page offers **Create
+   scenario** for the currently displayed version.
+2. The action opens
+   `/admin/patient-profiles/{profileId}/version/{versionId}/scenarios/new`.
+3. A compact form captures:
+   - scenario title;
+   - slug, initially derived from the title but editable;
+   - description;
+   - care setting;
+   - zero or more intended clinical audiences; and
+   - beginning-step title and optional description.
+4. The page clearly identifies the patient and pinned profile version. Neither
+   can be changed within the form.
+5. Submitting creates one system-owned draft scenario, one empty beginning
+   `PatientProfileLayer`, and one beginning `PatientScenarioStep` at position
+   `10`.
+6. Success returns to the pinned patient-profile detail page, where the new pod
+   appears and can immediately be previewed. Until clinical changes are added,
+   its beginning preview is intentionally identical to the pinned base EHR.
+
+#### Contract and persistence boundary
+
+- Add a platform-admin `POST` contract to the existing version-scoped scenario
+  collection endpoint. The profile ID remains in the path and the exact version
+  ID remains in the query; the request body contains only the editable fields
+  above.
+- The service verifies that the version belongs to the path profile and that
+  the profile is active before writing anything.
+- Creation is one database transaction. A service-role-only PostgreSQL function
+  in the existing, unreleased patient-scenario migration creates the scenario,
+  empty layer and beginning step together and returns their IDs. Partial
+  scenario shells must not be observable.
+- Allow `PatientProfileLayer.operations` to be empty while a scenario is a
+  draft. The pure resolver already treats an empty layer as a no-op. Published
+  scenario validation is deferred until a publication workflow exists.
+- Generate all three IDs as real UUIDs. Enforce the existing system-scope slug
+  uniqueness constraint and return a field-addressable conflict rather than a
+  generic server error.
+- Return the composed `PatientScenario` aggregate, not database-shaped foreign
+  keys.
+
+#### Admin UI boundary
+
+- Implement the form as a reusable UI page component with Storybook states for
+  default, validation failure, submission and server failure.
+- Use bounded selects and checkboxes derived from the existing care-setting and
+  clinical-audience enums.
+- Explain that clinical changes and EHR composition are added in later steps;
+  do not expose JSON textareas or placeholder controls.
+- Preserve platform-admin authorization in both the page and API route.
+
+#### Tests
+
+- Contract tests cover trimming, bounded values, enum inputs and malformed
+  requests.
+- Service integration tests cover atomic creation, exact version pinning,
+  generated beginning records, duplicate slugs and unauthorized reads.
+- Route tests prove platform-admin-only access.
+- UI tests cover accessible labels, derived/editable slug behavior, bounded
+  selections, submission payload and error feedback.
+- Seed generation is unaffected: user-created drafts are database state, not
+  production seed input.
+
+#### Explicitly outside this slice
+
+- adding, editing, deleting or reordering progression steps;
+- editing `PatientProfileLayer` operations;
+- editing EHR configuration changes;
+- changing the pinned patient or profile version;
+- editing or deleting scenario metadata after creation;
+- publication, archive, cloning and organisation/user ownership;
+- tutor access, assignments, release schedules and learner state; and
+- creating a scenario from inside the full-screen EHR.
+
+#### Acceptance criteria
+
+- A platform administrator can create a scenario shell from any active patient
+  profile version using bounded fields only.
+- The created scenario pins exactly that version and contains exactly one
+  beginning step at position `10` with an empty, same-patient layer.
+- A failed write leaves no scenario, step or layer behind.
+- The new pod appears after redirect and opens a working scenario preview whose
+  initial resolved data matches the selected base profile.
+- An ordinary authenticated user cannot open the form or invoke the endpoint.
+
+### Slice 8 — draft scenario overview editing — completed
+
+This slice establishes the platform-admin scenario edit workspace and makes the
+scenario shell useful to refine. It edits only existing draft metadata and the
+beginning-step narrative; it does not yet author clinical or EHR changes.
+
+#### User journey
+
+1. Each draft scenario pod offers **Edit scenario** alongside **Preview scenario
+   in EHR**.
+2. The action opens `/admin/patient-scenarios/{scenarioId}/edit`.
+3. The edit screen identifies the pinned patient and profile version and keeps
+   both immutable.
+4. An **Overview** form edits:
+   - scenario title;
+   - slug;
+   - description;
+   - care setting;
+   - intended clinical audiences;
+   - beginning-step title; and
+   - beginning-step description.
+5. Saving remains on the edit screen, displays confirmation, and refreshes the
+   scenario aggregate. **Preview in EHR** opens the current draft in a new tab.
+6. Returning to the patient profile shows the updated scenario pod.
+
+The create and edit experiences should reuse one presentation component with
+explicit create/edit modes and initial values. The app owns fetching, mutation,
+routing and confirmation state.
+
+#### Domain and contract changes
+
+- Add `updatedAt` to the composed `PatientScenario`; persistence timestamps are
+  mapped into the domain rather than exposed as database-shaped fields.
+- Add a platform-admin `PATCH /api/admin/patient-scenarios/{scenarioId}`
+  contract with the editable values above and `expectedUpdatedAt` for optimistic
+  concurrency.
+- The response is the fully composed, updated `PatientScenario` aggregate.
+- Only system-owned scenarios in `draft` status are editable. Published or
+  archived content returns a lifecycle conflict rather than being mutated.
+- The pinned patient, pinned profile version, scope, status, step order, layer
+  operations and EHR changes are absent from the request body and therefore
+  cannot be changed through this endpoint.
+
+#### Persistence boundary
+
+- Update scenario metadata and its unique beginning step atomically in a
+  service-role-only PostgreSQL function folded into the existing unreleased
+  patient-scenario migration.
+- The function locks the scenario row, verifies `expectedUpdatedAt`, confirms
+  draft/system scope, and requires exactly one beginning step.
+- Updating the visible beginning-step title and description also updates the
+  empty beginning layer's title and description while that layer has no
+  operations. Once clinical authoring populates a layer, its clinical title and
+  provenance become independently managed and this coupling must stop.
+- Duplicate system slugs return a field-addressable slug conflict. A stale edit
+  returns a clear concurrency conflict with no partial changes.
+
+#### Admin UX boundary
+
+- Reuse bounded care-setting and clinical-audience controls from creation.
+- Present the patient name, profile version and scenario draft status as
+  read-only context, not disabled form fields.
+- Show validation and slug errors beside their fields and a page-level error for
+  lifecycle, concurrency or unexpected failures.
+- Do not display JSON, database IDs as editable values, empty clinical editors,
+  disabled future tabs or controls that imply clinical changes can already be
+  authored.
+
+#### Tests
+
+- Contract tests cover the editable whitelist and required concurrency token.
+- Integration tests cover atomic updates, stale writes, duplicate slugs,
+  non-draft rejection and preservation of the pinned version and empty
+  operations/EHR changes.
+- Route tests prove platform-admin-only access.
+- UI tests cover populated initial values, bounded changes, save payload,
+  pending/success/error states and immutable patient/version context.
+
+#### Explicitly outside this slice
+
+- adding, deleting or reordering scenario steps;
+- editing any patient-profile layer operation;
+- editing EHR configuration changes;
+- changing the pinned patient or version;
+- lifecycle transitions, publication, archive or deletion;
+- provenance and clinical-review workflows; and
+- tutor, assignment or learner behavior.
+
+#### Acceptance criteria
+
+- A platform administrator can edit and reopen a draft scenario overview without
+  changing its identity relationships or resolved clinical state.
+- Scenario pods and the preview drawer reflect saved titles and descriptions.
+- Saving cannot discard a concurrent update and cannot leave scenario, step and
+  layer metadata out of sync.
+- The base-plus-empty-layer EHR remains clinically identical before and after
+  overview editing.
+- Non-admin users and non-draft scenarios cannot be edited.
 
 ## Acceptance criteria
 
