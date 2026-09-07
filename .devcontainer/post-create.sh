@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+bash .devcontainer/codex-state.sh restore
+
 echo "==> Installing Yarn workspace dependencies"
 if [ -f yarn.lock ]; then
   yarn install --immutable

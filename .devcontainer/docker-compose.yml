@@ -6,5 +6,10 @@ services:
     privileged: true
     volumes:
       - ..:/workspace:cached
+      - codex-state:/home/node/.codex
     working_dir: /workspace
     command: sleep infinity
+
+volumes:
+  codex-state:
+    name: hektor-codex-state

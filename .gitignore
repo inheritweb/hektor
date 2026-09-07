@@ -16,6 +16,7 @@ apps/web/test-results/
 packages/ui/storybook-static/
 coverage/
 artifacts/
+.local-backups/
 *.tsbuildinfo
 
 # Local environment files

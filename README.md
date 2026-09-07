@@ -62,6 +62,10 @@ browser.
 
 ### Open the dev container
 
+Before rebuilding an existing container, follow
+[Codex continuity](docs/codex-continuity.md) to preserve local conversation
+history. New containers persist Codex state in a dedicated Docker volume.
+
 Clone the repository and choose **Reopen in Container** in VS Code or another
 Dev Container-compatible editor.
 
