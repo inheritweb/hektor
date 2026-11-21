@@ -1,6 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "cacheMaxSize": "5GB",
+  "cacheMaxAge": "14d",
   "globalDependencies": [".env"],
   "globalEnv": [
     "PUBLIC_BASE_URL",
@@ -13,7 +15,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"]
     },
     "dev": {
       "cache": false,
