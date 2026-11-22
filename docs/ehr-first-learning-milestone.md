@@ -3,6 +3,12 @@
 Status: proposed implementation sequence. This plan deliberately stops at the
 first complete tutor-to-learner learning loop.
 
+Historical proposal: the current Learning Experience model is recorded in
+[learning-experiences-design.md](learning-experiences-design.md). Its agreed
+activity ownership and individual learner EHR additions supersede the exercise
+model and read-only learner-record assumption below. Assignment and submission
+details here remain proposals, not approved requirements for the current work.
+
 ## Outcome
 
 A tutor can choose and preview a curated EHR, create an exercise containing
