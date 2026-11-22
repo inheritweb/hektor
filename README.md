@@ -433,6 +433,17 @@ yarn workspace @hektor/web playwright install --with-deps chromium
 
 ### A task appears stale
 
+Turborepo stores its local task cache in `.turbo/cache`. In the dev container,
+this is part of the host-mounted repository, so it persists across container
+rebuilds. The root `turbo.json` sets a 5 GB size limit and 14-day retention;
+Turbo evicts expired entries at the start of a run and removes the oldest
+entries when enforcing the size limit. This is run-triggered cleanup, not a
+background timer or filesystem quota.
+
+Build archives retain production `.next` output and `dist`, excluding both
+`.next/cache` and the entire `.next/dev` tree. This keeps development Turbopack
+databases out of production build archives.
+
 Force Turborepo to bypass its cache:
 
 ```sh
