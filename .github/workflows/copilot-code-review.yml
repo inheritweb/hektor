@@ -12,14 +12,13 @@ on:
       - .yarnrc.yml
       - '**/package.json'
 
-permissions:
-  contents: read
-
 jobs:
   # GitHub requires this job ID, including in a dedicated code-review workflow.
   copilot-setup-steps:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
