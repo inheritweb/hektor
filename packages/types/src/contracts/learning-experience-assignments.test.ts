@@ -180,6 +180,25 @@ describe('assignment content boundaries', () => {
     },
   );
 
+  it('rejects differently typed EHR sections sharing an identity', () => {
+    const snapshot = assignmentFixture().snapshot;
+    const sections = snapshot.scenarios[0]!.baseEhr.sections;
+    expect(sections[0]!.type).not.toBe(sections[1]!.type);
+    sections[1]!.id = sections[0]!.id;
+
+    const result = learningExperienceSnapshotSchema.safeParse(snapshot);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ['scenarios', 0, 'baseEhr', 'sections'],
+          }),
+        ]),
+      );
+    }
+  });
+
   it('rejects ambiguous step identities within a captured scenario', () => {
     const snapshot = assignmentFixture().snapshot;
     const steps = snapshot.scenarios[0]!.scenario.steps;

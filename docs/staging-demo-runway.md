@@ -173,7 +173,7 @@ release story reliably. Record what was deployed, validation and known limits.
   only experience and group IDs; actor, tenant and recipients must be resolved
   by the future service. Schemas check content consistency, not permissions or
   database immutability.
-- Slice 2a validation: all 70 types-package tests pass, including 21 added
+- Slice 2a validation: all 71 types-package tests pass, including 22 added
   assignment/snapshot checks. `yarn check` passes. `yarn build --concurrency=1`
   passes with fresh web/simulator builds and cached docs/website builds.
   Database integration and browser tests were not run for this types-only PR.

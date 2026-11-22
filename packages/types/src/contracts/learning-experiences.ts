@@ -153,11 +153,16 @@ export const learningScenarioSnapshotSchema = z
     scenario: patientScenarioSchema,
     baseEhr: ehrConfigurationSchema,
   })
-  .superRefine(({ scenario }, context) => {
+  .superRefine(({ scenario, baseEhr }, context) => {
     requireUnique(
       scenario.steps.map(({ id }) => id),
       context,
       ['scenario', 'steps'],
+    );
+    requireUnique(
+      baseEhr.sections.map(({ id }) => id),
+      context,
+      ['baseEhr', 'sections'],
     );
   }) satisfies z.ZodType<LearningScenarioSnapshot>;
 
