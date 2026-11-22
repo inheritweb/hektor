@@ -55,6 +55,11 @@ function carePlanWorkFixture() {
   const activity = experience.activities[0]!;
   const learnerExperience = {
     id: id(6),
+    assignment: {
+      id: id(30),
+      group: { id: id(31), name: 'Demo group' },
+      createdAt: timestamp,
+    },
     learningExperience: activity.learningExperience,
     learner: { id: id(7), user: { id: id(8), displayName: 'Demo Learner' } },
   };
@@ -259,23 +264,34 @@ describe('learner work consistency (not authorisation)', () => {
     expect(learnerActivityWorkSchema.safeParse(work).success).toBe(false);
   });
 
-  it.each(['participation', 'membership', 'user', 'experience'] as const)(
-    'rejects a clinical document from another %s',
-    (kind) => {
-      const work = carePlanWorkFixture();
-      work.carePlan.learnerExperience = structuredClone(work.learnerExperience);
-      const scope = work.carePlan.learnerExperience;
-      if (kind === 'participation') scope.id = id(20);
-      if (kind === 'membership') scope.learner.id = id(20);
-      if (kind === 'user') scope.learner.user.id = id(20);
-      if (kind === 'experience') scope.learningExperience.id = id(20);
-      expect(learnerActivityWorkSchema.safeParse(work).success).toBe(false);
-    },
-  );
+  it.each([
+    'participation',
+    'assignment',
+    'membership',
+    'user',
+    'experience',
+  ] as const)('rejects a clinical document from another %s', (kind) => {
+    const work = carePlanWorkFixture();
+    work.carePlan.learnerExperience = structuredClone(work.learnerExperience);
+    const scope = work.carePlan.learnerExperience;
+    if (kind === 'participation') scope.id = id(20);
+    if (kind === 'assignment') scope.assignment.id = id(20);
+    if (kind === 'membership') scope.learner.id = id(20);
+    if (kind === 'user') scope.learner.user.id = id(20);
+    if (kind === 'experience') scope.learningExperience.id = id(20);
+    expect(learnerActivityWorkSchema.safeParse(work).success).toBe(false);
+  });
 
   it('rejects another learner response, even when the clinical document is correct', () => {
     const work = carePlanWorkFixture();
     work.response.learnerExperience = { ...work.learnerExperience, id: id(20) };
+    expect(learnerActivityWorkSchema.safeParse(work).success).toBe(false);
+  });
+
+  it('rejects a response attributed to another assignment of the same content', () => {
+    const work = carePlanWorkFixture();
+    work.response.learnerExperience = structuredClone(work.learnerExperience);
+    work.response.learnerExperience.assignment.id = id(99);
     expect(learnerActivityWorkSchema.safeParse(work).success).toBe(false);
   });
 

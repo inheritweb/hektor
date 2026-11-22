@@ -1,5 +1,10 @@
 import type { Activity } from './activities';
-import type { OrganisationMembershipUserSummary } from './organisations';
+import type { EhrConfiguration } from './ehr';
+import type {
+  OrganisationGroup,
+  OrganisationMembershipUserSummary,
+  OrganisationSummary,
+} from './organisations';
 import type { PatientScenario } from './patient-scenarios';
 
 export type LearningScenarioSummary = Pick<PatientScenario, 'id' | 'title'>;
@@ -22,9 +27,40 @@ export type LearningExperienceSummary = Pick<
   'id' | 'title'
 >;
 
-/** Individual participation; the assignment relationship follows in slice 2. */
+export interface LearningScenarioSnapshot {
+  scenario: PatientScenario;
+  baseEhr: EhrConfiguration;
+}
+
+/** Captured at assignment; persistence must enforce immutability. */
+export interface LearningExperienceSnapshot {
+  experience: LearningExperience;
+  scenarios: LearningScenarioSnapshot[];
+}
+
+export interface LearningExperienceAssignment {
+  id: string;
+  organisation: Pick<OrganisationSummary, 'id' | 'name'>;
+  group: Pick<OrganisationGroup, 'id' | 'name'>;
+  assignedBy: Pick<OrganisationMembershipUserSummary, 'id' | 'user'>;
+  snapshot: LearningExperienceSnapshot;
+  createdAt: string;
+}
+
+export type LearningExperienceAssignmentSummary = Pick<
+  LearningExperienceAssignment,
+  'id' | 'group' | 'createdAt'
+>;
+
+export interface CreateLearningExperienceAssignmentInput {
+  experienceId: string;
+  groupId: string;
+}
+
+/** One captured recipient per assignment; repeat assignments create new work. */
 export interface LearnerExperience {
   id: string;
+  assignment: LearningExperienceAssignmentSummary;
   learningExperience: LearningExperienceSummary;
   learner: Pick<OrganisationMembershipUserSummary, 'id' | 'user'>;
   createdAt: string;
@@ -32,5 +68,5 @@ export interface LearnerExperience {
 
 export type LearnerExperienceSummary = Pick<
   LearnerExperience,
-  'id' | 'learningExperience' | 'learner'
+  'id' | 'assignment' | 'learningExperience' | 'learner'
 >;
