@@ -10,12 +10,19 @@ import {
 } from '../activities';
 import type { LearnerCarePlan, LearnerCarePlanContent } from '../care-plans';
 import type {
+  CreateLearningExperienceAssignmentInput,
+  LearningExperienceAssignment,
+  LearningExperienceAssignmentSummary,
+  LearningExperienceSnapshot,
+  LearningScenarioSnapshot,
   LearnerExperience,
   LearnerExperienceSummary,
   LearningExperience,
   LearningExperienceSummary,
   LearningScenarioSummary,
 } from '../learning-experiences';
+import { ehrConfigurationSchema } from './ehr';
+import { patientScenarioSchema } from './patient-scenarios';
 import { userSummarySchema } from './users';
 
 const titleSchema = z.string().trim().min(1).max(200);
@@ -44,10 +51,27 @@ export const learningExperienceSummarySchema = z.strictObject({
   title: titleSchema,
 }) satisfies z.ZodType<LearningExperienceSummary>;
 
+const membershipIdentitySchema = z.strictObject({
+  id: z.uuid(),
+  user: userSummarySchema,
+});
+
+export const learningExperienceAssignmentSummarySchema = z.strictObject({
+  id: z.uuid(),
+  group: z.strictObject({ id: z.uuid(), name: z.string().trim().min(1) }),
+  createdAt: z.iso.datetime(),
+}) satisfies z.ZodType<LearningExperienceAssignmentSummary>;
+
+export const createLearningExperienceAssignmentInputSchema = z.strictObject({
+  experienceId: z.uuid(),
+  groupId: z.uuid(),
+}) satisfies z.ZodType<CreateLearningExperienceAssignmentInput>;
+
 export const learnerExperienceSummarySchema = z.strictObject({
   id: z.uuid(),
   learningExperience: learningExperienceSummarySchema,
-  learner: z.strictObject({ id: z.uuid(), user: userSummarySchema }),
+  assignment: learningExperienceAssignmentSummarySchema,
+  learner: membershipIdentitySchema,
 }) satisfies z.ZodType<LearnerExperienceSummary>;
 
 export const learnerExperienceSchema = learnerExperienceSummarySchema.extend({
@@ -123,6 +147,85 @@ export const learningExperienceSchema = learningExperienceSummarySchema
       });
     });
   }) satisfies z.ZodType<LearningExperience>;
+
+export const learningScenarioSnapshotSchema = z
+  .strictObject({
+    scenario: patientScenarioSchema,
+    baseEhr: ehrConfigurationSchema,
+  })
+  .superRefine(({ scenario }, context) => {
+    requireUnique(
+      scenario.steps.map(({ id }) => id),
+      context,
+      ['scenario', 'steps'],
+    );
+  }) satisfies z.ZodType<LearningScenarioSnapshot>;
+
+export const learningExperienceSnapshotSchema = z
+  .strictObject({
+    experience: learningExperienceSchema,
+    scenarios: z.array(learningScenarioSnapshotSchema).min(1).max(100),
+  })
+  .superRefine(({ experience, scenarios }, context) => {
+    requireUnique(
+      scenarios.map(({ scenario }) => scenario.id),
+      context,
+      ['scenarios'],
+    );
+    const definitions = new Map(
+      scenarios.map(({ scenario }) => [scenario.id, scenario]),
+    );
+    if (scenarios.length !== experience.scenarios.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Snapshot must contain exactly the experience scenarios',
+        path: ['scenarios'],
+      });
+    }
+    experience.scenarios.forEach((reference, index) => {
+      if (definitions.get(reference.id)?.title !== reference.title) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Scenario reference must match its captured definition',
+          path: ['experience', 'scenarios', index],
+        });
+      }
+    });
+    experience.activities.forEach((activity, index) => {
+      if (activity.learningExperience.title !== experience.title) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Activity experience title must match captured content',
+          path: ['experience', 'activities', index, 'learningExperience'],
+        });
+      }
+      activity.scenarios.forEach((reference, scenarioIndex) => {
+        if (definitions.get(reference.id)?.title !== reference.title) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Activity scenario must match its captured definition',
+            path: [
+              'experience',
+              'activities',
+              index,
+              'scenarios',
+              scenarioIndex,
+            ],
+          });
+        }
+      });
+    });
+  }) satisfies z.ZodType<LearningExperienceSnapshot>;
+
+export const learningExperienceAssignmentSchema =
+  learningExperienceAssignmentSummarySchema.extend({
+    organisation: z.strictObject({
+      id: z.uuid(),
+      name: z.string().trim().min(1),
+    }),
+    assignedBy: membershipIdentitySchema,
+    snapshot: learningExperienceSnapshotSchema,
+  }) satisfies z.ZodType<LearningExperienceAssignment>;
 
 /** Draft content deliberately allows empty fields and preserves learner text. */
 export const learnerCarePlanContentSchema = z.strictObject({
@@ -201,6 +304,7 @@ function sameLearnerExperience(
 ) {
   return (
     left.id === right.id &&
+    left.assignment.id === right.assignment.id &&
     left.learningExperience.id === right.learningExperience.id &&
     left.learner.id === right.learner.id &&
     left.learner.user.id === right.learner.user.id

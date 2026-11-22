@@ -7,7 +7,8 @@ Unresolved proposals below are not implementation decisions.
 The proposed implementation sequence and staging release gate are in
 [staging-demo-runway.md](staging-demo-runway.md). It distinguishes prior
 agreements from working choices for the first demo. The first slice is
-implemented; the remaining runway awaits user approval before work continues.
+merged in PR #3. The user authorised the next step on 22 November 2026;
+assignment boundaries are the next small PR within the persistence slice.
 
 ## Current implementation
 
@@ -144,6 +145,32 @@ Schemas check unique activity IDs/order, scenario membership, activity ownership
 matching response types and consistent learner/document context. They do not
 authorise callers or persist anything. Assignment snapshots, database constraints,
 authenticated routes, EHR projection and screens remain later runway slices.
+
+### Runway slice 2a: 22 November 2026
+
+The implementation now distinguishes a reusable `LearningExperience` from a
+`LearningExperienceAssignment`, and links each `LearnerExperience` to its
+assignment. Assignment summaries expose the group and assignment date rather
+than expanding the entire content tree in every response. Responses and care
+plans carry this assignment identity through their learner-participation context.
+
+The assignment contains a `LearningExperienceSnapshot`: the experience plus
+its full scenario definitions, including patient versions, clinical layers,
+progression steps and each scenario's starting EHR configuration. It must be
+possible to resolve an assigned scenario without consulting editable source
+content or a later application default. No snapshot-building or database
+immutability mechanism exists yet; the types and schemas define that boundary.
+
+For the first demo, the working choice is immediate group assignment with
+recipients captured once and separate participation for every repeat assignment.
+The create input accepts only experience and group IDs. The future authenticated
+service must resolve the organisation, assigning member, eligible learners and
+content, and enforce explicit group permissions. These choices implement the
+runway proposal; they do not settle scheduling, authoring or shared work.
+
+This PR adds no database tables, routes or browser features. Next is persistence
+and its isolation/concurrency tests, followed by the authenticated API. Assessment
+remains out of scope.
 
 ## Open questions
 

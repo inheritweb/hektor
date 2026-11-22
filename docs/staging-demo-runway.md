@@ -1,9 +1,10 @@
 # Staging demo runway
 
-Status: proposed runway, awaiting user approval. The user accepted the first
-implementation step as work already done and requested review before continuing
-on 21 November 2026. Later slices must not begin until approved. This plan builds
-on [learning-experiences-design.md](learning-experiences-design.md).
+Status: slice 1 merged in PR #3. On 22 November 2026 the user authorised the
+next step. Slice 2 is being split into small reviewable PRs, beginning with
+assignment and snapshot boundaries (2a). Persistence and authenticated APIs
+remain outstanding; later product slices still require approval. This plan
+builds on [learning-experiences-design.md](learning-experiences-design.md).
 
 ## Release story
 
@@ -69,6 +70,20 @@ Exit: meaningful validation tests, `yarn check`, relevant unit tests and a
 production build pass. No new endpoint is advertised before it is implemented.
 
 ### 2. Individual persistence and API
+
+Implement in small PRs:
+
+- **2a — assignment boundaries (current):** canonical assignment and snapshot
+  types, strict boundary schemas and individual participation's assignment
+  relationship. No new routes or database tables in this PR.
+- **2b — persistence:** versioned schema, atomic assignment, recipient capture,
+  immutable snapshots, access enforcement and revisioned saves, verified with
+  local database integration tests.
+- **2c — authenticated API:** services, endpoint contracts and thin routes for
+  the operations below, including stable learner and tutor read models.
+
+These are review boundaries within slice 2, not separate product milestones.
+The slice is only complete when its API exit criteria pass.
 
 - Implement assignment snapshots and individual participation types, then
   versioned local database migrations and generated database types.
@@ -150,6 +165,17 @@ release story reliably. Record what was deployed, validation and known limits.
   PR. It excludes `.next/dev` and sets `5GB` / `14d` retention.
 - Slice 1 types, schemas and regression coverage are implemented. The types
   package's 49 tests pass, including 27 new tests. Its typecheck and lint pass.
-  Repository-wide `yarn check` also passes. A fresh production build has not yet
-  been run for this slice, so its full exit gate remains outstanding.
-- Later slices are proposed and await user approval. Review one slice at a time.
+  These checks were recorded with slice 1; the fresh build and checks below
+  verify the merged foundation together with slice 2a.
+- Slice 2a adds assignment/group context to each learner participation. An
+  assignment captures the experience and full scenario definitions (patient
+  version, layers, steps and starting EHR configuration). Strict input accepts
+  only experience and group IDs; actor, tenant and recipients must be resolved
+  by the future service. Schemas check content consistency, not permissions or
+  database immutability.
+- Slice 2a validation: all 70 types-package tests pass, including 21 added
+  assignment/snapshot checks. `yarn check` passes. `yarn build --concurrency=1`
+  passes with fresh web/simulator builds and cached docs/website builds.
+  Database integration and browser tests were not run for this types-only PR.
+- Persistence, authenticated endpoints and browser flows remain unimplemented.
+  Review this boundary before proceeding to the migration and service work.
